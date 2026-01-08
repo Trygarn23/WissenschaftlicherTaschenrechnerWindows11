@@ -31,6 +31,7 @@ public class TaschenrechnerLogik
             neueEingabe = false;
         }
         eingabe.append(ziffer);
+        
         return formatEingabeLive(eingabe.toString());
     }
 
@@ -213,7 +214,6 @@ public class TaschenrechnerLogik
         neueEingabe = false;
         return formatEingabeLive(eingabe.toString());
     }
-
 
     public String quadriere()
     {
