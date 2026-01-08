@@ -4,6 +4,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
 public class TaschenrechnerUI extends JFrame
 {
@@ -82,7 +83,16 @@ public class TaschenrechnerUI extends JFrame
                 String t = ((JButton) e.getSource()).getText();
                 switch (t)
                 {
-                    case "0": case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9":
+                    case "0":
+                    case "1":
+                    case "2":
+                    case "3":
+                    case "4":
+                    case "5":
+                    case "6":
+                    case "7":
+                    case "8":
+                    case "9":
                         display.setText(rechner.eingabeZahl(t));
                         recdisplay.setText(rechner.getVerlauf());
                         break;
@@ -145,6 +155,107 @@ public class TaschenrechnerUI extends JFrame
 
     private void setupKeyboard(TaschenrechnerLogik rechner)
     {
+        JRootPane root = SwingUtilities.getRootPane(buttonPanel);
+        InputMap im = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = root.getActionMap();
 
+        for (int i = 0; i <= 9; i++)
+        {
+            final String num = String.valueOf(i);
+            im.put(KeyStroke.getKeyStroke(num), "num" + num);
+            am.put("num" + num, new AbstractAction()
+            {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    display.setText(rechner.getVerlauf());
+                    recdisplay.setText(rechner.getVerlauf());
+                }
+            });
+        }
+
+        im.put(KeyStroke.getKeyStroke(","), "komma");
+        im.put(KeyStroke.getKeyStroke("."), "komma");
+        am.put("komma", new AbstractAction()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                display.setText(rechner.eingabeKomma());
+            }
+        });
+
+        im.put(KeyStroke.getKeyStroke("+"), "plus");
+        im.put(KeyStroke.getKeyStroke("-"), "minus");
+        im.put(KeyStroke.getKeyStroke("*"), "mal");
+        im.put(KeyStroke.getKeyStroke("/"), "geteilt");
+
+        am.put("plus", new AbstractAction()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                display.setText(rechner.operatorSetzen("+"));
+                recdisplay.setText(rechner.getVerlauf());
+            }
+        });
+        am.put("minus", new AbstractAction()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                display.setText(rechner.operatorSetzen("-"));
+                recdisplay.setText(rechner.getVerlauf());
+            }
+        });
+        am.put("mal", new AbstractAction()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                display.setText(rechner.operatorSetzen("*"));
+                recdisplay.setText(rechner.getVerlauf());
+            }
+        });
+        am.put("geteilt", new AbstractAction()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                display.setText(rechner.operatorSetzen("/"));
+                recdisplay.setText(rechner.getVerlauf());
+            }
+        });
+
+        im.put(KeyStroke.getKeyStroke("enter"), "enter");
+        am.put("enter", new AbstractAction()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                display.setText(rechner.berechne());
+                recdisplay.setText(rechner.getVerlauf());
+            }
+        });
+
+        im.put(KeyStroke.getKeyStroke("BACK_SPACE"), "back");
+        am.put("back", new AbstractAction()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                display.setText(rechner.loeschen());
+            }
+        });
+
+        im.put(KeyStroke.getKeyStroke("ESCAPE"), "escape");
+        am.put("escape", new AbstractAction()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                dispose();
+            }
+        });
     }
 }
