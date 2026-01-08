@@ -170,6 +170,7 @@ public class TaschenrechnerUI extends JFrame
                 {
                     display.setText(rechner.getVerlauf());
                     recdisplay.setText(rechner.getVerlauf());
+                    
                 }
             });
         }
