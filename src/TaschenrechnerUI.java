@@ -82,44 +82,49 @@ public class TaschenrechnerUI extends JFrame
                 String t = ((JButton) e.getSource()).getText();
                 switch (t)
                 {
-                    case "0": case "1": case "2": case "3": case "4": case "5": case "6":  case "7": case "8": case "9":
-
+                    case "0": case "1": case "2": case "3": case "4": case "5": case "6": case "7": case "8": case "9":
+                        display.setText(rechner.eingabeZahl(t));
+                        recdisplay.setText(rechner.getVerlauf());
                         break;
                     case ",":
-
+                        display.setText(rechner.eingabeKomma());
                         break;
                     case "+":
                     case "-":
                     case "×":
                     case "÷":
-
+                        display.setText(rechner.operatorSetzen(t));
+                        recdisplay.setText(rechner.getVerlauf());
                         break;
                     case "=":
-
+                        display.setText(rechner.berechne());
+                        recdisplay.setText(rechner.getVerlauf());
                         break;
                     case "+/_":
-
+                        display.setText(rechner.wechselVorzeichen());
                         break;
                     case "C":
-
+                        display.setText(rechner.allesLoeschen());
+                        recdisplay.setText(rechner.getVerlauf());
                         break;
                     case "CE":
-
+                        display.setText(rechner.ce());
+                        recdisplay.setText(rechner.getVerlauf());
                         break;
                     case "←":
-
+                        display.setText(rechner.loeschen());
                         break;
                     case "%":
-
+                        display.setText(rechner.prozent());
                         break;
                     case "x²":
-
+                        display.setText(rechner.quadriere());
                         break;
                     case "√x":
-
+                        display.setText(rechner.wurzel());
                         break;
                     case "1/x":
-
+                        display.setText(rechner.reziprok());
                         break;
                 }
             });
@@ -140,6 +145,6 @@ public class TaschenrechnerUI extends JFrame
 
     private void setupKeyboard(TaschenrechnerLogik rechner)
     {
-        
+
     }
 }
