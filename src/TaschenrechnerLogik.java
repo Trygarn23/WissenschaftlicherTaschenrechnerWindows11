@@ -18,6 +18,9 @@ public class TaschenrechnerLogik
     private StringBuilder verlauf = new StringBuilder();
     private double verlaufErsterWert;
 
+    private StringBuilder expression = new StringBuilder();
+
+
     public String eingabeZahl(String ziffer)
     {
         if (gleichGedrueckt)
@@ -31,7 +34,7 @@ public class TaschenrechnerLogik
             neueEingabe = false;
         }
         eingabe.append(ziffer);
-        
+
         return formatEingabeLive(eingabe.toString());
     }
 
@@ -77,6 +80,17 @@ public class TaschenrechnerLogik
         return formatEingabeLive(eingabe.toString());
     }
 
+    public String klammerAuf()
+    {
+        expression.append("(");
+        return expression.toString();
+    }
+
+    public String klammerZu()
+    {
+        expression.append(")");
+        return expression.toString();
+    }
 
     public String loeschen()
     {
@@ -138,6 +152,23 @@ public class TaschenrechnerLogik
 
         return formatDouble(aktuellerWert);
     }
+
+    public String berechne2()
+    {
+        try
+        {
+            double result = TaschenrechnerParser.evaluate(expression.toString());
+            gleichGedrueckt = true;
+            expression.setLength(0);
+            expression.append(result);
+            return formatDouble(result);
+        }
+        catch (Exception e)
+        {
+            return "Fehler";
+        }
+    }
+
 
     public String berechne()
     {

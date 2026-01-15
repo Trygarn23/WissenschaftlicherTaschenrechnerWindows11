@@ -136,6 +136,13 @@ public class TaschenrechnerUI extends JFrame
                     case "1/x":
                         display.setText(rechner.reziprok());
                         break;
+                    case "(":
+                        display.setText(rechner.klammerAuf());
+                        break;
+                    case ")":
+                        display.setText(rechner.klammerZu());
+                        break;
+
                 }
             });
 
@@ -168,7 +175,7 @@ public class TaschenrechnerUI extends JFrame
                 @Override
                 public void actionPerformed(ActionEvent e)
                 {
-                    display.setText(rechner.getVerlauf());
+                    display.setText(rechner.eingabeZahl(num));
                     recdisplay.setText(rechner.getVerlauf());
                     
                 }
