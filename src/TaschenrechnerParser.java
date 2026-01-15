@@ -9,7 +9,7 @@ public class TaschenrechnerParser
             "/", 2
     );
 
-    public static double evaluate(String expr)
+    public static double auswerten(String expr)
     {
         List<String> postfix = toPostfix(tokenize(expr));
         return evalPostfix(postfix);
@@ -28,7 +28,7 @@ public class TaschenrechnerParser
             }
             else
             {
-                if (number.length() > 0)
+                if (!number.isEmpty())
                 {
                     tokens.add(number.toString());
                     number.setLength(0);
@@ -37,7 +37,7 @@ public class TaschenrechnerParser
             }
         }
 
-        if (number.length() > 0)
+        if (!number.isEmpty())
             tokens.add(number.toString());
 
         return tokens;

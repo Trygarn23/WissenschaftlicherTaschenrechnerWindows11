@@ -4,109 +4,87 @@ import java.util.Locale;
 
 public class TaschenrechnerLogik
 {
-    private double aktuellerWert = 0;
-    private String aktuellerOperator = "";
 
-    private double zweiterWert;
-    private String letzterOperator = "";
-    private double letzerOperand = 0;
 
-    private boolean neueEingabe = true;
     private boolean gleichGedrueckt = false;
 
-    private StringBuilder eingabe = new StringBuilder();
-    private StringBuilder verlauf = new StringBuilder();
-    private double verlaufErsterWert;
-
-    private StringBuilder expression = new StringBuilder();
+    private final StringBuilder verlauf = new StringBuilder();
+    private final StringBuilder ausdruck = new StringBuilder();
 
 
     public String eingabeZahl(String ziffer)
     {
         if (gleichGedrueckt)
         {
-            verlauf.setLength(0);
+            ausdruck.setLength(0);
             gleichGedrueckt = false;
         }
-        if (neueEingabe)
-        {
-            eingabe.setLength(0);
-            neueEingabe = false;
-        }
-        eingabe.append(ziffer);
 
-        return formatEingabeLive(eingabe.toString());
+        ausdruck.append(ziffer);
+        return ausdruck.toString();
     }
+
 
     public String eingabeKomma()
     {
         if (gleichGedrueckt)
         {
-            verlauf.setLength(0);
+            ausdruck.setLength(0);
             gleichGedrueckt = false;
-
         }
-        if (neueEingabe)
+
+        if (ausdruck.isEmpty() || endetMitOperator())
         {
-            eingabe.setLength(0);
-            eingabe.append("0");
-            neueEingabe = false;
+            ausdruck.append("0");
         }
 
-        if (!eingabe.toString().contains(","))
-        {
-            eingabe.append(",");
-        }
-
-        return formatEingabeLive(eingabe.toString());
+        ausdruck.append(",");
+        return ausdruck.toString();
     }
+
 
     public String wechselVorzeichen()
     {
-        if (eingabe.isEmpty())
+        if (ausdruck.isEmpty() || endetMitOperator())
         {
-            eingabe.append("-");
-            neueEingabe = false;
-            return "-0";
+            ausdruck.append("-");
         }
-
-        if (eingabe.charAt(0) == '-')
-        {
-            eingabe.deleteCharAt(0);
-        } else
-        {
-            eingabe.insert(0, '-');
-        }
-        return formatEingabeLive(eingabe.toString());
+        return ausdruck.toString();
     }
+
 
     public String klammerAuf()
     {
-        expression.append("(");
-        return expression.toString();
+        if (gleichGedrueckt)
+        {
+            ausdruck.setLength(0);
+            gleichGedrueckt = false;
+        }
+
+        ausdruck.append("(");
+        return ausdruck.toString();
     }
 
     public String klammerZu()
     {
-        expression.append(")");
-        return expression.toString();
+        ausdruck.append(")");
+        return ausdruck.toString();
     }
+
 
     public String loeschen()
     {
-        if (!eingabe.isEmpty())
+        if (!ausdruck.isEmpty())
         {
-            eingabe.deleteCharAt(eingabe.length() - 1);
+            ausdruck.deleteCharAt(ausdruck.length() - 1);
         }
 
-        if (eingabe.isEmpty())
-        {
-            neueEingabe = true;
+        if (ausdruck.isEmpty())
             return "0";
-        }
 
-        return formatEingabeLive(eingabe.toString());
+        return ausdruck.toString();
     }
+
 
     public String ce()
     {
@@ -116,170 +94,120 @@ public class TaschenrechnerLogik
         } else
         {
             verlauf.setLength(0);
-            neueEingabe = true;
         }
         return "0";
     }
 
     public String allesLoeschen()
     {
-        eingabe.setLength(0);
-        aktuellerOperator = "";
-        letzterOperator = "";
-        letzerOperand = 0;
-        aktuellerWert = 0;
-        neueEingabe = true;
         verlauf.setLength(0);
         return "0";
     }
 
     public String operatorSetzen(String op)
     {
-        if (!aktuellerOperator.isEmpty() && !neueEingabe)
+        if (gleichGedrueckt)
+            gleichGedrueckt = false;
+
+        switch (op)
         {
-            berechne();
-        } else
-        {
-            aktuellerWert = parseEingabe();
+            case "×": ausdruck.append("*"); break;
+            case "÷": ausdruck.append("/"); break;
+            default:  ausdruck.append(op);
         }
-        aktuellerOperator = op;
-        neueEingabe = true;
 
-        verlaufErsterWert = aktuellerWert;
-
-        verlauf.setLength(0);
-        verlauf.append(formatDouble(verlaufErsterWert)).append(" ").append(op);
-
-        return formatDouble(aktuellerWert);
-    }
-
-    public String berechne2()
-    {
-        try
-        {
-            double result = TaschenrechnerParser.evaluate(expression.toString());
-            gleichGedrueckt = true;
-            expression.setLength(0);
-            expression.append(result);
-            return formatDouble(result);
-        }
-        catch (Exception e)
-        {
-            return "Fehler";
-        }
+        return ausdruck.toString();
     }
 
 
     public String berechne()
     {
-        if (aktuellerOperator.isEmpty())
+        try
         {
+            double result = TaschenrechnerParser.auswerten(ausdruck.toString());
+            ausdruck.setLength(0);
+            ausdruck.append(formatDouble(result).replace(".", ""));
             gleichGedrueckt = true;
-            neueEingabe = true;
-            return formatDouble(!eingabe.isEmpty() ? parseEingabe() : aktuellerWert);
+            return formatDouble(result);
         }
-
-        if (!neueEingabe)
+        catch (Exception e)
         {
-            zweiterWert = parseEingabe();
-            letzerOperand = zweiterWert;
-            letzterOperator = "";
-        } else
-        {
-            zweiterWert = letzerOperand;
-            aktuellerOperator = letzterOperator;
+            ausdruck.setLength(0);
+            return "Fehler";
         }
-
-        switch (aktuellerOperator)
-        {
-            case "+":
-                aktuellerWert += zweiterWert;
-                gleichGedrueckt = true;
-                break;
-            case "-":
-                aktuellerWert -= zweiterWert;
-                gleichGedrueckt = true;
-                break;
-            case "*":
-                aktuellerWert *= zweiterWert;
-                gleichGedrueckt = true;
-                break;
-            case "/":
-                if (zweiterWert == 0)
-                {
-                    allesLoeschen();
-                    return fehler();
-                }
-                aktuellerWert /= zweiterWert;
-                gleichGedrueckt = true;
-                break;
-            default:
-                throw new IllegalArgumentException("Unbekannter Operator: " + aktuellerOperator);
-        }
-
-        verlauf.setLength(0);
-        verlauf.append(formatDouble(verlaufErsterWert)).append(" ").append(aktuellerOperator).append(" ").append(formatDouble(zweiterWert)).append(" ").append("=");
-
-        neueEingabe = true;
-
-        eingabe.setLength(0);
-        eingabe.append(formatDouble(aktuellerWert).replace(".", "").replace(',', ','));
-
-        return formatDouble(aktuellerWert);
     }
+
 
     public String prozent()
     {
-        zweiterWert = parseEingabe();
+        if (ausdruck.isEmpty() || endetMitOperator())
+            return ausdruck.toString();
 
-        if (!aktuellerOperator.isEmpty())
-        {
-            zweiterWert = aktuellerWert * zweiterWert / 100;
-        } else
-        {
-            zweiterWert = zweiterWert / 100;
-        }
+        int start = startLetzteZahl();
+        double wert = letzteZahlAlsDouble() / 100.0;
 
-        eingabe.setLength(0);
-        formatter(zweiterWert);
-        neueEingabe = false;
-        return formatEingabeLive(eingabe.toString());
+        ausdruck.delete(start, ausdruck.length());
+        ausdruck.append(formatDouble(wert).replace(".", ""));
+
+        return formatDouble(wert);
     }
+
 
     public String quadriere()
     {
-        zweiterWert = parseEingabe();
-        zweiterWert *= zweiterWert;
-        eingabe.setLength(0);
-        formatter(zweiterWert);
-        neueEingabe = false;
-        return formatDouble(zweiterWert);
+        if (ausdruck.isEmpty() || endetMitOperator())
+            return ausdruck.toString();
+
+        int start = startLetzteZahl();
+        double wert = letzteZahlAlsDouble();
+        wert = wert * wert;
+
+        ausdruck.delete(start, ausdruck.length());
+        ausdruck.append(formatDouble(wert).replace(".", ""));
+
+        return formatDouble(wert);
     }
+
 
     public String wurzel()
     {
-        zweiterWert = parseEingabe();
-        zweiterWert = Math.sqrt(zweiterWert);
-        eingabe.setLength(0);
-        formatter(zweiterWert);
-        neueEingabe = false;
-        return formatDouble(zweiterWert);
+        if (ausdruck.isEmpty() || endetMitOperator())
+            return ausdruck.toString();
+
+        int start = startLetzteZahl();
+        double wert = letzteZahlAlsDouble();
+
+        if (wert < 0)
+            return fehler();
+
+        wert = Math.sqrt(wert);
+
+        ausdruck.delete(start, ausdruck.length());
+        ausdruck.append(formatDouble(wert).replace(".", ""));
+
+        return formatDouble(wert);
     }
+
 
     public String reziprok()
     {
-        zweiterWert = parseEingabe();
-        if (zweiterWert == 0)
-        {
-            return fehler();
-        }
+        if (ausdruck.isEmpty() || endetMitOperator())
+            return ausdruck.toString();
 
-        zweiterWert = 1 / zweiterWert;
-        eingabe.setLength(0);
-        formatter(zweiterWert);
-        neueEingabe = false;
-        return formatDouble(zweiterWert);
+        int start = startLetzteZahl();
+        double wert = letzteZahlAlsDouble();
+
+        if (wert == 0)
+            return fehler();
+
+        wert = 1.0 / wert;
+
+        ausdruck.delete(start, ausdruck.length());
+        ausdruck.append(formatDouble(wert).replace(".", ""));
+
+        return formatDouble(wert);
     }
+
 
     public String getVerlauf()
     {
@@ -305,7 +233,7 @@ public class TaschenrechnerLogik
 
     public double parseEingabe()
     {
-        String text = eingabe.toString().replace(',', '.');
+        String text = ausdruck.toString().replace(',', '.');
         try
         {
             return Double.parseDouble(text);
@@ -351,6 +279,32 @@ public class TaschenrechnerLogik
 
     public void formatter(double wert)
     {
-        eingabe.append(formatDouble(wert).replace(".", "").replace(',', ','));
+        ausdruck.append(formatDouble(wert).replace(".", ""));
     }
+
+    private boolean endetMitOperator()
+    {
+        if (ausdruck.isEmpty()) return true;
+        char c = ausdruck.charAt(ausdruck.length() - 1);
+        return "+-*/(".indexOf(c) >= 0;
+    }
+
+    private int startLetzteZahl()
+    {
+        int i = ausdruck.length() - 1;
+        while (i >= 0 && (Character.isDigit(ausdruck.charAt(i)) || ausdruck.charAt(i) == ',' || ausdruck.charAt(i) == '.'))
+        {
+            i--;
+        }
+        return i + 1;
+    }
+
+    private double letzteZahlAlsDouble()
+    {
+        int start = startLetzteZahl();
+        String zahl = ausdruck.substring(start).replace(',', '.');
+        return Double.parseDouble(zahl);
+    }
+
+
 }
