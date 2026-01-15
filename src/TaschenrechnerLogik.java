@@ -116,6 +116,7 @@ public class TaschenrechnerLogik
     public String allesLoeschen()
     {
         verlauf.setLength(0);
+        ausdruck.setLength(0);
         return "0";
     }
 
@@ -384,6 +385,39 @@ public class TaschenrechnerLogik
         RAD
     }
 
+    private String konstanteEinsetzen(double wert)
+    {
+        if (gleichGedrueckt)
+        {
+            ausdruck.setLength(0);
+            gleichGedrueckt = false;
+        }
+
+        // implizite Multiplikation
+        if (!ausdruck.isEmpty())
+        {
+            char last = ausdruck.charAt(ausdruck.length() - 1);
+            if (Character.isDigit(last) || last == ')' || last == ',')
+            {
+                ausdruck.append("*");
+            }
+        }
+
+        ausdruck.append(formatDouble(wert).replace(".", ""));
+        return ausdruck.toString();
+    }
+
+    public String pi()
+    {
+        return konstanteEinsetzen(Math.PI);
+    }
+
+    public String e()
+    {
+        return konstanteEinsetzen(Math.E);
+    }
+
+
     public String getVerlauf()
     {
         return verlauf.toString();
@@ -444,32 +478,32 @@ public class TaschenrechnerLogik
         return "Fehler";
     }
 
-    private String formatEingabeLive(String raw)
-    {
-        if (raw.isEmpty() || raw.contains("-"))
-        {
-            return raw;
-        }
-
-        boolean negativ = raw.startsWith("-");
-        if (negativ)
-        {
-            raw = raw.substring(1);
-        }
-
-        String ganz = raw;
-        String dezimal = "";
-
-        if (raw.contains(","))
-        {
-            String[] parts = raw.split(",", 2);
-            ganz = parts[0];
-            dezimal = "," + parts[1];
-        }
-
-        ganz = ganz.replaceAll("\\.", "");
-        ganz = ganz.replaceAll("(\\d)(?=(\\{3})+§)", "$1.");
-
-        return (negativ ? "-" : "") + ganz + dezimal;
-    }
+//    private String formatEingabeLive(String raw)
+//    {
+//        if (raw.isEmpty() || raw.contains("-"))
+//        {
+//            return raw;
+//        }
+//
+//        boolean negativ = raw.startsWith("-");
+//        if (negativ)
+//        {
+//            raw = raw.substring(1);
+//        }
+//
+//        String ganz = raw;
+//        String dezimal = "";
+//
+//        if (raw.contains(","))
+//        {
+//            String[] parts = raw.split(",", 2);
+//            ganz = parts[0];
+//            dezimal = "," + parts[1];
+//        }
+//
+//        ganz = ganz.replaceAll("\\.", "");
+//        ganz = ganz.replaceAll("(\\d)(?=(\\{3})+§)", "$1.");
+//
+//        return (negativ ? "-" : "") + ganz + dezimal;
+//    }
 }
