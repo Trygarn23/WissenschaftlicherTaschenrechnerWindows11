@@ -6,7 +6,8 @@ public class TaschenrechnerParser
             "+", 1,
             "-", 1,
             "*", 2,
-            "/", 2
+            "/", 2,
+            "^", 3
     );
 
     public static double auswerten(String expr)
@@ -103,6 +104,8 @@ public class TaschenrechnerParser
                     case "-": stack.push(a - b); break;
                     case "*": stack.push(a * b); break;
                     case "/": stack.push(a / b); break;
+                    case "^": stack.push(Math.pow(a, b)); break;
+
                 }
             }
         }

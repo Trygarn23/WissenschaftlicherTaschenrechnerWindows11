@@ -8,10 +8,9 @@ import java.awt.event.ActionEvent;
 
 public class TaschenrechnerUI extends JFrame
 {
-    private JPanel contentPane;
-    private JTextPane display;
-    private JTextPane recdisplay;
-    private JPanel buttonPanel;
+    private final JTextPane display;
+    private final JTextPane recdisplay;
+    private final JPanel buttonPanel;
 
 
     public TaschenrechnerUI()
@@ -21,7 +20,7 @@ public class TaschenrechnerUI extends JFrame
         setSize(450, 650);
         setLocationRelativeTo(null);
         setMinimumSize(new Dimension(450, 650));
-        contentPane = new JPanel(new BorderLayout(10, 10));
+        JPanel contentPane = new JPanel(new BorderLayout(10, 10));
         contentPane.setBackground(new Color(25, 25, 25));
         contentPane.setBorder(new EmptyBorder(10, 10, 10, 10));
         setContentPane(contentPane);
@@ -142,7 +141,30 @@ public class TaschenrechnerUI extends JFrame
                     case ")":
                         display.setText(rechner.klammerZu());
                         break;
-
+                    case "n!":
+                        display.setText(rechner.fakultaet());
+                        break;
+                    case "10ˣ":
+                        display.setText(rechner.zehnHoch());
+                        break;
+                    case "xʸ":
+                        display.setText(rechner.potenz());
+                        break;
+                    case "ln":
+                        display.setText(rechner.ln());
+                        break;
+                    case "log":
+                        display.setText(rechner.log());
+                        break;
+                    case "sin":
+                        display.setText(rechner.sin());
+                        break;
+                    case "cos":
+                        display.setText(rechner.cos());
+                        break;
+                    case "tan":
+                        display.setText(rechner.tan());
+                        break;
                 }
             });
 
@@ -177,7 +199,7 @@ public class TaschenrechnerUI extends JFrame
                 {
                     display.setText(rechner.eingabeZahl(num));
                     recdisplay.setText(rechner.getVerlauf());
-                    
+
                 }
             });
         }
