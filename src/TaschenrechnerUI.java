@@ -96,7 +96,8 @@ public class TaschenrechnerUI extends JFrame
                     case "7":
                     case "8":
                     case "9":
-                        display.setText(rechner.eingabeZahl(t));
+                        rechner.eingabeZahl(t);
+                        display.setText(rechner.formatLiveAnzeige());
                         recdisplay.setText(rechner.getVerlauf());
                         break;
                     case ",":
@@ -255,52 +256,75 @@ public class TaschenrechnerUI extends JFrame
 
     private Color helleColor(Color c, int amount)
     {
-        return new Color(Math.min(255, c.getRed() + amount), Math.min(255, c.getGreen() + amount), Math.min(255, c.getBlue() + amount));
+        return new Color(
+                Math.min(255, c.getRed() + amount),
+                Math.min(255, c.getGreen() + amount),
+                Math.min(255, c.getBlue() + amount)
+        );
     }
 
     private Color dunkelColor(Color c, int amount)
     {
 
-        return new Color(Math.max(0, c.getRed() + amount), Math.max(0, c.getGreen() + amount), Math.max(0, c.getBlue() + amount));
+        return new Color(
+                Math.max(0, c.getRed() - amount),
+                Math.max(0, c.getGreen() - amount),
+                Math.max(0, c.getBlue() - amount)
+        );
     }
 
     private void toggleDarkMode()
     {
         darkMode = !darkMode;
 
-        Color bg = darkMode ? new Color(25, 25, 25) : Color.WHITE;
-        Color fg = darkMode ? Color.WHITE : Color.BLACK;
-        Color recFg = darkMode ? Color.RED : Color.BLUE;
+        Color startBg = display.getBackground();
+        Color targetBg = darkMode ? new Color(25,25,25) : Color.WHITE;
 
-        getContentPane().setBackground(bg);
+        Color startFg = display.getForeground();
+        Color targetFg = darkMode ? Color.WHITE : Color.BLACK;
 
-        display.setBackground(bg);
-        display.setForeground(fg);
-        recdisplay.setBackground(bg);
-        recdisplay.setForeground(recFg);
+        Timer timer = new Timer(15, null);
+        final int[] step = {0};
+        int steps = 20;
 
-        // Buttons
-        for (Component comp : buttonPanel.getComponents())
+        timer.addActionListener(e ->
         {
-            if (comp instanceof JButton btn)
-            {
-                btn.setBackground(bg);
-                btn.setForeground(fg);
-            }
-        }
+            float t = step[0] / (float) steps;
 
-        // Texte auf Buttons
-        for (Component comp : buttonPanel.getComponents())
-        {
-            if (comp instanceof JButton btn && (btn.getText().equalsIgnoreCase("Dark") || btn.getText().equalsIgnoreCase("Light")))
-            {
-                btn.setText(darkMode ? "Dark" : "Light");
-            }
-        }
-        revalidate();
-        repaint();
+            Color bg = lerp(startBg, targetBg, t);
+            Color fg = lerp(startFg, targetFg, t);
 
+            getContentPane().setBackground(bg);
+            display.setBackground(bg);
+            display.setForeground(fg);
+            recdisplay.setBackground(bg);
+
+            for (Component c : buttonPanel.getComponents())
+            {
+                if (c instanceof JButton btn)
+                {
+                    Color base = (Color) btn.getClientProperty("baseColor");
+                    if (base != null)
+                        btn.setBackground(base);
+                }
+            }
+
+            step[0]++;
+            if (step[0] > steps)
+                timer.stop();
+        });
+
+        timer.start();
     }
+
+    private Color lerp(Color a, Color b, float t)
+    {
+        int r = (int) (a.getRed()   + (b.getRed()   - a.getRed())   * t);
+        int g = (int) (a.getGreen() + (b.getGreen() - a.getGreen()) * t);
+        int b2 = (int) (a.getBlue()  + (b.getBlue()  - a.getBlue())  * t);
+        return new Color(r, g, b2);
+    }
+
 
     private void setupKeyboard(TaschenrechnerLogik rechner)
     {
@@ -440,6 +464,7 @@ public class TaschenrechnerUI extends JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
+
                 display.setText(rechner.loeschen());
             }
         });

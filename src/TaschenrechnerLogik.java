@@ -11,7 +11,6 @@ public class TaschenrechnerLogik
     private final StringBuilder verlauf = new StringBuilder();
     private final StringBuilder ausdruck = new StringBuilder();
 
-
     public String eingabeZahl(String ziffer)
     {
         if (gleichGedrueckt)
@@ -24,7 +23,6 @@ public class TaschenrechnerLogik
         return ausdruck.toString();
     }
 
-
     public String eingabeKomma()
     {
         if (gleichGedrueckt)
@@ -32,6 +30,10 @@ public class TaschenrechnerLogik
             ausdruck.setLength(0);
             gleichGedrueckt = false;
         }
+
+        int start = startLetzteZahl();
+        if (ausdruck.substring(start).contains(","))
+            return ausdruck.toString();
 
         if (ausdruck.isEmpty() || endetMitOperator())
         {
@@ -41,7 +43,6 @@ public class TaschenrechnerLogik
         ausdruck.append(",");
         return ausdruck.toString();
     }
-
 
     public String wechselVorzeichen()
     {
@@ -66,7 +67,6 @@ public class TaschenrechnerLogik
 
         return ausdruck.toString();
     }
-
 
     public String klammerAuf()
     {
@@ -100,7 +100,6 @@ public class TaschenrechnerLogik
         return ausdruck.toString();
     }
 
-
     public String ce()
     {
         if (gleichGedrueckt)
@@ -122,6 +121,13 @@ public class TaschenrechnerLogik
 
     public String operatorSetzen(String op)
     {
+
+        if (ausdruck.isEmpty())
+            return ausdruck.toString();
+
+        if (endetMitOperator())
+            return ausdruck.toString();
+
         if (gleichGedrueckt)
             gleichGedrueckt = false;
 
@@ -139,7 +145,6 @@ public class TaschenrechnerLogik
 
         return ausdruck.toString();
     }
-
 
     public String potenz()
     {
@@ -165,7 +170,6 @@ public class TaschenrechnerLogik
             return "Fehler";
         }
     }
-
 
     public String prozent()
     {
@@ -477,6 +481,37 @@ public class TaschenrechnerLogik
         gleichGedrueckt = true;
         return "Fehler";
     }
+
+    public String formatLiveAnzeige()
+    {
+        if (ausdruck.isEmpty())
+            return "0";
+
+        String raw = ausdruck.toString();
+
+        // Operatoren NICHT formatieren
+        if (endetMitOperator())
+            return raw;
+
+        boolean negativ = raw.startsWith("-");
+        if (negativ) raw = raw.substring(1);
+
+        String ganz = raw;
+        String dezimal = "";
+
+        if (raw.contains(","))
+        {
+            String[] parts = raw.split(",", 2);
+            ganz = parts[0];
+            dezimal = "," + parts[1];
+        }
+
+        ganz = ganz.replace(".", "");
+        ganz = ganz.replaceAll("\\B(?=(\\d{3})+(?!\\d))", ".");
+
+        return (negativ ? "-" : "") + ganz + dezimal;
+    }
+
 
 //    private String formatEingabeLive(String raw)
 //    {
