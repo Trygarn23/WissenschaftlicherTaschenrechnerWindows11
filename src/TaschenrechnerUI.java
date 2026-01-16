@@ -5,6 +5,8 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class TaschenrechnerUI extends JFrame
 {
@@ -34,8 +36,8 @@ public class TaschenrechnerUI extends JFrame
         recdisplay = new JTextPane();
         recdisplay.setEditable(false);
         recdisplay.setBackground(new Color(25, 25, 25));
-        recdisplay.setForeground(Color.RED);
-        recdisplay.setFont(new Font("Segoe UI", Font.PLAIN, 28));
+        recdisplay.setForeground(new Color(180, 180, 180));
+        recdisplay.setFont(new Font("Segoe UI", Font.PLAIN, 22));
         recdisplay.setOpaque(true);
         recdisplay.setBorder(null);
         StyledDocument doc2 = recdisplay.getStyledDocument();
@@ -48,7 +50,7 @@ public class TaschenrechnerUI extends JFrame
         display = new JTextPane();
         display.setEditable(false);
         display.setBackground(new Color(25, 25, 25));
-        display.setForeground(Color.WHITE);
+        display.setForeground(new Color(255, 255, 255));
         display.setFont(new Font("Segoe UI", Font.PLAIN, 48));
         display.setText("0");
         display.setBorder(null);
@@ -187,11 +189,79 @@ public class TaschenrechnerUI extends JFrame
     private void styleButton(JButton btn, String text)
     {
         btn.setFont(new Font("Segoe UI", Font.PLAIN, 24));
-        btn.setBackground(new Color(25, 25, 25));
-        btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setOpaque(true);
+
+        Color baseColor;
+        Color textColor = Color.WHITE;
+
+        if (text.matches("\\d"))
+        {
+            baseColor = new Color(45, 45, 45);
+
+        } else if ("+-×÷".contains(text))
+        {
+            baseColor = new Color(255, 149, 0);
+            textColor = Color.BLACK;
+        } else if (text.equals("C") || text.equals("CE") || text.equals("←"))
+        {
+            baseColor = new Color(100, 60, 60);
+        } else if (text.equals("Dark") || text.equals("Light"))
+        {
+            baseColor = new Color(70, 70, 120);
+        } else
+        {
+            baseColor = new Color(60, 60, 60);
+        }
+
+        btn.setBackground(baseColor);
+        btn.setForeground(textColor);
+
+        btn.putClientProperty("baseColor", baseColor);
+        btn.addMouseMotionListener(new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(MouseEvent e)
+            {
+                btn.setBackground(dunkelColor(baseColor, 25));
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e)
+            {
+                btn.setBackground(helleColor(baseColor, 20));
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e)
+            {
+                btn.setBackground(helleColor(baseColor, 20));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e)
+            {
+                btn.setBackground((Color) btn.getClientProperty("baseColor"));
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e)
+            {
+                btn.setBackground(helleColor(baseColor, 20));
+            }
+        });
+    }
+
+    private Color helleColor(Color c, int amount)
+    {
+        return new Color(Math.min(255, c.getRed() + amount), Math.min(255, c.getGreen() + amount), Math.min(255, c.getBlue() + amount));
+    }
+
+    private Color dunkelColor(Color c, int amount)
+    {
+
+        return new Color(Math.max(0, c.getRed() + amount), Math.max(0, c.getGreen() + amount), Math.max(0, c.getBlue() + amount));
     }
 
     private void toggleDarkMode()
