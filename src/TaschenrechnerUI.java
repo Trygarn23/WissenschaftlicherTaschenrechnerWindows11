@@ -60,11 +60,12 @@ public class TaschenrechnerUI extends JFrame
 
         contentPane.add(topPanel, BorderLayout.NORTH);
 
-        buttonPanel = new JPanel(new GridLayout(8, 5, 6, 6));
+        buttonPanel = new JPanel(new GridLayout(9, 5, 6, 6));
         buttonPanel.setBackground(new Color(25, 25, 25));
         contentPane.add(buttonPanel, BorderLayout.CENTER);
 
         String[] buttons = {
+                "MC", "MR", "M+", "M-", "Ans",
                 "DEG", "π", "e", "CE", "C",
                 "sin", "cos", "tan", "←", "Dark",
                 "x²", "1/x", "|x|", "exp", "mod",
@@ -74,6 +75,7 @@ public class TaschenrechnerUI extends JFrame
                 "log", "1", "2", "3", "+",
                 "ln", "+/_", "0", ",", "="
         };
+
 
         setupKeyboard();
 
@@ -260,6 +262,28 @@ public class TaschenrechnerUI extends JFrame
 
             case "|x|":
                 rechner.betrag();
+                refresh();
+                break;
+            case "MC":
+                rechner.memoryClear();
+                refreshWithExtraInfo("M = 0");
+                break;
+
+            case "MR":
+                rechner.memoryRecall();
+                refresh();
+                break;
+
+            case "M+":
+                refreshWithExtraInfo("M = " + rechner.memoryAdd());
+                break;
+
+            case "M-":
+                refreshWithExtraInfo("M = " + rechner.memorySub());
+                break;
+
+            case "Ans":
+                rechner.ans();
                 refresh();
                 break;
 

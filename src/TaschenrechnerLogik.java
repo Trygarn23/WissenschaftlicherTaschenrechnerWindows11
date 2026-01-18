@@ -14,6 +14,9 @@ public class TaschenrechnerLogik
     public enum WinkelModus
     {DEG, RAD}
 
+    private double memory = 0.0;
+    private double ans = 0.0;
+
     // ========= EINGABE =========
 
     public String eingabeZahl(String ziffer)
@@ -188,6 +191,8 @@ public class TaschenrechnerLogik
             double result = TaschenrechnerParser.auswerten(original);
 
             if (!Double.isFinite(result)) return fehler();
+
+            ans = result;
 
             ausdruck.setLength(0);
             ausdruck.append(toInternal(result));
@@ -460,6 +465,54 @@ public class TaschenrechnerLogik
 
         return (negativ ? "-" : "") + ganz + dezimal;
     }
+
+    // Speicherung und so
+
+    public String ans()
+    {
+        return konstanteEinsetzen(ans);
+    }
+
+    public String memoryClear()
+    {
+        memory = 0.0;
+        return "0";
+    }
+
+    public String memoryRecall()
+    {
+        return konstanteEinsetzen(memory);
+    }
+
+    public String memoryAdd()
+    {
+        memory += aktuellerWertOder0();
+        return formatDouble(memory);
+    }
+
+    public String memorySub()
+    {
+        memory -= aktuellerWertOder0();
+        return formatDouble(memory);
+    }
+
+    private double aktuellerWertOder0()
+    {
+        if (ausdruck.isEmpty()) return 0.0;
+
+        try
+        {
+            if (endetMitOperator()) return 0.0;
+            double v = TaschenrechnerParser.auswerten(ausdruck.toString());
+            return Double.isFinite(v) ? v : 0.0;
+        }
+        catch (Exception e)
+        {
+            return 0.0;
+        }
+    }
+
+
 
     // ========= INTERN =========
 
