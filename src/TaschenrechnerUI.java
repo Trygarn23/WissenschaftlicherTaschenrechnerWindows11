@@ -5,6 +5,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -16,6 +17,8 @@ public class TaschenrechnerUI extends JFrame
 
     private boolean darkMode = true;
 
+    private final TaschenrechnerLogik rechner = new TaschenrechnerLogik();
+
     public TaschenrechnerUI()
     {
         setTitle("Taschenrechner");
@@ -23,16 +26,15 @@ public class TaschenrechnerUI extends JFrame
         setSize(450, 650);
         setLocationRelativeTo(null);
         setMinimumSize(new Dimension(550, 650));
+
         JPanel contentPane = new JPanel(new BorderLayout(10, 10));
         contentPane.setBackground(new Color(25, 25, 25));
         contentPane.setBorder(new EmptyBorder(10, 10, 10, 10));
         setContentPane(contentPane);
 
-        //Oberer Bereich mit Verlauf +Display
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setOpaque(false);
 
-        // Verlauf
         recdisplay = new JTextPane();
         recdisplay.setEditable(false);
         recdisplay.setBackground(new Color(25, 25, 25));
@@ -40,34 +42,29 @@ public class TaschenrechnerUI extends JFrame
         recdisplay.setFont(new Font("Segoe UI", Font.PLAIN, 22));
         recdisplay.setOpaque(true);
         recdisplay.setBorder(null);
-        StyledDocument doc2 = recdisplay.getStyledDocument();
-        SimpleAttributeSet right2 = new SimpleAttributeSet();
-        StyleConstants.setAlignment(right2, StyleConstants.ALIGN_RIGHT);
-        doc2.setParagraphAttributes(0, doc2.getLength(), right2, false);
+        alignRight(recdisplay);
         topPanel.add(recdisplay, BorderLayout.NORTH);
 
-        // Hauptdisplay
         display = new JTextPane();
         display.setEditable(false);
         display.setBackground(new Color(25, 25, 25));
-        display.setForeground(new Color(255, 255, 255));
+        display.setForeground(Color.WHITE);
         display.setFont(new Font("Segoe UI", Font.PLAIN, 48));
         display.setText("0");
         display.setBorder(null);
         display.setOpaque(true);
-        StyledDocument doc = display.getStyledDocument();
-        SimpleAttributeSet right = new SimpleAttributeSet();
-        StyleConstants.setAlignment(right, StyleConstants.ALIGN_RIGHT);
-        doc.setParagraphAttributes(0, doc.getLength(), right, false);
+        alignRight(display);
         topPanel.add(display, BorderLayout.CENTER);
-        contentPane.add(topPanel, BorderLayout.NORTH); // Buttons
+
+        contentPane.add(topPanel, BorderLayout.NORTH);
+
         buttonPanel = new JPanel(new GridLayout(8, 5, 6, 6));
         buttonPanel.setBackground(new Color(25, 25, 25));
         contentPane.add(buttonPanel, BorderLayout.CENTER);
 
         String[] buttons = {
-                "2nd", "π", "e", "CE", "C",
-                "Sin", "cos", "tan", "←", "Dark",
+                "DEG", "π", "e", "CE", "C",
+                "sin", "cos", "tan", "←", "Dark",
                 "x²", "1/x", "|x|", "exp", "mod",
                 "√x", "(", ")", "n!", "÷",
                 "xʸ", "7", "8", "9", "×",
@@ -76,114 +73,196 @@ public class TaschenrechnerUI extends JFrame
                 "ln", "+/_", "0", ",", "="
         };
 
-        TaschenrechnerLogik rechner = new TaschenrechnerLogik();
-        setupKeyboard(rechner);
+        setupKeyboard();
+
         for (String text : buttons)
         {
             JButton btn = new JButton(text);
             styleButton(btn, text);
-            btn.addActionListener(e -> {
-                String t = ((JButton) e.getSource()).getText();
-                switch (t)
-                {
-                    case "0":
-                    case "1":
-                    case "2":
-                    case "3":
-                    case "4":
-                    case "5":
-                    case "6":
-                    case "7":
-                    case "8":
-                    case "9":
-                        rechner.eingabeZahl(t);
-                        display.setText(rechner.formatLiveAnzeige());
-                        recdisplay.setText(rechner.getVerlauf());
-                        break;
-                    case ",":
-                        display.setText(rechner.eingabeKomma());
-                        break;
-                    case "+":
-                    case "-":
-                    case "×":
-                    case "÷":
-                        display.setText(rechner.operatorSetzen(t));
-                        recdisplay.setText(rechner.getVerlauf());
-                        break;
-                    case "=":
-                        display.setText(rechner.berechne());
-                        recdisplay.setText(rechner.getVerlauf());
-                        break;
-                    case "+/_":
-                        display.setText(rechner.wechselVorzeichen());
-                        break;
-                    case "C":
-                        display.setText(rechner.allesLoeschen());
-                        recdisplay.setText(rechner.getVerlauf());
-                        break;
-                    case "CE":
-                        display.setText(rechner.ce());
-                        recdisplay.setText(rechner.getVerlauf());
-                        break;
-                    case "←":
-                        display.setText(rechner.loeschen());
-                        break;
-                    case "%":
-                        display.setText(rechner.prozent());
-                        break;
-                    case "x²":
-                        display.setText(rechner.quadriere());
-                        break;
-                    case "√x":
-                        display.setText(rechner.wurzel());
-                        break;
-                    case "1/x":
-                        display.setText(rechner.reziprok());
-                        break;
-                    case "(":
-                        display.setText(rechner.klammerAuf());
-                        break;
-                    case ")":
-                        display.setText(rechner.klammerZu());
-                        break;
-                    case "n!":
-                        display.setText(rechner.fakultaet());
-                        break;
-                    case "10ˣ":
-                        display.setText(rechner.zehnHoch());
-                        break;
-                    case "xʸ":
-                        display.setText(rechner.potenz());
-                        break;
-                    case "ln":
-                        display.setText(rechner.ln());
-                        break;
-                    case "log":
-                        display.setText(rechner.log());
-                        break;
-                    case "sin":
-                        display.setText(rechner.sin());
-                        break;
-                    case "cos":
-                        display.setText(rechner.cos());
-                        break;
-                    case "tan":
-                        display.setText(rechner.tan());
-                        break;
-                    case "π":
-                        display.setText(rechner.pi());
-                        break;
-                    case "e":
-                        display.setText(rechner.e());
-                        break;
-                    case "Dark":
-                    case "Light":
-                        toggleDarkMode();
-                        break;
-                }
-            });
-
+            btn.addActionListener(e -> handleButton((JButton) e.getSource()));
             buttonPanel.add(btn);
+        }
+
+        refresh();
+    }
+
+    private void alignRight(JTextPane pane)
+    {
+        StyledDocument doc = pane.getStyledDocument();
+        SimpleAttributeSet right = new SimpleAttributeSet();
+        StyleConstants.setAlignment(right, StyleConstants.ALIGN_RIGHT);
+        doc.setParagraphAttributes(0, doc.getLength(), right, false);
+    }
+
+    private void refresh()
+    {
+        display.setText(rechner.formatLiveAnzeige());
+        recdisplay.setText(rechner.getVerlauf());
+    }
+
+    private void refreshWithExtraInfo(String info)
+    {
+        display.setText(rechner.formatLiveAnzeige());
+        String v = rechner.getVerlauf();
+        recdisplay.setText(info + (v.isEmpty() ? "" : " | " + v));
+    }
+
+    private void handleButton(JButton sourceBtn)
+    {
+        String t = sourceBtn.getText();
+
+        if (t.matches("\\d"))
+        {
+            rechner.eingabeZahl(t);
+            refresh();
+            return;
+        }
+
+        switch (t)
+        {
+            case ",":
+                rechner.eingabeKomma();
+                refresh();
+                break;
+
+            case "+":
+            case "-":
+            case "×":
+            case "÷":
+                rechner.operatorSetzen(t);
+                refresh();
+                break;
+
+            case "=":
+                display.setText(rechner.berechne());
+                recdisplay.setText(rechner.getVerlauf());
+                break;
+
+            case "+/_":
+                rechner.wechselVorzeichen();
+                refresh();
+                break;
+
+            case "C":
+                rechner.allesLoeschen();
+                refresh();
+                break;
+
+            case "CE":
+                rechner.ce();
+                refresh();
+                break;
+
+            case "←":
+                rechner.loeschen();
+                refresh();
+                break;
+
+            case "mod":
+                // Modulo-Operator
+                rechner.operatorSetzen("%");
+                refresh();
+                break;
+
+            case "x²":
+                rechner.quadriere();
+                refresh();
+                break;
+
+            case "√x":
+                rechner.wurzel();
+                refresh();
+                break;
+
+            case "1/x":
+                rechner.reziprok();
+                refresh();
+                break;
+
+            case "(":
+                rechner.klammerAuf();
+                refresh();
+                break;
+
+            case ")":
+                rechner.klammerZu();
+                refresh();
+                break;
+
+            case "n!":
+                rechner.fakultaet();
+                refresh();
+                break;
+
+            case "10ˣ":
+                rechner.zehnHoch();
+                refresh();
+                break;
+
+            case "xʸ":
+                rechner.potenz();
+                refresh();
+                break;
+
+            case "ln":
+                rechner.ln();
+                refresh();
+                break;
+
+            case "log":
+                rechner.log();
+                refresh();
+                break;
+
+            case "sin":
+                rechner.sin();
+                refresh();
+                break;
+
+            case "cos":
+                rechner.cos();
+                refresh();
+                break;
+
+            case "tan":
+                rechner.tan();
+                refresh();
+                break;
+
+            case "π":
+                rechner.pi();
+                refresh();
+                break;
+
+            case "e":
+                rechner.e();
+                refresh();
+                break;
+
+            case "DEG":
+            case "RAD":
+                rechner.toggleWinkelModus();
+                sourceBtn.setText(rechner.getWinkelModus().name());
+                refreshWithExtraInfo(rechner.getWinkelModus().name());
+                break;
+
+            case "Dark":
+            case "Light":
+                toggleDarkMode(sourceBtn);
+                break;
+
+            case "exp":
+                rechner.exp();
+                refresh();
+                break; // WICHTIG!
+
+            case "|x|":
+                rechner.betrag();
+                refresh();
+                break;
+
+            default:
+                Toolkit.getDefaultToolkit().beep();
         }
     }
 
@@ -200,7 +279,6 @@ public class TaschenrechnerUI extends JFrame
         if (text.matches("\\d"))
         {
             baseColor = new Color(45, 45, 45);
-
         } else if ("+-×÷".contains(text))
         {
             baseColor = new Color(255, 149, 0);
@@ -211,6 +289,9 @@ public class TaschenrechnerUI extends JFrame
         } else if (text.equals("Dark") || text.equals("Light"))
         {
             baseColor = new Color(70, 70, 120);
+        } else if (text.equals("DEG") || text.equals("RAD"))
+        {
+            baseColor = new Color(80, 100, 140);
         } else
         {
             baseColor = new Color(60, 60, 60);
@@ -265,7 +346,6 @@ public class TaschenrechnerUI extends JFrame
 
     private Color dunkelColor(Color c, int amount)
     {
-
         return new Color(
                 Math.max(0, c.getRed() - amount),
                 Math.max(0, c.getGreen() - amount),
@@ -273,12 +353,13 @@ public class TaschenrechnerUI extends JFrame
         );
     }
 
-    private void toggleDarkMode()
+    private void toggleDarkMode(JButton darkBtn)
     {
         darkMode = !darkMode;
+        darkBtn.setText(darkMode ? "Dark" : "Light");
 
         Color startBg = display.getBackground();
-        Color targetBg = darkMode ? new Color(25,25,25) : Color.WHITE;
+        Color targetBg = darkMode ? new Color(25, 25, 25) : Color.WHITE;
 
         Color startFg = display.getForeground();
         Color targetFg = darkMode ? Color.WHITE : Color.BLACK;
@@ -287,8 +368,7 @@ public class TaschenrechnerUI extends JFrame
         final int[] step = {0};
         int steps = 20;
 
-        timer.addActionListener(e ->
-        {
+        timer.addActionListener(e -> {
             float t = step[0] / (float) steps;
 
             Color bg = lerp(startBg, targetBg, t);
@@ -301,17 +381,15 @@ public class TaschenrechnerUI extends JFrame
 
             for (Component c : buttonPanel.getComponents())
             {
-                if (c instanceof JButton btn)
+                if (c instanceof JButton b)
                 {
-                    Color base = (Color) btn.getClientProperty("baseColor");
-                    if (base != null)
-                        btn.setBackground(base);
+                    Color base = (Color) b.getClientProperty("baseColor");
+                    if (base != null) b.setBackground(base);
                 }
             }
 
             step[0]++;
-            if (step[0] > steps)
-                timer.stop();
+            if (step[0] > steps) timer.stop();
         });
 
         timer.start();
@@ -319,163 +397,113 @@ public class TaschenrechnerUI extends JFrame
 
     private Color lerp(Color a, Color b, float t)
     {
-        int r = (int) (a.getRed()   + (b.getRed()   - a.getRed())   * t);
+        int r = (int) (a.getRed() + (b.getRed() - a.getRed()) * t);
         int g = (int) (a.getGreen() + (b.getGreen() - a.getGreen()) * t);
-        int b2 = (int) (a.getBlue()  + (b.getBlue()  - a.getBlue())  * t);
-        return new Color(r, g, b2);
+        int bl = (int) (a.getBlue() + (b.getBlue() - a.getBlue()) * t);
+        return new Color(r, g, bl);
     }
 
-
-    private void setupKeyboard(TaschenrechnerLogik rechner)
+    private void setupKeyboard()
     {
-        JRootPane root = SwingUtilities.getRootPane(buttonPanel);
+        JRootPane root = getRootPane();
         InputMap im = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = root.getActionMap();
 
         for (int i = 0; i <= 9; i++)
         {
             final String num = String.valueOf(i);
-            im.put(KeyStroke.getKeyStroke(num), "num" + num);
-            am.put("num" + num, new AbstractAction()
-            {
-                @Override
-                public void actionPerformed(ActionEvent e)
-                {
-                    display.setText(rechner.eingabeZahl(num));
-                    recdisplay.setText(rechner.getVerlauf());
-                }
+
+            bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_0 + i, 0), "digitTop" + i, () -> {
+                rechner.eingabeZahl(num);
+                refresh();
+            });
+
+            bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0 + i, 0), "digitPad" + i, () -> {
+                rechner.eingabeZahl(num);
+                refresh();
+            });
+
+            bind(im, am, KeyStroke.getKeyStroke((char) ('0' + i)), "digitTyped" + i, () -> {
+                rechner.eingabeZahl(num);
+                refresh();
             });
         }
 
-        im.put(KeyStroke.getKeyStroke(","), "komma");
-        im.put(KeyStroke.getKeyStroke("."), "komma");
-        am.put("komma", new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                display.setText(rechner.eingabeKomma());
-            }
+        Runnable commaAction = () -> {
+            rechner.eingabeKomma();
+            refresh();
+        };
+
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, 0), "commaVK", commaAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, 0), "periodVK", commaAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_DECIMAL, 0), "decimalVK", commaAction);
+        bind(im, am, KeyStroke.getKeyStroke(','), "commaTyped", commaAction);
+        bind(im, am, KeyStroke.getKeyStroke('.'), "periodTyped", commaAction);
+
+        Runnable plusAction = () -> {
+            rechner.operatorSetzen("+");
+            refresh();
+        };
+        Runnable minusAction = () -> {
+            rechner.operatorSetzen("-");
+            refresh();
+        };
+        Runnable mulAction = () -> {
+            rechner.operatorSetzen("*");
+            refresh();
+        };
+        Runnable divAction = () -> {
+            rechner.operatorSetzen("/");
+            refresh();
+        };
+        Runnable modAction = () -> {
+            rechner.operatorSetzen("%");
+            refresh();
+        };
+
+        bind(im, am, KeyStroke.getKeyStroke('+'), "plusTyped", plusAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0), "plusPad", plusAction);
+
+        bind(im, am, KeyStroke.getKeyStroke('-'), "minusTyped", minusAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "minusVK", minusAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, 0), "minusPad", minusAction);
+
+        bind(im, am, KeyStroke.getKeyStroke('*'), "mulTyped", mulAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_MULTIPLY, 0), "mulPad", mulAction);
+
+        bind(im, am, KeyStroke.getKeyStroke('/'), "divTyped", divAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, 0), "divVK", divAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_DIVIDE, 0), "divPad", divAction);
+
+        bind(im, am, KeyStroke.getKeyStroke('%'), "modTyped", modAction);
+        bind(im, am, KeyStroke.getKeyStroke('^'), "powTyped", () -> {
+            rechner.potenz();
+            refresh();
         });
 
-        im.put(KeyStroke.getKeyStroke("+"), "plus");
-        im.put(KeyStroke.getKeyStroke("-"), "minus");
-        im.put(KeyStroke.getKeyStroke("*"), "mal");
-        im.put(KeyStroke.getKeyStroke("/"), "geteilt");
-
-        am.put("plus", new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                display.setText(rechner.operatorSetzen("+"));
-                recdisplay.setText(rechner.getVerlauf());
-            }
-        });
-        am.put("minus", new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                display.setText(rechner.operatorSetzen("-"));
-                recdisplay.setText(rechner.getVerlauf());
-            }
-        });
-        am.put("mal", new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                display.setText(rechner.operatorSetzen("*"));
-                recdisplay.setText(rechner.getVerlauf());
-            }
-        });
-        am.put("geteilt", new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                display.setText(rechner.operatorSetzen("/"));
-                recdisplay.setText(rechner.getVerlauf());
-            }
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enterPress", () -> {
+            display.setText(rechner.berechne());
+            recdisplay.setText(rechner.getVerlauf());
         });
 
-        im.put(KeyStroke.getKeyStroke("P"), "pi");
-        im.put(KeyStroke.getKeyStroke("p"), "pi");
-        am.put("pi", new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                display.setText(rechner.pi());
-                display.setText(rechner.getVerlauf());
-            }
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "backspacePress", () -> {
+            rechner.loeschen();
+            refresh();
         });
 
-        im.put(KeyStroke.getKeyStroke("F"), "Fakultät");
-        im.put(KeyStroke.getKeyStroke("f"), "Fakultät");
-        am.put("Fakultät", new AbstractAction()
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escapePress", this::dispose);
+    }
+
+    private void bind(InputMap im, ActionMap am, KeyStroke ks, String name, Runnable action)
+    {
+        if (ks == null) return;
+        im.put(ks, name);
+        am.put(name, new AbstractAction()
         {
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                display.setText(rechner.fakultaet());
-                display.setText(rechner.getVerlauf());
-            }
-        });
-
-        im.put(KeyStroke.getKeyStroke("S"), "Squareroot");
-        im.put(KeyStroke.getKeyStroke("s"), "Squareroot");
-        am.put("Squareroot", new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                display.setText(rechner.wurzel());
-                recdisplay.setText(rechner.getVerlauf());
-            }
-        });
-
-        im.put(KeyStroke.getKeyStroke("E"), "euler");
-        im.put(KeyStroke.getKeyStroke("e"), "euler");
-        am.put("euler", new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                display.setText(rechner.e());
-            }
-        });
-
-        im.put(KeyStroke.getKeyStroke("enter"), "enter");
-        am.put("enter", new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                display.setText(rechner.berechne());
-                recdisplay.setText(rechner.getVerlauf());
-            }
-        });
-
-        im.put(KeyStroke.getKeyStroke("BACK_SPACE"), "back");
-        am.put("back", new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-
-                display.setText(rechner.loeschen());
-            }
-        });
-
-        im.put(KeyStroke.getKeyStroke("ESCAPE"), "escape");
-        am.put("escape", new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                dispose();
+                action.run();
             }
         });
     }
