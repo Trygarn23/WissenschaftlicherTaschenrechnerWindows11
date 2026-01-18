@@ -42,6 +42,7 @@ public class TaschenrechnerUI extends JFrame
         recdisplay.setFont(new Font("Segoe UI", Font.PLAIN, 22));
         recdisplay.setOpaque(true);
         recdisplay.setBorder(null);
+        recdisplay.setFocusable(false);
         alignRight(recdisplay);
         topPanel.add(recdisplay, BorderLayout.NORTH);
 
@@ -53,6 +54,7 @@ public class TaschenrechnerUI extends JFrame
         display.setText("0");
         display.setBorder(null);
         display.setOpaque(true);
+        display.setFocusable(false);
         alignRight(display);
         topPanel.add(display, BorderLayout.CENTER);
 
@@ -272,6 +274,7 @@ public class TaschenrechnerUI extends JFrame
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setOpaque(true);
+        btn.setFocusable(false);
 
         Color baseColor;
         Color textColor = Color.WHITE;
@@ -281,7 +284,7 @@ public class TaschenrechnerUI extends JFrame
             baseColor = new Color(45, 45, 45);
         } else if ("+-×÷".contains(text))
         {
-            baseColor = new Color(255, 149, 0);
+            baseColor = new Color(173, 41, 99);
             textColor = Color.BLACK;
         } else if (text.equals("C") || text.equals("CE") || text.equals("←"))
         {
@@ -422,11 +425,6 @@ public class TaschenrechnerUI extends JFrame
                 rechner.eingabeZahl(num);
                 refresh();
             });
-
-            bind(im, am, KeyStroke.getKeyStroke((char) ('0' + i)), "digitTyped" + i, () -> {
-                rechner.eingabeZahl(num);
-                refresh();
-            });
         }
 
         Runnable commaAction = () -> {
@@ -437,54 +435,33 @@ public class TaschenrechnerUI extends JFrame
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, 0), "commaVK", commaAction);
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, 0), "periodVK", commaAction);
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_DECIMAL, 0), "decimalVK", commaAction);
-        bind(im, am, KeyStroke.getKeyStroke(','), "commaTyped", commaAction);
-        bind(im, am, KeyStroke.getKeyStroke('.'), "periodTyped", commaAction);
 
-        Runnable plusAction = () -> {
-            rechner.operatorSetzen("+");
-            refresh();
-        };
-        Runnable minusAction = () -> {
-            rechner.operatorSetzen("-");
-            refresh();
-        };
-        Runnable mulAction = () -> {
-            rechner.operatorSetzen("*");
-            refresh();
-        };
-        Runnable divAction = () -> {
-            rechner.operatorSetzen("/");
-            refresh();
-        };
-        Runnable modAction = () -> {
-            rechner.operatorSetzen("%");
-            refresh();
-        };
+        Runnable plusAction = () -> { rechner.operatorSetzen("+"); refresh(); };
+        Runnable minusAction = () -> { rechner.operatorSetzen("-"); refresh(); };
+        Runnable mulAction = () -> { rechner.operatorSetzen("*"); refresh(); };
+        Runnable divAction = () -> { rechner.operatorSetzen("/"); refresh(); };
+        Runnable modAction = () -> { rechner.operatorSetzen("%"); refresh(); };
 
-        bind(im, am, KeyStroke.getKeyStroke('+'), "plusTyped", plusAction);
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0), "plusPad", plusAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, 0), "plusVK", plusAction);
 
-        bind(im, am, KeyStroke.getKeyStroke('-'), "minusTyped", minusAction);
-        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "minusVK", minusAction);
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, 0), "minusPad", minusAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "minusVK", minusAction);
 
-        bind(im, am, KeyStroke.getKeyStroke('*'), "mulTyped", mulAction);
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_MULTIPLY, 0), "mulPad", mulAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ASTERISK, 0), "mulVK", mulAction);
 
-        bind(im, am, KeyStroke.getKeyStroke('/'), "divTyped", divAction);
-        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, 0), "divVK", divAction);
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_DIVIDE, 0), "divPad", divAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, 0), "divVK", divAction);
 
-        bind(im, am, KeyStroke.getKeyStroke('%'), "modTyped", modAction);
-        bind(im, am, KeyStroke.getKeyStroke('^'), "powTyped", () -> {
-            rechner.potenz();
-            refresh();
-        });
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_P, 0), "modVK", modAction);
 
-        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enterPress", () -> {
+        Runnable evalAction = () -> {
             display.setText(rechner.berechne());
             recdisplay.setText(rechner.getVerlauf());
-        });
+        };
+
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enterMain", evalAction);
 
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "backspacePress", () -> {
             rechner.loeschen();
