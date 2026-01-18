@@ -595,4 +595,19 @@ public class TaschenrechnerLogik
         ausdruck.append(toInternal(wert));
         gleichGedrueckt = false;
     }
+
+    public void setAusdruckVonHistoryResult(String resultDisplay)
+    {
+        if (resultDisplay == null) return;
+
+        String s = resultDisplay.trim();
+        s = s.replace(" ", "");
+        s = s.replace(".", "");
+        s = s.replace('−', '-').replace('–', '-').replace('—', '-');
+
+        ausdruck.setLength(0);
+        ausdruck.append(s);
+        gleichGedrueckt = false;
+    }
+
 }

@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class TaschenrechnerUI extends JFrame
 {
@@ -19,11 +21,19 @@ public class TaschenrechnerUI extends JFrame
 
     private final TaschenrechnerLogik rechner = new TaschenrechnerLogik();
 
+    private final DefaultListModel<String> allHistoryModel = new DefaultListModel<>();
+    private final DefaultListModel<String> historyModel = new DefaultListModel<>();
+    private final JList<String> historyList = new JList<>(historyModel);
+    private final JScrollPane historyScroll = new JScrollPane(historyList);
+    private final JButton clearHistoryBtn = new JButton("Clear");
+    private final JTextField historySearchField = new JTextField();
+
+
     public TaschenrechnerUI()
     {
         setTitle("Taschenrechner");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(450, 650);
+        setSize(700, 850);
         setLocationRelativeTo(null);
         setMinimumSize(new Dimension(550, 650));
 
@@ -62,7 +72,77 @@ public class TaschenrechnerUI extends JFrame
 
         buttonPanel = new JPanel(new GridLayout(9, 5, 6, 6));
         buttonPanel.setBackground(new Color(25, 25, 25));
-        contentPane.add(buttonPanel, BorderLayout.CENTER);
+
+        JPanel centerWrap = new JPanel(new BorderLayout(10, 10));
+        centerWrap.setOpaque(false);
+        centerWrap.add(buttonPanel, BorderLayout.CENTER);
+
+        JPanel historyPanel = new JPanel(new BorderLayout(6, 6));
+        historyPanel.setOpaque(false);
+
+        historyList.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        historyList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        historyList.setFocusable(false);
+
+        historyScroll.setBorder(null);
+        historyScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        historyScroll.setPreferredSize(new Dimension(240, 0));
+
+        clearHistoryBtn.setFocusable(false);
+
+        centerWrap.add(historyPanel, BorderLayout.EAST);
+
+        contentPane.add(centerWrap, BorderLayout.CENTER);
+
+        historySearchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        historySearchField.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+        historySearchField.setOpaque(true);
+        historySearchField.setText("Suche…");
+        historySearchField.setForeground(new Color(140, 140, 140));
+
+        historyList.setCellRenderer(new HistoryHighlightRenderer());
+
+
+        historySearchField.addFocusListener(new java.awt.event.FocusAdapter()
+        {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e)
+            {
+                if ("Suche…".equals(historySearchField.getText()))
+                {
+                    historySearchField.setText("");
+                    historySearchField.setForeground(darkMode ? Color.WHITE : Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e)
+            {
+                if (historySearchField.getText().isBlank())
+                {
+                    historySearchField.setText("Suche…");
+                    historySearchField.setForeground(new Color(140, 140, 140));
+                }
+            }
+        });
+
+
+        JPanel historyTop = new JPanel(new BorderLayout(6, 6));
+        historyTop.setOpaque(false);
+        historyTop.add(historySearchField, BorderLayout.CENTER);
+        historyTop.add(clearHistoryBtn, BorderLayout.EAST);
+
+        clearHistoryBtn.setFocusable(false);
+        clearHistoryBtn.addActionListener(e -> {
+            allHistoryModel.clear();
+            historyModel.clear();
+            historySearchField.setText("");
+        });
+
+
+        historyPanel.add(historyTop, BorderLayout.NORTH);
+        historyPanel.add(historyScroll, BorderLayout.CENTER);
+
 
         String[] buttons = {
                 "MC", "MR", "M+", "M-", "Ans",
@@ -79,6 +159,55 @@ public class TaschenrechnerUI extends JFrame
 
         setupKeyboard();
 
+
+        historySearchField.getDocument().addDocumentListener(new DocumentListener()
+        {
+            @Override
+            public void insertUpdate(DocumentEvent e)
+            {
+                applyHistoryFilter();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e)
+            {
+                applyHistoryFilter();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e)
+            {
+                applyHistoryFilter();
+            }
+        });
+
+        historySearchField.addActionListener(e -> requestFocusInWindow());
+
+        historyList.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mouseClicked(MouseEvent e)
+            {
+                if (e.getClickCount() == 2)
+                {
+                    int idx = historyList.locationToIndex(e.getPoint());
+                    if (idx < 0) return;
+
+                    Rectangle r = historyList.getCellBounds(idx, idx);
+                    if (r == null || !r.contains(e.getPoint())) return;
+
+                    String entry = historyModel.getElementAt(idx);
+                    int eq = entry.lastIndexOf('=');
+                    if (eq < 0) return;
+
+                    String resultPart = entry.substring(eq + 1).trim();
+                    rechner.setAusdruckVonHistoryResult(resultPart);
+                    refresh();
+                }
+            }
+        });
+
+
         for (String text : buttons)
         {
             JButton btn = new JButton(text);
@@ -88,6 +217,9 @@ public class TaschenrechnerUI extends JFrame
         }
 
         refresh();
+        applyHistoryColors();
+        setupSearchFieldKeyForwarding();
+
     }
 
     private void alignRight(JTextPane pane)
@@ -138,9 +270,18 @@ public class TaschenrechnerUI extends JFrame
                 break;
 
             case "=":
-                display.setText(rechner.berechne());
-                recdisplay.setText(rechner.getVerlauf());
+                String res = rechner.berechne();
+                display.setText(res);
+                String v = rechner.getVerlauf();
+                recdisplay.setText(v);
+
+                if (!"Fehler".equals(res))
+                {
+                    addHistoryEntry(v);
+                }
+
                 break;
+
 
             case "+/_":
                 rechner.wechselVorzeichen();
@@ -405,6 +546,7 @@ public class TaschenrechnerUI extends JFrame
             display.setBackground(bg);
             display.setForeground(fg);
             recdisplay.setBackground(bg);
+            recdisplay.setForeground(darkMode ? new Color(180, 180, 180) : new Color(70, 70, 70));
 
             for (Component c : buttonPanel.getComponents())
             {
@@ -417,6 +559,8 @@ public class TaschenrechnerUI extends JFrame
 
             step[0]++;
             if (step[0] > steps) timer.stop();
+            applyHistoryColors();
+
         });
 
         timer.start();
@@ -429,6 +573,31 @@ public class TaschenrechnerUI extends JFrame
         int bl = (int) (a.getBlue() + (b.getBlue() - a.getBlue()) * t);
         return new Color(r, g, bl);
     }
+
+    private void applyHistoryColors()
+    {
+        Color bg = darkMode ? new Color(25, 25, 25) : Color.WHITE;
+        Color fg = darkMode ? Color.WHITE : Color.BLACK;
+
+        historyList.setBackground(bg);
+        historyList.setForeground(fg);
+        historyList.setSelectionBackground(helleColor(bg, 30));
+        historyList.setSelectionForeground(fg);
+
+        historyScroll.getViewport().setBackground(bg);
+
+        clearHistoryBtn.setBackground(darkMode ? new Color(60, 60, 60) : new Color(220, 220, 220));
+        clearHistoryBtn.setForeground(fg);
+        clearHistoryBtn.setBorderPainted(false);
+        clearHistoryBtn.setOpaque(true);
+        clearHistoryBtn.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+
+        historySearchField.setBackground(darkMode ? new Color(35, 35, 35) : new Color(245, 245, 245));
+        historySearchField.setForeground(darkMode ? Color.WHITE : Color.BLACK);
+        historySearchField.setCaretColor(darkMode ? Color.WHITE : Color.BLACK);
+
+    }
+
 
     private void setupKeyboard()
     {
@@ -460,11 +629,26 @@ public class TaschenrechnerUI extends JFrame
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, 0), "periodVK", commaAction);
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_DECIMAL, 0), "decimalVK", commaAction);
 
-        Runnable plusAction = () -> { rechner.operatorSetzen("+"); refresh(); };
-        Runnable minusAction = () -> { rechner.operatorSetzen("-"); refresh(); };
-        Runnable mulAction = () -> { rechner.operatorSetzen("*"); refresh(); };
-        Runnable divAction = () -> { rechner.operatorSetzen("/"); refresh(); };
-        Runnable modAction = () -> { rechner.operatorSetzen("%"); refresh(); };
+        Runnable plusAction = () -> {
+            rechner.operatorSetzen("+");
+            refresh();
+        };
+        Runnable minusAction = () -> {
+            rechner.operatorSetzen("-");
+            refresh();
+        };
+        Runnable mulAction = () -> {
+            rechner.operatorSetzen("*");
+            refresh();
+        };
+        Runnable divAction = () -> {
+            rechner.operatorSetzen("/");
+            refresh();
+        };
+        Runnable modAction = () -> {
+            rechner.operatorSetzen("%");
+            refresh();
+        };
 
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0), "plusPad", plusAction);
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, 0), "plusVK", plusAction);
@@ -481,8 +665,15 @@ public class TaschenrechnerUI extends JFrame
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_P, 0), "modVK", modAction);
 
         Runnable evalAction = () -> {
-            display.setText(rechner.berechne());
-            recdisplay.setText(rechner.getVerlauf());
+            String res = rechner.berechne();
+            display.setText(res);
+            String v = rechner.getVerlauf();
+            recdisplay.setText(v);
+
+            if (!"Fehler".equals(res))
+            {
+                addHistoryEntry(v);
+            }
         };
 
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enterMain", evalAction);
@@ -504,8 +695,209 @@ public class TaschenrechnerUI extends JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
+                if (keyboardBlockedBySearch())
+                {
+                    Toolkit.getDefaultToolkit().beep();
+                    return;
+                }
                 action.run();
             }
         });
     }
+
+
+    private boolean matchesHistoryFilter(String entry)
+    {
+        String q = historySearchField.getText();
+        if (q == null) return true;
+
+        q = q.trim();
+        if (q.isEmpty() || "Suche…".equals(q)) return true;
+
+        q = q.toLowerCase();
+        return entry.toLowerCase().contains(q);
+    }
+
+
+    private void applyHistoryFilter()
+    {
+        historyModel.clear();
+        for (int i = 0; i < allHistoryModel.size(); i++)
+        {
+            String entry = allHistoryModel.getElementAt(i);
+            if (matchesHistoryFilter(entry))
+            {
+                historyModel.addElement(entry);
+            }
+        }
+        int last = historyModel.size() - 1;
+        if (last >= 0) historyList.ensureIndexIsVisible(last);
+    }
+
+    private void addHistoryEntry(String entry)
+    {
+        if (entry == null || entry.isBlank()) return;
+
+        allHistoryModel.addElement(entry);
+
+        if (matchesHistoryFilter(entry))
+        {
+            historyModel.addElement(entry);
+            int last = historyModel.size() - 1;
+            if (last >= 0) historyList.ensureIndexIsVisible(last);
+        }
+    }
+    private class HistoryHighlightRenderer extends DefaultListCellRenderer
+    {
+        private final EmptyBorder pad = new EmptyBorder(6, 8, 6, 8);
+
+        @Override
+        public Component getListCellRendererComponent(
+                JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+        {
+            JLabel lbl = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            String text = value == null ? "" : value.toString();
+
+            String q = historySearchField.getText();
+            q = (q == null) ? "" : q.trim();
+            boolean hasQuery = !q.isEmpty() && !"Suche…".equals(q);
+
+            if (hasQuery)
+            {
+                String safeText = escapeHtml(text);
+                String safeQuery = escapeHtml(q);
+
+                String highlighted = safeText.replaceAll("(?i)(" + java.util.regex.Pattern.quote(safeQuery) + ")",
+                        "<span style='background:#ffea00; color:#000; padding:1px 2px; border-radius:3px;'>$1</span>");
+
+                lbl.setText("<html><div style='white-space:nowrap;'>" + highlighted + "</div></html>");
+            }
+            else
+            {
+                lbl.setText(text);
+            }
+
+            lbl.setBorder(pad);
+
+            Color bg = darkMode ? new Color(25, 25, 25) : Color.WHITE;
+            Color fg = darkMode ? Color.WHITE : Color.BLACK;
+
+            if (isSelected)
+            {
+                lbl.setBackground(helleColor(bg, 30));
+                lbl.setForeground(fg);
+            }
+            else
+            {
+                lbl.setBackground(bg);
+                lbl.setForeground(fg);
+            }
+
+            lbl.setOpaque(true);
+            return lbl;
+        }
+    }
+
+    private String escapeHtml(String s)
+    {
+        if (s == null) return "";
+        return s
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
+    private void setupSearchFieldKeyForwarding()
+    {
+        historySearchField.addKeyListener(new java.awt.event.KeyAdapter()
+        {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e)
+            {
+                char ch = e.getKeyChar();
+
+                if (Character.isDigit(ch))
+                {
+                    e.consume();
+                    rechner.eingabeZahl(String.valueOf(ch));
+                    refresh();
+                    getRootPane().requestFocusInWindow();
+                    return;
+                }
+
+                if (ch == ',' || ch == '.')
+                {
+                    e.consume();
+                    rechner.eingabeKomma();
+                    refresh();
+                    getRootPane().requestFocusInWindow();
+                    return;
+                }
+
+                if (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '%')
+                {
+                    e.consume();
+                    String op = String.valueOf(ch);
+                    rechner.operatorSetzen(op);
+                    refresh();
+                    getRootPane().requestFocusInWindow();
+                    return;
+                }
+
+                if (ch == '\n')
+                {
+                    e.consume();
+                    String res = rechner.berechne();
+                    display.setText(res);
+                    String v = rechner.getVerlauf();
+                    recdisplay.setText(v);
+
+                    if (!"Fehler".equals(res))
+                    {
+                        addHistoryEntry(v);
+                    }
+
+                    getRootPane().requestFocusInWindow();
+                }
+            }
+
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent e)
+            {
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_BACK_SPACE)
+                {
+                    if (historySearchField.getSelectionStart() != historySearchField.getSelectionEnd()
+                            || historySearchField.getCaretPosition() > 0)
+                    {
+                        return;
+                    }
+
+                    e.consume();
+                    rechner.loeschen();
+                    refresh();
+                    getRootPane().requestFocusInWindow();
+                }
+
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE)
+                {
+                    historySearchField.setText("");
+                    getRootPane().requestFocusInWindow();
+                }
+            }
+        });
+    }
+
+    private boolean keyboardBlockedBySearch()
+    {
+        if (!historySearchField.isFocusOwner()) return false;
+
+        String t = historySearchField.getText();
+        if (t == null) return true;
+
+        t = t.trim();
+        return !t.isEmpty() && !"Suche…".equals(t);
+    }
+
 }
