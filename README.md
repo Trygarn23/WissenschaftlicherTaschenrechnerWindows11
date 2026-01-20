@@ -24,3 +24,6 @@ Plattform: Windows 11
 
 Hinweis
 Dieses Projekt dient Lern- und Übungszwecken und ist öffentlich einsehbar, um den Code nachvollziehen zu können.
+
+Lizenz
+Dieses Projekt ist öffentlich einsehbar, der Quellcode darf jedoch ohne ausdrückliche Zustimmung nicht kopiert, weiterverwendet oder als eigenes Projekt ausgegeben werden.
