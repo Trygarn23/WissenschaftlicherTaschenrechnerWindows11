@@ -2,209 +2,288 @@ import java.util.*;
 
 public class TaschenrechnerParser
 {
-    private static final Map<String, Integer> PRIORITY = Map.of(
-            "+", 1,
-            "-", 1,
-            "*", 2,
-            "/", 2,
-            "%", 2,
-            "^", 3
-    );
+
+    public enum WinkelModus
+    {DEG, RAD}
+
+    private static final Map<String, Integer> PRIORITY = new HashMap<>();
+
+    static
+    {
+        PRIORITY.put("+", 1);
+        PRIORITY.put("-", 1);
+        PRIORITY.put("*", 2);
+        PRIORITY.put("/", 2);
+        PRIORITY.put("%", 2);
+        PRIORITY.put("^", 3);
+        PRIORITY.put("u-", 4);
+    }
 
     private static boolean isRightAssociative(String op)
     {
-        return "^".equals(op);
+        return "^".equals(op) || "u-".equals(op);
     }
 
-    public static double auswerten(String expr)
+    private static boolean isOperator(String t)
     {
-        if (expr == null)
-        {
-            throw new IllegalArgumentException("expr is null");
-        }
+        return PRIORITY.containsKey(t);
+    }
 
-        // Normalisieren: UI-Zeichen -> Parser-Zeichen
+    private static boolean isFunction(String t)
+    {
+        return switch (t)
+        {
+            case "sin", "cos", "tan", "ln", "log", "sqrt", "abs", "exp" -> true;
+            default -> false;
+        };
+    }
+
+    private static boolean isIdentifier(String t)
+    {
+        return t != null && t.matches("[a-zA-Z]+");
+    }
+
+    public static double auswerten(String expr, double ans, WinkelModus winkelModus)
+    {
+        if (expr == null) throw new IllegalArgumentException();
+
         expr = expr
                 .replace('×', '*')
                 .replace('÷', '/')
-                .replace('−', '-') // Unicode minus
-                .replace('–', '-') // En dash
-                .replace('—', '-'); // Em dash
+                .replace('−', '-')
+                .replace('–', '-')
+                .replace('—', '-')
+                .replaceAll("\\s+", "");
 
-        // Whitespace entfernen
-        expr = expr.replaceAll("\\s+", "");
-
-        // Wenn der User mit Komma/Punkt endet: als ,0 interpretieren
         if (!expr.isEmpty())
         {
             char last = expr.charAt(expr.length() - 1);
-            if (last == ',' || last == '.')
-            {
-                expr = expr + "0";
-            }
+            if (last == ',' || last == '.') expr += "0";
         }
 
-        List<String> postfix = toPostfix(tokenize(expr));
-        return evalPostfix(postfix);
+        return evalPostfix(
+                toPostfix(tokenize(expr)),
+                ans,
+                winkelModus
+        );
     }
 
     private static List<String> tokenize(String expr)
     {
         List<String> tokens = new ArrayList<>();
         StringBuilder number = new StringBuilder();
-        String prevToken = null;
+        StringBuilder ident = new StringBuilder();
+        String prev = null;
 
         for (int i = 0; i < expr.length(); i++)
         {
             char c = expr.charAt(i);
 
-            boolean unaryMinus =
-                    c == '-' && number.length() == 0 &&
-                            (prevToken == null || PRIORITY.containsKey(prevToken) || "(".equals(prevToken));
-
-            if (Character.isDigit(c) || c == ',' || c == '.' || unaryMinus)
+            if (Character.isLetter(c) || c == 'π')
             {
+                flush(number, tokens);
+                if (isValue(prev)) tokens.add("*");
+
+                ident.append(c);
+                while (i + 1 < expr.length() &&
+                        (Character.isLetter(expr.charAt(i + 1)) || expr.charAt(i + 1) == 'π'))
+                {
+                    ident.append(expr.charAt(++i));
+                }
+
+                String id = ident.toString().toLowerCase().replace("π", "pi");
+                tokens.add(id);
+                ident.setLength(0);
+                prev = id;
+                continue;
+            }
+
+            boolean unaryNumber =
+                    c == '-' && number.isEmpty() &&
+                            (prev == null || isOperator(prev) || "(".equals(prev)) &&
+                            i + 1 < expr.length() &&
+                            (Character.isDigit(expr.charAt(i + 1)) || expr.charAt(i + 1) == ',');
+
+            if (Character.isDigit(c) || c == ',' || c == '.' || unaryNumber)
+            {
+                flush(ident, tokens);
+                if (number.isEmpty() && isValue(prev)) tokens.add("*");
                 number.append(c);
+                prev = null;
+                continue;
+            }
+
+            flush(number, tokens);
+            flush(ident, tokens);
+
+            String t = String.valueOf(c);
+
+            if ("(".equals(t) && isValue(prev)) tokens.add("*");
+
+            if ("-".equals(t) &&
+                    (prev == null || isOperator(prev) || "(".equals(prev)) &&
+                    i + 1 < expr.length() &&
+                    !Character.isDigit(expr.charAt(i + 1)))
+            {
+                t = "u-";
+            }
+
+            if (isOperator(t) || "(".equals(t) || ")".equals(t))
+            {
+                tokens.add(t);
+                prev = t;
             } else
             {
-                if (number.length() > 0)
-                {
-                    tokens.add(number.toString());
-                    prevToken = number.toString();
-                    number.setLength(0);
-                }
-                String tok = String.valueOf(c);
-                tokens.add(tok);
-                prevToken = tok;
+                throw new IllegalArgumentException();
             }
         }
 
-        if (number.length() > 0)
-        {
-            tokens.add(number.toString());
-        }
-
+        flush(number, tokens);
+        flush(ident, tokens);
         return tokens;
     }
 
     private static List<String> toPostfix(List<String> tokens)
     {
-        List<String> output = new ArrayList<>();
+        List<String> out = new ArrayList<>();
         Deque<String> stack = new ArrayDeque<>();
 
-        for (String token : tokens)
+        for (int i = 0; i < tokens.size(); i++)
         {
-            if (isNumber(token))
-            {
-                output.add(token);
-            } else if (PRIORITY.containsKey(token))
-            {
-                int p1 = PRIORITY.get(token);
-                boolean rightAssoc = isRightAssociative(token);
+            String t = tokens.get(i);
 
-                while (!stack.isEmpty() && PRIORITY.containsKey(stack.peek()))
+            if (isNumber(t))
+            {
+                out.add(t);
+            } else if (isIdentifier(t))
+            {
+                if (i + 1 < tokens.size() && "(".equals(tokens.get(i + 1)) && isFunction(t))
+                {
+                    stack.push(t);
+                } else
+                {
+                    out.add(t);
+                }
+            } else if (isOperator(t))
+            {
+                while (!stack.isEmpty() && isOperator(stack.peek()))
                 {
                     String top = stack.peek();
-                    int p2 = PRIORITY.get(top);
-
-                    // ^ ist rechtsassoziativ: bei gleicher Priorität NICHT poppen
-                    boolean shouldPop = rightAssoc ? (p2 > p1) : (p2 >= p1);
-                    if (!shouldPop) break;
-
-                    output.add(stack.pop());
+                    boolean pop = isRightAssociative(t)
+                            ? PRIORITY.get(top) > PRIORITY.get(t)
+                            : PRIORITY.get(top) >= PRIORITY.get(t);
+                    if (!pop) break;
+                    out.add(stack.pop());
                 }
-
-                stack.push(token);
-            } else if (token.equals("("))
+                stack.push(t);
+            } else if ("(".equals(t))
             {
-                stack.push(token);
-            } else if (token.equals(")"))
+                stack.push(t);
+            } else if (")".equals(t))
             {
-                while (!stack.isEmpty() && !stack.peek().equals("("))
+                while (!stack.isEmpty() && !"(".equals(stack.peek()))
                 {
-                    output.add(stack.pop());
+                    out.add(stack.pop());
                 }
-
-                if (stack.isEmpty())
+                if (stack.isEmpty()) throw new IllegalArgumentException();
+                stack.pop();
+                if (!stack.isEmpty() && isFunction(stack.peek()))
                 {
-                    throw new IllegalArgumentException("Unbalanced parentheses");
+                    out.add(stack.pop());
                 }
-
-                stack.pop(); // '(' entfernen
             } else
             {
-                throw new IllegalArgumentException("Unknown token: " + token);
+                throw new IllegalArgumentException();
             }
         }
 
         while (!stack.isEmpty())
         {
-            String top = stack.pop();
-            if (top.equals("("))
-            {
-                throw new IllegalArgumentException("Unbalanced parentheses");
-            }
-            output.add(top);
+            String t = stack.pop();
+            if ("(".equals(t)) throw new IllegalArgumentException();
+            out.add(t);
         }
 
-        return output;
+        return out;
     }
 
-    private static double evalPostfix(List<String> postfix)
+    private static double evalPostfix(List<String> postfix, double ans, WinkelModus mode)
     {
         Deque<Double> stack = new ArrayDeque<>();
 
-        for (String token : postfix)
+        for (String t : postfix)
         {
-            if (isNumber(token))
+            if (isNumber(t))
             {
-                stack.push(Double.parseDouble(token.replace(',', '.')));
-            } else
+                stack.push(Double.parseDouble(t.replace(',', '.')));
+            } else if (isIdentifier(t) && !isFunction(t))
             {
-                if (stack.size() < 2)
+                stack.push(switch (t)
                 {
-                    throw new IllegalArgumentException("Invalid expression");
-                }
-
+                    case "pi" -> Math.PI;
+                    case "e" -> Math.E;
+                    case "ans" -> ans;
+                    default -> throw new IllegalArgumentException();
+                });
+            } else if ("u-".equals(t))
+            {
+                stack.push(-stack.pop());
+            } else if (isOperator(t))
+            {
                 double b = stack.pop();
                 double a = stack.pop();
-
-                switch (token)
+                stack.push(switch (t)
                 {
-                    case "+":
-                        stack.push(a + b);
-                        break;
-                    case "-":
-                        stack.push(a - b);
-                        break;
-                    case "*":
-                        stack.push(a * b);
-                        break;
-                    case "/":
-                        stack.push(a / b);
-                        break;
-                    case "%":
-                        stack.push(a % b);
-                        break;
-                    case "^":
-                        stack.push(Math.pow(a, b));
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown operator: " + token);
-                }
+                    case "+" -> a + b;
+                    case "-" -> a - b;
+                    case "*" -> a * b;
+                    case "/" -> a / b;
+                    case "%" -> a % b;
+                    case "^" -> Math.pow(a, b);
+                    default -> throw new IllegalArgumentException();
+                });
+            } else if (isFunction(t))
+            {
+                double x = stack.pop();
+                double r = switch (t)
+                {
+                    case "sin" -> Math.sin(mode == WinkelModus.DEG ? Math.toRadians(x) : x);
+                    case "cos" -> Math.cos(mode == WinkelModus.DEG ? Math.toRadians(x) : x);
+                    case "tan" -> Math.tan(mode == WinkelModus.DEG ? Math.toRadians(x) : x);
+                    case "ln" -> Math.log(x);
+                    case "log" -> Math.log10(x);
+                    case "sqrt" -> Math.sqrt(x);
+                    case "abs" -> Math.abs(x);
+                    case "exp" -> Math.exp(x);
+                    default -> throw new IllegalArgumentException();
+                };
+                stack.push(r);
+            } else
+            {
+                throw new IllegalArgumentException();
             }
         }
 
-        if (stack.size() != 1)
-        {
-            throw new IllegalArgumentException("Invalid expression");
-        }
-
+        if (stack.size() != 1) throw new IllegalArgumentException();
         return stack.pop();
+    }
+
+    private static boolean isValue(String t)
+    {
+        return t != null && (isNumber(t) || isIdentifier(t) || ")".equals(t));
     }
 
     private static boolean isNumber(String s)
     {
-        return s.matches("-?[0-9]+([.,][0-9]+)?");
+        return s != null && s.matches("-?[0-9]+([.,][0-9]+)?");
+    }
+
+    private static void flush(StringBuilder sb, List<String> out)
+    {
+        if (!sb.isEmpty())
+        {
+            out.add(sb.toString());
+            sb.setLength(0);
+        }
     }
 }

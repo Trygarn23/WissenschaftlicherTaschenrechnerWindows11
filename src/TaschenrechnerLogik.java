@@ -17,8 +17,6 @@ public class TaschenrechnerLogik
     private double memory = 0.0;
     private double ans = 0.0;
 
-    // ========= EINGABE =========
-
     public String eingabeZahl(String ziffer)
     {
         if (gleichGedrueckt)
@@ -188,7 +186,14 @@ public class TaschenrechnerLogik
         try
         {
             String original = ausdruck.toString();
-            double result = TaschenrechnerParser.auswerten(original);
+            double result = TaschenrechnerParser.auswerten(
+                    original,
+                    ans,
+                    winkelModus == WinkelModus.DEG
+                            ? TaschenrechnerParser.WinkelModus.DEG
+                            : TaschenrechnerParser.WinkelModus.RAD
+            );
+
 
             if (!Double.isFinite(result)) return fehler();
 
@@ -208,8 +213,6 @@ public class TaschenrechnerLogik
             return fehler();
         }
     }
-
-    // ========= FUNKTIONEN (letzte Zahl) =========
 
     public String prozent()
     {
@@ -503,7 +506,14 @@ public class TaschenrechnerLogik
         try
         {
             if (endetMitOperator()) return 0.0;
-            double v = TaschenrechnerParser.auswerten(ausdruck.toString());
+            double v = TaschenrechnerParser.auswerten(
+                    ausdruck.toString(),
+                    ans,
+                    winkelModus == WinkelModus.DEG
+                            ? TaschenrechnerParser.WinkelModus.DEG
+                            : TaschenrechnerParser.WinkelModus.RAD
+            );
+
             return Double.isFinite(v) ? v : 0.0;
         }
         catch (Exception e)
