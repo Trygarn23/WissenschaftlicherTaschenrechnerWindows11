@@ -207,6 +207,16 @@ public class TaschenrechnerUI extends JFrame
             }
         });
 
+        buttonPanel.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(MouseEvent e)
+            {
+                defocusSearchIfNeeded();
+            }
+        });
+
+
 
         for (String text : buttons)
         {
@@ -218,7 +228,7 @@ public class TaschenrechnerUI extends JFrame
 
         refresh();
         applyHistoryColors();
-        setupSearchFieldKeyForwarding();
+        SwingUtilities.invokeLater(() -> getRootPane().requestFocusInWindow());
 
     }
 
@@ -245,6 +255,8 @@ public class TaschenrechnerUI extends JFrame
 
     private void handleButton(JButton sourceBtn)
     {
+        defocusSearchIfNeeded();
+
         String t = sourceBtn.getText();
 
         if (t.matches("\\d"))
@@ -431,6 +443,7 @@ public class TaschenrechnerUI extends JFrame
             default:
                 Toolkit.getDefaultToolkit().beep();
         }
+        defocusSearchIfNeeded();
     }
 
     private void styleButton(JButton btn, String text)
@@ -891,13 +904,15 @@ public class TaschenrechnerUI extends JFrame
 
     private boolean keyboardBlockedBySearch()
     {
-        if (!historySearchField.isFocusOwner()) return false;
+        return historySearchField.isFocusOwner();
+    }
 
-        String t = historySearchField.getText();
-        if (t == null) return true;
-
-        t = t.trim();
-        return !t.isEmpty() && !"Suche…".equals(t);
+    private void defocusSearchIfNeeded()
+    {
+        if (historySearchField.isFocusOwner())
+        {
+            getRootPane().requestFocusInWindow();
+        }
     }
 
 }
