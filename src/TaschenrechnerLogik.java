@@ -522,10 +522,6 @@ public class TaschenrechnerLogik
         }
     }
 
-
-
-    // ========= INTERN =========
-
     private boolean kannLetzteZahlBearbeiten()
     {
         if (ausdruck.isEmpty()) return false;
@@ -588,9 +584,11 @@ public class TaschenrechnerLogik
     private String fehler()
     {
         ausdruck.setLength(0);
+        verlauf.setLength(0);
         gleichGedrueckt = true;
         return "Fehler";
     }
+
 
     private String toInternal(double wert)
     {

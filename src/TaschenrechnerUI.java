@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -27,6 +28,7 @@ public class TaschenrechnerUI extends JFrame
     private final JScrollPane historyScroll = new JScrollPane(historyList);
     private final JButton clearHistoryBtn = new JButton("Clear");
     private final JTextField historySearchField = new JTextField();
+    private final HashMap<String, Runnable> actions = new HashMap<>();
 
 
     public TaschenrechnerUI()
@@ -229,6 +231,8 @@ public class TaschenrechnerUI extends JFrame
         refresh();
         applyHistoryColors();
         SwingUtilities.invokeLater(() -> getRootPane().requestFocusInWindow());
+        initActions();
+        setupSearchFieldKeyForwarding();
 
     }
 
@@ -266,184 +270,21 @@ public class TaschenrechnerUI extends JFrame
             return;
         }
 
-        switch (t)
+        if ("DEG".equals(t) || "RAD".equals(t))
         {
-            case ",":
-                rechner.eingabeKomma();
-                refresh();
-                break;
-
-            case "+":
-            case "-":
-            case "×":
-            case "÷":
-                rechner.operatorSetzen(t);
-                refresh();
-                break;
-
-            case "=":
-                String res = rechner.berechne();
-                display.setText(res);
-                String v = rechner.getVerlauf();
-                recdisplay.setText(v);
-
-                if (!"Fehler".equals(res))
-                {
-                    addHistoryEntry(v);
-                }
-
-                break;
-
-
-            case "+/_":
-                rechner.wechselVorzeichen();
-                refresh();
-                break;
-
-            case "C":
-                rechner.allesLoeschen();
-                refresh();
-                break;
-
-            case "CE":
-                rechner.ce();
-                refresh();
-                break;
-
-            case "←":
-                rechner.loeschen();
-                refresh();
-                break;
-
-            case "mod":
-                // Modulo-Operator
-                rechner.operatorSetzen("%");
-                refresh();
-                break;
-
-            case "x²":
-                rechner.quadriere();
-                refresh();
-                break;
-
-            case "√x":
-                rechner.wurzel();
-                refresh();
-                break;
-
-            case "1/x":
-                rechner.reziprok();
-                refresh();
-                break;
-
-            case "(":
-                rechner.klammerAuf();
-                refresh();
-                break;
-
-            case ")":
-                rechner.klammerZu();
-                refresh();
-                break;
-
-            case "n!":
-                rechner.fakultaet();
-                refresh();
-                break;
-
-            case "10ˣ":
-                rechner.zehnHoch();
-                refresh();
-                break;
-
-            case "xʸ":
-                rechner.potenz();
-                refresh();
-                break;
-
-            case "ln":
-                rechner.ln();
-                refresh();
-                break;
-
-            case "log":
-                rechner.log();
-                refresh();
-                break;
-
-            case "sin":
-                rechner.sin();
-                refresh();
-                break;
-
-            case "cos":
-                rechner.cos();
-                refresh();
-                break;
-
-            case "tan":
-                rechner.tan();
-                refresh();
-                break;
-
-            case "π":
-                rechner.pi();
-                refresh();
-                break;
-
-            case "e":
-                rechner.e();
-                refresh();
-                break;
-
-            case "DEG":
-            case "RAD":
-                rechner.toggleWinkelModus();
-                sourceBtn.setText(rechner.getWinkelModus().name());
-                refreshWithExtraInfo(rechner.getWinkelModus().name());
-                break;
-
-            case "Dark":
-            case "Light":
-                toggleDarkMode(sourceBtn);
-                break;
-
-            case "exp":
-                rechner.exp();
-                refresh();
-                break; // WICHTIG!
-
-            case "|x|":
-                rechner.betrag();
-                refresh();
-                break;
-            case "MC":
-                rechner.memoryClear();
-                refreshWithExtraInfo("M = 0");
-                break;
-
-            case "MR":
-                rechner.memoryRecall();
-                refresh();
-                break;
-
-            case "M+":
-                refreshWithExtraInfo("M = " + rechner.memoryAdd());
-                break;
-
-            case "M-":
-                refreshWithExtraInfo("M = " + rechner.memorySub());
-                break;
-
-            case "Ans":
-                rechner.ans();
-                refresh();
-                break;
-
-            default:
-                Toolkit.getDefaultToolkit().beep();
+            rechner.toggleWinkelModus();
+            sourceBtn.setText(rechner.getWinkelModus().name());
+            refreshWithExtraInfo(rechner.getWinkelModus().name());
+            return;
         }
-        defocusSearchIfNeeded();
+
+        if ("Dark".equals(t) || "Light".equals(t))
+        {
+            toggleDarkMode(sourceBtn);
+            return;
+        }
+
+        actions.getOrDefault(t, Toolkit.getDefaultToolkit()::beep).run();
     }
 
     private void styleButton(JButton btn, String text)
@@ -822,6 +663,21 @@ public class TaschenrechnerUI extends JFrame
                 .replace("\"", "&quot;");
     }
 
+    private void evaluate()
+    {
+        String res = rechner.berechne();
+        display.setText(res);
+
+        String v = rechner.getVerlauf();
+        recdisplay.setText(v);
+
+        if (!"Fehler".equals(res))
+        {
+            addHistoryEntry(v);
+        }
+    }
+
+
     private void setupSearchFieldKeyForwarding()
     {
         historySearchField.addKeyListener(new java.awt.event.KeyAdapter()
@@ -913,6 +769,58 @@ public class TaschenrechnerUI extends JFrame
         {
             getRootPane().requestFocusInWindow();
         }
+    }
+
+    private void initActions()
+    {
+        actions.put(",", () -> { rechner.eingabeKomma(); refresh(); });
+
+        actions.put("+", () -> { rechner.operatorSetzen("+"); refresh(); });
+        actions.put("-", () -> { rechner.operatorSetzen("-"); refresh(); });
+        actions.put("×", () -> { rechner.operatorSetzen("×"); refresh(); });
+        actions.put("÷", () -> { rechner.operatorSetzen("÷"); refresh(); });
+
+        actions.put("=", this::evaluate);
+
+        actions.put("+/_", () -> { rechner.wechselVorzeichen(); refresh(); });
+
+        actions.put("C",  () -> { rechner.allesLoeschen(); refresh(); });
+        actions.put("CE", () -> { rechner.ce(); refresh(); });
+        actions.put("←",  () -> { rechner.loeschen(); refresh(); });
+
+        actions.put("mod", () -> { rechner.operatorSetzen("%"); refresh(); });
+
+        actions.put("x²", () -> { rechner.quadriere(); refresh(); });
+        actions.put("√x", () -> { rechner.wurzel(); refresh(); });
+        actions.put("1/x", () -> { rechner.reziprok(); refresh(); });
+
+        actions.put("(", () -> { rechner.klammerAuf(); refresh(); });
+        actions.put(")", () -> { rechner.klammerZu(); refresh(); });
+
+        actions.put("n!", () -> { rechner.fakultaet(); refresh(); });
+
+        actions.put("10ˣ", () -> { rechner.zehnHoch(); refresh(); });
+        actions.put("xʸ",  () -> { rechner.potenz(); refresh(); });
+
+        actions.put("ln",  () -> { rechner.ln(); refresh(); });
+        actions.put("log", () -> { rechner.log(); refresh(); });
+
+        actions.put("sin", () -> { rechner.sin(); refresh(); });
+        actions.put("cos", () -> { rechner.cos(); refresh(); });
+        actions.put("tan", () -> { rechner.tan(); refresh(); });
+
+        actions.put("π", () -> { rechner.pi(); refresh(); });
+        actions.put("e", () -> { rechner.e(); refresh(); });
+
+        actions.put("exp", () -> { rechner.exp(); refresh(); });
+        actions.put("|x|", () -> { rechner.betrag(); refresh(); });
+
+        actions.put("MC", () -> { rechner.memoryClear(); refreshWithExtraInfo("M = 0"); });
+        actions.put("MR", () -> { rechner.memoryRecall(); refresh(); });
+        actions.put("M+", () -> refreshWithExtraInfo("M = " + rechner.memoryAdd()));
+        actions.put("M-", () -> refreshWithExtraInfo("M = " + rechner.memorySub()));
+
+        actions.put("Ans", () -> { rechner.ans(); refresh(); });
     }
 
 }
