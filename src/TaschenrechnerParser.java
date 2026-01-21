@@ -1,27 +1,64 @@
 import java.util.*;
 
-public class TaschenrechnerParser
+public final class TaschenrechnerParser
 {
+    public enum WinkelModus { DEG, RAD }
 
-    public enum WinkelModus
-    {DEG, RAD}
+    private static final String UNARY_MINUS = "u-";
+    private static final String OPEN = "(";
+    private static final String CLOSE = ")";
+    private static final String MUL = "*";
 
-    private static final Map<String, Integer> PRIORITY = new HashMap<>();
+    private static final Map<String, Integer> PRIORITY = Map.of(
+            "+", 1,
+            "-", 1,
+            "*", 2,
+            "/", 2,
+            "%", 2,
+            "^", 3,
+            UNARY_MINUS, 4
+    );
 
-    static
+    private static final Set<String> FUNCTIONS = Set.of(
+            "sin", "cos", "tan", "ln", "log", "sqrt", "abs", "exp"
+    );
+
+    private TaschenrechnerParser() {}
+
+    public static double auswerten(String expr, double ans, WinkelModus winkelModus)
     {
-        PRIORITY.put("+", 1);
-        PRIORITY.put("-", 1);
-        PRIORITY.put("*", 2);
-        PRIORITY.put("/", 2);
-        PRIORITY.put("%", 2);
-        PRIORITY.put("^", 3);
-        PRIORITY.put("u-", 4);
+        if (expr == null) throw new IllegalArgumentException("expr is null");
+
+        String normalized = normalize(expr);
+        normalized = ensureTrailingZero(normalized);
+
+        List<String> tokens = tokenize(normalized);
+        List<String> postfix = toPostfix(tokens);
+        return evalPostfix(postfix, ans, winkelModus);
+    }
+
+    private static String normalize(String expr)
+    {
+        return expr
+                .replace('×', '*')
+                .replace('÷', '/')
+                .replace('−', '-')
+                .replace('–', '-')
+                .replace('—', '-')
+                .replaceAll("\\s+", "");
+    }
+
+    private static String ensureTrailingZero(String expr)
+    {
+        if (expr.isEmpty()) return expr;
+        char last = expr.charAt(expr.length() - 1);
+        if (last == ',' || last == '.') return expr + "0";
+        return expr;
     }
 
     private static boolean isRightAssociative(String op)
     {
-        return "^".equals(op) || "u-".equals(op);
+        return "^".equals(op) || UNARY_MINUS.equals(op);
     }
 
     private static boolean isOperator(String t)
@@ -31,11 +68,7 @@ public class TaschenrechnerParser
 
     private static boolean isFunction(String t)
     {
-        return switch (t)
-        {
-            case "sin", "cos", "tan", "ln", "log", "sqrt", "abs", "exp" -> true;
-            default -> false;
-        };
+        return FUNCTIONS.contains(t);
     }
 
     private static boolean isIdentifier(String t)
@@ -43,29 +76,9 @@ public class TaschenrechnerParser
         return t != null && t.matches("[a-zA-Z]+");
     }
 
-    public static double auswerten(String expr, double ans, WinkelModus winkelModus)
+    private static boolean isIdentifierChar(char c)
     {
-        if (expr == null) throw new IllegalArgumentException();
-
-        expr = expr
-                .replace('×', '*')
-                .replace('÷', '/')
-                .replace('−', '-')
-                .replace('–', '-')
-                .replace('—', '-')
-                .replaceAll("\\s+", "");
-
-        if (!expr.isEmpty())
-        {
-            char last = expr.charAt(expr.length() - 1);
-            if (last == ',' || last == '.') expr += "0";
-        }
-
-        return evalPostfix(
-                toPostfix(tokenize(expr)),
-                ans,
-                winkelModus
-        );
+        return Character.isLetter(c) || c == 'π';
     }
 
     private static List<String> tokenize(String expr)
@@ -79,19 +92,18 @@ public class TaschenrechnerParser
         {
             char c = expr.charAt(i);
 
-            if (Character.isLetter(c) || c == 'π')
+            if (isIdentifierChar(c))
             {
                 flush(number, tokens);
-                if (isValue(prev)) tokens.add("*");
+                if (isValue(prev)) tokens.add(MUL);
 
                 ident.append(c);
-                while (i + 1 < expr.length() &&
-                        (Character.isLetter(expr.charAt(i + 1)) || expr.charAt(i + 1) == 'π'))
+                while (i + 1 < expr.length() && isIdentifierChar(expr.charAt(i + 1)))
                 {
                     ident.append(expr.charAt(++i));
                 }
 
-                String id = ident.toString().toLowerCase().replace("π", "pi");
+                String id = ident.toString().toLowerCase(Locale.ROOT).replace("π", "pi");
                 tokens.add(id);
                 ident.setLength(0);
                 prev = id;
@@ -99,15 +111,16 @@ public class TaschenrechnerParser
             }
 
             boolean unaryNumber =
-                    c == '-' && number.isEmpty() &&
-                            (prev == null || isOperator(prev) || "(".equals(prev)) &&
+                    c == '-' && number.length() == 0 &&
+                            (prev == null || isOperator(prev) || OPEN.equals(prev)) &&
                             i + 1 < expr.length() &&
                             (Character.isDigit(expr.charAt(i + 1)) || expr.charAt(i + 1) == ',');
 
             if (Character.isDigit(c) || c == ',' || c == '.' || unaryNumber)
             {
                 flush(ident, tokens);
-                if (number.isEmpty() && isValue(prev)) tokens.add("*");
+                if (number.length() == 0 && isValue(prev)) tokens.add(MUL);
+
                 number.append(c);
                 prev = null;
                 continue;
@@ -118,23 +131,24 @@ public class TaschenrechnerParser
 
             String t = String.valueOf(c);
 
-            if ("(".equals(t) && isValue(prev)) tokens.add("*");
+            if (OPEN.equals(t) && isValue(prev)) tokens.add(MUL);
 
             if ("-".equals(t) &&
-                    (prev == null || isOperator(prev) || "(".equals(prev)) &&
+                    (prev == null || isOperator(prev) || OPEN.equals(prev)) &&
                     i + 1 < expr.length() &&
                     !Character.isDigit(expr.charAt(i + 1)))
             {
-                t = "u-";
+                t = UNARY_MINUS;
             }
 
-            if (isOperator(t) || "(".equals(t) || ")".equals(t))
+            if (isOperator(t) || OPEN.equals(t) || CLOSE.equals(t))
             {
                 tokens.add(t);
                 prev = t;
-            } else
+            }
+            else
             {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Unknown token: " + t);
             }
         }
 
@@ -155,16 +169,14 @@ public class TaschenrechnerParser
             if (isNumber(t))
             {
                 out.add(t);
-            } else if (isIdentifier(t))
+            }
+            else if (isIdentifier(t))
             {
-                if (i + 1 < tokens.size() && "(".equals(tokens.get(i + 1)) && isFunction(t))
-                {
-                    stack.push(t);
-                } else
-                {
-                    out.add(t);
-                }
-            } else if (isOperator(t))
+                boolean isFunc = i + 1 < tokens.size() && OPEN.equals(tokens.get(i + 1)) && isFunction(t);
+                if (isFunc) stack.push(t);
+                else out.add(t);
+            }
+            else if (isOperator(t))
             {
                 while (!stack.isEmpty() && isOperator(stack.peek()))
                 {
@@ -172,35 +184,41 @@ public class TaschenrechnerParser
                     boolean pop = isRightAssociative(t)
                             ? PRIORITY.get(top) > PRIORITY.get(t)
                             : PRIORITY.get(top) >= PRIORITY.get(t);
+
                     if (!pop) break;
                     out.add(stack.pop());
                 }
                 stack.push(t);
-            } else if ("(".equals(t))
+            }
+            else if (OPEN.equals(t))
             {
                 stack.push(t);
-            } else if (")".equals(t))
+            }
+            else if (CLOSE.equals(t))
             {
-                while (!stack.isEmpty() && !"(".equals(stack.peek()))
+                while (!stack.isEmpty() && !OPEN.equals(stack.peek()))
                 {
                     out.add(stack.pop());
                 }
-                if (stack.isEmpty()) throw new IllegalArgumentException();
+
+                if (stack.isEmpty()) throw new IllegalArgumentException("Unbalanced parentheses");
                 stack.pop();
+
                 if (!stack.isEmpty() && isFunction(stack.peek()))
                 {
                     out.add(stack.pop());
                 }
-            } else
+            }
+            else
             {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Unknown token: " + t);
             }
         }
 
         while (!stack.isEmpty())
         {
             String t = stack.pop();
-            if ("(".equals(t)) throw new IllegalArgumentException();
+            if (OPEN.equals(t)) throw new IllegalArgumentException("Unbalanced parentheses");
             out.add(t);
         }
 
@@ -216,19 +234,22 @@ public class TaschenrechnerParser
             if (isNumber(t))
             {
                 stack.push(Double.parseDouble(t.replace(',', '.')));
-            } else if (isIdentifier(t) && !isFunction(t))
+            }
+            else if (isIdentifier(t) && !isFunction(t))
             {
                 stack.push(switch (t)
                 {
                     case "pi" -> Math.PI;
                     case "e" -> Math.E;
                     case "ans" -> ans;
-                    default -> throw new IllegalArgumentException();
+                    default -> throw new IllegalArgumentException("Unknown identifier: " + t);
                 });
-            } else if ("u-".equals(t))
+            }
+            else if (UNARY_MINUS.equals(t))
             {
                 stack.push(-stack.pop());
-            } else if (isOperator(t))
+            }
+            else if (isOperator(t))
             {
                 double b = stack.pop();
                 double a = stack.pop();
@@ -240,37 +261,47 @@ public class TaschenrechnerParser
                     case "/" -> a / b;
                     case "%" -> a % b;
                     case "^" -> Math.pow(a, b);
-                    default -> throw new IllegalArgumentException();
+                    default -> throw new IllegalArgumentException("Unknown operator: " + t);
                 });
-            } else if (isFunction(t))
+            }
+            else if (isFunction(t))
             {
                 double x = stack.pop();
+
+                double trigArg = x;
+                if (mode == WinkelModus.DEG && ("sin".equals(t) || "cos".equals(t) || "tan".equals(t)))
+                {
+                    trigArg = Math.toRadians(x);
+                }
+
                 double r = switch (t)
                 {
-                    case "sin" -> Math.sin(mode == WinkelModus.DEG ? Math.toRadians(x) : x);
-                    case "cos" -> Math.cos(mode == WinkelModus.DEG ? Math.toRadians(x) : x);
-                    case "tan" -> Math.tan(mode == WinkelModus.DEG ? Math.toRadians(x) : x);
+                    case "sin" -> Math.sin(trigArg);
+                    case "cos" -> Math.cos(trigArg);
+                    case "tan" -> Math.tan(trigArg);
                     case "ln" -> Math.log(x);
                     case "log" -> Math.log10(x);
                     case "sqrt" -> Math.sqrt(x);
                     case "abs" -> Math.abs(x);
                     case "exp" -> Math.exp(x);
-                    default -> throw new IllegalArgumentException();
+                    default -> throw new IllegalArgumentException("Unknown function: " + t);
                 };
+
                 stack.push(r);
-            } else
+            }
+            else
             {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Unknown token: " + t);
             }
         }
 
-        if (stack.size() != 1) throw new IllegalArgumentException();
+        if (stack.size() != 1) throw new IllegalArgumentException("Invalid expression");
         return stack.pop();
     }
 
     private static boolean isValue(String t)
     {
-        return t != null && (isNumber(t) || isIdentifier(t) || ")".equals(t));
+        return t != null && (isNumber(t) || isIdentifier(t) || CLOSE.equals(t));
     }
 
     private static boolean isNumber(String s)
@@ -280,10 +311,8 @@ public class TaschenrechnerParser
 
     private static void flush(StringBuilder sb, List<String> out)
     {
-        if (!sb.isEmpty())
-        {
-            out.add(sb.toString());
-            sb.setLength(0);
-        }
+        if (sb.length() == 0) return;
+        out.add(sb.toString());
+        sb.setLength(0);
     }
 }

@@ -2,47 +2,43 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.function.DoublePredicate;
+import java.util.function.DoubleUnaryOperator;
 
 public class TaschenrechnerLogik
 {
+    public enum WinkelModus
+    {DEG, RAD}
+
+    private static final String ERROR_TEXT = "Fehler";
+
     private WinkelModus winkelModus = WinkelModus.DEG;
     private boolean gleichGedrueckt = false;
 
     private final StringBuilder verlauf = new StringBuilder();
     private final StringBuilder ausdruck = new StringBuilder();
 
-    public enum WinkelModus
-    {DEG, RAD}
-
     private double memory = 0.0;
     private double ans = 0.0;
 
     public String eingabeZahl(String ziffer)
     {
-        if (gleichGedrueckt)
-        {
-            ausdruck.setLength(0);
-            gleichGedrueckt = false;
-        }
+        resetAfterEqualsIfNeeded();
         ausdruck.append(ziffer);
         return ausdruck.toString();
     }
 
     public String eingabeKomma()
     {
-        if (gleichGedrueckt)
-        {
-            ausdruck.setLength(0);
-            gleichGedrueckt = false;
-        }
+        resetAfterEqualsIfNeeded();
 
         int start = startLetzteZahl();
-        if (!ausdruck.isEmpty() && start < ausdruck.length() && ausdruck.substring(start).contains(","))
+        if (ausdruck.length() > 0 && start < ausdruck.length() && ausdruck.substring(start).contains(","))
         {
             return ausdruck.toString();
         }
 
-        if (ausdruck.isEmpty() || endetMitOperator())
+        if (ausdruck.length() == 0 || endetMitOperatorOderKlammerAuf())
         {
             ausdruck.append("0");
         }
@@ -58,8 +54,7 @@ public class TaschenrechnerLogik
             gleichGedrueckt = false;
         }
 
-        // Wenn gerade keine Zahl aktiv ist (z.B. nach Operator), dann starte negative Zahl
-        if (ausdruck.isEmpty() || endetMitOperator() || ausdruck.charAt(ausdruck.length() - 1) == '(')
+        if (ausdruck.length() == 0 || endetMitOperatorOderKlammerAuf() || lastChar() == '(')
         {
             ausdruck.append("-");
             return ausdruck.toString();
@@ -72,7 +67,6 @@ public class TaschenrechnerLogik
             return ausdruck.toString();
         }
 
-        // Wenn Zahl bereits mit unary '-' startet, entfernen, sonst einfügen
         if (ausdruck.charAt(start) == '-')
         {
             ausdruck.deleteCharAt(start);
@@ -86,16 +80,11 @@ public class TaschenrechnerLogik
 
     public String klammerAuf()
     {
-        if (gleichGedrueckt)
-        {
-            ausdruck.setLength(0);
-            gleichGedrueckt = false;
-        }
+        resetAfterEqualsIfNeeded();
 
-        // implizite Multiplikation: 2(3) => 2*(3)
-        if (!ausdruck.isEmpty())
+        if (ausdruck.length() > 0)
         {
-            char last = ausdruck.charAt(ausdruck.length() - 1);
+            char last = lastChar();
             if (Character.isDigit(last) || last == ')' || last == ',')
             {
                 ausdruck.append("*");
@@ -114,11 +103,11 @@ public class TaschenrechnerLogik
 
     public String loeschen()
     {
-        if (!ausdruck.isEmpty())
+        if (ausdruck.length() > 0)
         {
             ausdruck.deleteCharAt(ausdruck.length() - 1);
         }
-        return ausdruck.isEmpty() ? "0" : ausdruck.toString();
+        return ausdruck.length() == 0 ? "0" : ausdruck.toString();
     }
 
     public String ce()
@@ -141,24 +130,21 @@ public class TaschenrechnerLogik
 
     public String operatorSetzen(String op)
     {
-        // UI-Symbole normalisieren
-        if ("×".equals(op)) op = "*";
-        if ("÷".equals(op)) op = "/";
+        op = normalizeOperator(op);
 
         if (gleichGedrueckt)
         {
             gleichGedrueckt = false;
         }
 
-        // '-' kann auch unary sein (z.B. 5*-3 oder 5--3)
         if ("-".equals(op))
         {
-            if (ausdruck.isEmpty())
+            if (ausdruck.length() == 0)
             {
                 ausdruck.append('-');
                 return ausdruck.toString();
             }
-            char last = ausdruck.charAt(ausdruck.length() - 1);
+            char last = lastChar();
             if (isOperatorChar(last) || last == '(')
             {
                 ausdruck.append('-');
@@ -166,8 +152,8 @@ public class TaschenrechnerLogik
             }
         }
 
-        if (ausdruck.isEmpty()) return ausdruck.toString();
-        if (endetMitOperator()) return ausdruck.toString();
+        if (ausdruck.length() == 0) return ausdruck.toString();
+        if (endetMitOperatorOderKlammerAuf()) return ausdruck.toString();
 
         ausdruck.append(op);
         return ausdruck.toString();
@@ -175,7 +161,7 @@ public class TaschenrechnerLogik
 
     public String potenz()
     {
-        if (ausdruck.isEmpty() || endetMitOperator()) return ausdruck.toString();
+        if (ausdruck.length() == 0 || endetMitOperatorOderKlammerAuf()) return ausdruck.toString();
         gleichGedrueckt = false;
         ausdruck.append("^");
         return ausdruck.toString();
@@ -193,7 +179,6 @@ public class TaschenrechnerLogik
                             ? TaschenrechnerParser.WinkelModus.DEG
                             : TaschenrechnerParser.WinkelModus.RAD
             );
-
 
             if (!Double.isFinite(result)) return fehler();
 
@@ -216,45 +201,72 @@ public class TaschenrechnerLogik
 
     public String prozent()
     {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
-        int start = startLetzteZahl();
-        double wert = letzteZahlAlsDouble() / 100.0;
-        if (!Double.isFinite(wert)) return fehler();
-        ersetzeLetzteZahl(start, wert);
-        return formatDouble(wert);
+        return applyToLastNumber(x -> x / 100.0, x -> true);
     }
 
     public String quadriere()
     {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
-        int start = startLetzteZahl();
-        double wert = letzteZahlAlsDouble();
-        wert = wert * wert;
-        if (!Double.isFinite(wert)) return fehler();
-        ersetzeLetzteZahl(start, wert);
-        return formatDouble(wert);
+        return applyToLastNumber(x -> x * x, x -> true);
     }
 
     public String wurzel()
     {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
-        int start = startLetzteZahl();
-        double wert = letzteZahlAlsDouble();
-        if (wert < 0) return fehler();
-        wert = Math.sqrt(wert);
-        if (!Double.isFinite(wert)) return fehler();
-        ersetzeLetzteZahl(start, wert);
-        return formatDouble(wert);
+        return applyToLastNumber(Math::sqrt, x -> x >= 0);
     }
 
     public String reziprok()
     {
+        return applyToLastNumber(x -> 1.0 / x, x -> x != 0.0);
+    }
+
+    public String zehnHoch()
+    {
+        return applyToLastNumber(x -> Math.pow(10, x), x -> true);
+    }
+
+    public String ln()
+    {
+        return applyToLastNumber(Math::log, x -> x > 0);
+    }
+
+    public String log()
+    {
+        return applyToLastNumber(Math::log10, x -> x > 0);
+    }
+
+    public String sin()
+    {
+        return applyToLastNumber(x -> Math.sin(toRadians(x)), x -> true);
+    }
+
+    public String cos()
+    {
+        return applyToLastNumber(x -> Math.cos(toRadians(x)), x -> true);
+    }
+
+    public String exp()
+    {
+        return applyToLastNumber(Math::exp, x -> true);
+    }
+
+    public String betrag()
+    {
+        return applyToLastNumber(Math::abs, x -> true);
+    }
+
+    public String tan()
+    {
         if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
         int start = startLetzteZahl();
-        double wert = letzteZahlAlsDouble();
-        if (wert == 0) return fehler();
-        wert = 1.0 / wert;
+
+        double input = letzteZahlAlsDouble();
+        double rad = toRadians(input);
+
+        if (Math.abs(Math.cos(rad)) < 1e-12) return fehler();
+
+        double wert = Math.tan(rad);
         if (!Double.isFinite(wert)) return fehler();
+
         ersetzeLetzteZahl(start, wert);
         return formatDouble(wert);
     }
@@ -276,113 +288,13 @@ public class TaschenrechnerLogik
         return String.valueOf(result);
     }
 
-    public String zehnHoch()
-    {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
-        int start = startLetzteZahl();
-        double wert = Math.pow(10, letzteZahlAlsDouble());
-        if (!Double.isFinite(wert)) return fehler();
-        ersetzeLetzteZahl(start, wert);
-        return formatDouble(wert);
-    }
-
-    public String ln()
-    {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
-        int start = startLetzteZahl();
-        double v = letzteZahlAlsDouble();
-        if (v <= 0) return fehler();
-        double wert = Math.log(v);
-        if (!Double.isFinite(wert)) return fehler();
-        ersetzeLetzteZahl(start, wert);
-        return formatDouble(wert);
-    }
-
-    public String log()
-    {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
-        int start = startLetzteZahl();
-        double v = letzteZahlAlsDouble();
-        if (v <= 0) return fehler();
-        double wert = Math.log10(v);
-        if (!Double.isFinite(wert)) return fehler();
-        ersetzeLetzteZahl(start, wert);
-        return formatDouble(wert);
-    }
-
-    public String sin()
-    {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
-        int start = startLetzteZahl();
-        double wert = Math.sin(toRadians(letzteZahlAlsDouble()));
-        if (!Double.isFinite(wert)) return fehler();
-        ersetzeLetzteZahl(start, wert);
-        return formatDouble(wert);
-    }
-
-    public String cos()
-    {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
-        int start = startLetzteZahl();
-        double wert = Math.cos(toRadians(letzteZahlAlsDouble()));
-        if (!Double.isFinite(wert)) return fehler();
-        ersetzeLetzteZahl(start, wert);
-        return formatDouble(wert);
-    }
-
-    public String tan()
-    {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
-        int start = startLetzteZahl();
-
-        double input = letzteZahlAlsDouble();
-        double rad = toRadians(input);
-
-        if (Math.abs(Math.cos(rad)) < 1e-12) return fehler();
-
-        double wert = Math.tan(rad);
-        if (!Double.isFinite(wert)) return fehler();
-
-        ersetzeLetzteZahl(start, wert);
-        return formatDouble(wert);
-    }
-
-    // exp(x) = e^x
-    public String exp()
-    {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
-        int start = startLetzteZahl();
-        double wert = Math.exp(letzteZahlAlsDouble());
-        if (!Double.isFinite(wert)) return fehler();
-        ersetzeLetzteZahl(start, wert);
-        return formatDouble(wert);
-    }
-
-    // |x|
-    public String betrag()
-    {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
-        int start = startLetzteZahl();
-        double wert = Math.abs(letzteZahlAlsDouble());
-        if (!Double.isFinite(wert)) return fehler();
-        ersetzeLetzteZahl(start, wert);
-        return formatDouble(wert);
-    }
-
-    // ========= KONSTANTEN =========
-
     private String konstanteEinsetzen(double wert)
     {
-        if (gleichGedrueckt)
-        {
-            ausdruck.setLength(0);
-            gleichGedrueckt = false;
-        }
+        resetAfterEqualsIfNeeded();
 
-        // implizite Multiplikation
-        if (!ausdruck.isEmpty())
+        if (ausdruck.length() > 0)
         {
-            char last = ausdruck.charAt(ausdruck.length() - 1);
+            char last = lastChar();
             if (Character.isDigit(last) || last == ')' || last == ',')
             {
                 ausdruck.append('*');
@@ -403,8 +315,6 @@ public class TaschenrechnerLogik
         return konstanteEinsetzen(Math.E);
     }
 
-    // ========= WINKELMODUS =========
-
     public void toggleWinkelModus()
     {
         winkelModus = (winkelModus == WinkelModus.DEG) ? WinkelModus.RAD : WinkelModus.DEG;
@@ -414,8 +324,6 @@ public class TaschenrechnerLogik
     {
         return winkelModus;
     }
-
-    // ========= ANZEIGE / FORMAT =========
 
     public String getVerlauf()
     {
@@ -444,7 +352,6 @@ public class TaschenrechnerLogik
 
         String raw = ausdruck.toString();
 
-        // Nur formatieren, wenn es wirklich nur eine Zahl ist (evtl. mit Vorzeichen)
         if (!raw.matches("-?[0-9.,]+"))
         {
             return raw;
@@ -468,8 +375,6 @@ public class TaschenrechnerLogik
 
         return (negativ ? "-" : "") + ganz + dezimal;
     }
-
-    // Speicherung und so
 
     public String ans()
     {
@@ -505,7 +410,8 @@ public class TaschenrechnerLogik
 
         try
         {
-            if (endetMitOperator()) return 0.0;
+            if (endetMitOperatorOderKlammerAuf()) return 0.0;
+
             double v = TaschenrechnerParser.auswerten(
                     ausdruck.toString(),
                     ans,
@@ -515,27 +421,52 @@ public class TaschenrechnerLogik
             );
 
             return Double.isFinite(v) ? v : 0.0;
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             return 0.0;
         }
     }
 
+    private void resetAfterEqualsIfNeeded()
+    {
+        if (!gleichGedrueckt) return;
+        ausdruck.setLength(0);
+        gleichGedrueckt = false;
+    }
+
+    private String applyToLastNumber(DoubleUnaryOperator operation, DoublePredicate isValidInput)
+    {
+        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
+        int start = startLetzteZahl();
+
+        double input = letzteZahlAlsDouble();
+        if (!isValidInput.test(input)) return fehler();
+
+        double value = operation.applyAsDouble(input);
+        if (!Double.isFinite(value)) return fehler();
+
+        ersetzeLetzteZahl(start, value);
+        return formatDouble(value);
+    }
+
     private boolean kannLetzteZahlBearbeiten()
     {
         if (ausdruck.isEmpty()) return false;
-        if (endetMitOperator()) return false;
-        // Wenn Ausdruck mit ')' endet, wissen wir nicht sauber, wo die letzte Zahl ist
-        if (ausdruck.charAt(ausdruck.length() - 1) == ')') return false;
+        if (endetMitOperatorOderKlammerAuf()) return false;
+        if (lastChar() == ')') return false;
         return true;
     }
 
-    private boolean endetMitOperator()
+    private boolean endetMitOperatorOderKlammerAuf()
     {
         if (ausdruck.isEmpty()) return true;
-        char c = ausdruck.charAt(ausdruck.length() - 1);
+        char c = lastChar();
         return isOperatorChar(c) || c == '(';
+    }
+
+    private char lastChar()
+    {
+        return ausdruck.charAt(ausdruck.length() - 1);
     }
 
     private boolean isOperatorChar(char c)
@@ -554,7 +485,6 @@ public class TaschenrechnerLogik
             else break;
         }
 
-        // unary '-' gehört zur Zahl?
         if (i >= 0 && ausdruck.charAt(i) == '-')
         {
             if (i == 0) return 0;
@@ -586,13 +516,11 @@ public class TaschenrechnerLogik
         ausdruck.setLength(0);
         verlauf.setLength(0);
         gleichGedrueckt = true;
-        return "Fehler";
+        return ERROR_TEXT;
     }
-
 
     private String toInternal(double wert)
     {
-        // verhindert wissenschaftliche Notation (E)
         String s = BigDecimal.valueOf(wert).stripTrailingZeros().toPlainString();
         return s.replace('.', ',');
     }
@@ -602,6 +530,13 @@ public class TaschenrechnerLogik
         ausdruck.delete(start, ausdruck.length());
         ausdruck.append(toInternal(wert));
         gleichGedrueckt = false;
+    }
+
+    private String normalizeOperator(String op)
+    {
+        if ("×".equals(op)) return "*";
+        if ("÷".equals(op)) return "/";
+        return op;
     }
 
     public void setAusdruckVonHistoryResult(String resultDisplay)
@@ -617,5 +552,4 @@ public class TaschenrechnerLogik
         ausdruck.append(s);
         gleichGedrueckt = false;
     }
-
 }
