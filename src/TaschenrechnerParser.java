@@ -2,7 +2,8 @@ import java.util.*;
 
 public final class TaschenrechnerParser
 {
-    public enum WinkelModus { DEG, RAD }
+    public enum WinkelModus
+    {DEG, RAD}
 
     private static final String UNARY_MINUS = "u-";
     private static final String OPEN = "(";
@@ -23,7 +24,9 @@ public final class TaschenrechnerParser
             "sin", "cos", "tan", "ln", "log", "sqrt", "abs", "exp"
     );
 
-    private TaschenrechnerParser() {}
+    private TaschenrechnerParser()
+    {
+    }
 
     public static double auswerten(String expr, double ans, WinkelModus winkelModus)
     {
@@ -145,8 +148,7 @@ public final class TaschenrechnerParser
             {
                 tokens.add(t);
                 prev = t;
-            }
-            else
+            } else
             {
                 throw new IllegalArgumentException("Unknown token: " + t);
             }
@@ -169,14 +171,12 @@ public final class TaschenrechnerParser
             if (isNumber(t))
             {
                 out.add(t);
-            }
-            else if (isIdentifier(t))
+            } else if (isIdentifier(t))
             {
                 boolean isFunc = i + 1 < tokens.size() && OPEN.equals(tokens.get(i + 1)) && isFunction(t);
                 if (isFunc) stack.push(t);
                 else out.add(t);
-            }
-            else if (isOperator(t))
+            } else if (isOperator(t))
             {
                 while (!stack.isEmpty() && isOperator(stack.peek()))
                 {
@@ -189,12 +189,10 @@ public final class TaschenrechnerParser
                     out.add(stack.pop());
                 }
                 stack.push(t);
-            }
-            else if (OPEN.equals(t))
+            } else if (OPEN.equals(t))
             {
                 stack.push(t);
-            }
-            else if (CLOSE.equals(t))
+            } else if (CLOSE.equals(t))
             {
                 while (!stack.isEmpty() && !OPEN.equals(stack.peek()))
                 {
@@ -208,8 +206,7 @@ public final class TaschenrechnerParser
                 {
                     out.add(stack.pop());
                 }
-            }
-            else
+            } else
             {
                 throw new IllegalArgumentException("Unknown token: " + t);
             }
@@ -234,8 +231,7 @@ public final class TaschenrechnerParser
             if (isNumber(t))
             {
                 stack.push(Double.parseDouble(t.replace(',', '.')));
-            }
-            else if (isIdentifier(t) && !isFunction(t))
+            } else if (isIdentifier(t) && !isFunction(t))
             {
                 stack.push(switch (t)
                 {
@@ -244,12 +240,10 @@ public final class TaschenrechnerParser
                     case "ans" -> ans;
                     default -> throw new IllegalArgumentException("Unknown identifier: " + t);
                 });
-            }
-            else if (UNARY_MINUS.equals(t))
+            } else if (UNARY_MINUS.equals(t))
             {
                 stack.push(-stack.pop());
-            }
-            else if (isOperator(t))
+            } else if (isOperator(t))
             {
                 double b = stack.pop();
                 double a = stack.pop();
@@ -263,8 +257,7 @@ public final class TaschenrechnerParser
                     case "^" -> Math.pow(a, b);
                     default -> throw new IllegalArgumentException("Unknown operator: " + t);
                 });
-            }
-            else if (isFunction(t))
+            } else if (isFunction(t))
             {
                 double x = stack.pop();
 
@@ -280,7 +273,7 @@ public final class TaschenrechnerParser
                     case "cos" -> Math.cos(trigArg);
                     case "tan" ->
                     {
-                        if(Math.abs(Math.cos(trigArg)) < 1e-12)
+                        if (Math.abs(Math.cos(trigArg)) < 1e-12)
                         {
                             throw new IllegalArgumentException("tan undefined");
                         }
@@ -295,8 +288,7 @@ public final class TaschenrechnerParser
                 };
 
                 stack.push(r);
-            }
-            else
+            } else
             {
                 throw new IllegalArgumentException("Unknown token: " + t);
             }

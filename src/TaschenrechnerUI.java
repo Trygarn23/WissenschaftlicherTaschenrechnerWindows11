@@ -224,13 +224,13 @@ public class TaschenrechnerUI extends JFrame
 
     private void refresh()
     {
-        display.setText(rechner.formatLiveAnzeige());
+        display.setText(rechner.formatiereLiveAnzeige());
         recDisplay.setText(rechner.getVerlauf());
     }
 
     private void refreshWithExtraInfo(String info)
     {
-        display.setText(rechner.formatLiveAnzeige());
+        display.setText(rechner.formatiereLiveAnzeige());
         String v = rechner.getVerlauf();
         recDisplay.setText(info + (v.isEmpty() ? "" : " | " + v));
     }
@@ -261,7 +261,7 @@ public class TaschenrechnerUI extends JFrame
 
         if ("DEG".equals(t) || "RAD".equals(t))
         {
-            rechner.toggleWinkelModus();
+            rechner.winkelModusUmschalten();
             sourceBtn.setText(rechner.getWinkelModus().name());
             refreshWithExtraInfo(rechner.getWinkelModus().name());
             return;
@@ -552,7 +552,7 @@ public class TaschenrechnerUI extends JFrame
                 if (eq < 0) return;
 
                 String resultPart = entry.substring(eq + 1).trim();
-                rechner.setAusdruckVonHistoryResult(resultPart);
+                rechner.setzeAusdruckAusVerlaufErgebnis(resultPart);
                 refresh();
             }
         });
@@ -804,10 +804,10 @@ public class TaschenrechnerUI extends JFrame
         actions.put("exp", () -> { rechner.exp(); refresh(); });
         actions.put("|x|", () -> { rechner.betrag(); refresh(); });
 
-        actions.put("MC", () -> { rechner.memoryClear(); refreshWithExtraInfo("M = 0"); });
-        actions.put("MR", () -> { rechner.memoryRecall(); refresh(); });
-        actions.put("M+", () -> refreshWithExtraInfo("M = " + rechner.memoryAdd()));
-        actions.put("M-", () -> refreshWithExtraInfo("M = " + rechner.memorySub()));
+        actions.put("MC", () -> { rechner.speicherLoeschen(); refreshWithExtraInfo("M = 0"); });
+        actions.put("MR", () -> { rechner.speicherAbrufen(); refresh(); });
+        actions.put("M+", () -> refreshWithExtraInfo("M = " + rechner.speicherAddieren()));
+        actions.put("M-", () -> refreshWithExtraInfo("M = " + rechner.speicherSubtrahieren()));
 
         actions.put("Ans", () -> { rechner.ans(); refresh(); });
     }

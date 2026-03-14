@@ -8,9 +8,11 @@ import java.util.function.DoubleUnaryOperator;
 public class TaschenrechnerLogik
 {
     public enum WinkelModus
-    {DEG, RAD}
+    {
+        DEG, RAD
+    }
 
-    private static final String ERROR_TEXT = "Fehler";
+    private static final String FEHLER_TEXT = "Fehler";
 
     private WinkelModus winkelModus = WinkelModus.DEG;
     private boolean gleichGedrueckt = false;
@@ -18,19 +20,19 @@ public class TaschenrechnerLogik
     private final StringBuilder verlauf = new StringBuilder();
     private final StringBuilder ausdruck = new StringBuilder();
 
-    private double memory = 0.0;
-    private double ans = 0.0;
+    private double speicher = 0.0;
+    private double letzteAntwort = 0.0;
 
     public String eingabeZahl(String ziffer)
     {
-        resetAfterEqualsIfNeeded();
+        resetNachGleichWennNoetig();
         ausdruck.append(ziffer);
         return ausdruck.toString();
     }
 
     public String eingabeKomma()
     {
-        resetAfterEqualsIfNeeded();
+        resetNachGleichWennNoetig();
 
         int start = startLetzteZahl();
         if (ausdruck.length() > 0 && start < ausdruck.length() && ausdruck.substring(start).contains(","))
@@ -38,7 +40,7 @@ public class TaschenrechnerLogik
             return ausdruck.toString();
         }
 
-        if (ausdruck.length() == 0 || endetMitOperatorOderKlammerAuf())
+        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
         {
             ausdruck.append("0");
         }
@@ -54,7 +56,7 @@ public class TaschenrechnerLogik
             gleichGedrueckt = false;
         }
 
-        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf() || lastChar() == '(')
+        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf() || letztesZeichen() == '(')
         {
             ausdruck.append("-");
             return ausdruck.toString();
@@ -80,12 +82,12 @@ public class TaschenrechnerLogik
 
     public String klammerAuf()
     {
-        resetAfterEqualsIfNeeded();
+        resetNachGleichWennNoetig();
 
         if (ausdruck.length() > 0)
         {
-            char last = lastChar();
-            if (Character.isDigit(last) || last == ')' || last == ',')
+            char letztesZeichen = letztesZeichen();
+            if (Character.isDigit(letztesZeichen) || letztesZeichen == ')' || letztesZeichen == ',')
             {
                 ausdruck.append("*");
             }
@@ -97,6 +99,11 @@ public class TaschenrechnerLogik
 
     public String klammerZu()
     {
+        if (!kannKlammerSchliessen())
+        {
+            return ausdruck.isEmpty() ? "0" : ausdruck.toString();
+        }
+
         ausdruck.append(")");
         return ausdruck.toString();
     }
@@ -116,6 +123,7 @@ public class TaschenrechnerLogik
         {
             return allesLoeschen();
         }
+
         ausdruck.setLength(0);
         return "0";
     }
@@ -128,26 +136,27 @@ public class TaschenrechnerLogik
         return "0";
     }
 
-    public String operatorSetzen(String op)
+    public String operatorSetzen(String operator)
     {
-        op = normalizeOperator(op);
+        operator = normalisiereOperator(operator);
 
         if (gleichGedrueckt)
         {
             gleichGedrueckt = false;
         }
 
-        if ("-".equals(op))
+        if ("-".equals(operator))
         {
             if (ausdruck.isEmpty())
             {
-                ausdruck.append('-');
+                ausdruck.append("-");
                 return ausdruck.toString();
             }
-            char last = lastChar();
-            if (isOperatorChar(last) || last == '(')
+
+            char letztesZeichen = letztesZeichen();
+            if (istOperatorZeichen(letztesZeichen) || letztesZeichen == '(')
             {
-                ausdruck.append('-');
+                ausdruck.append("-");
                 return ausdruck.toString();
             }
         }
@@ -155,13 +164,14 @@ public class TaschenrechnerLogik
         if (ausdruck.isEmpty()) return ausdruck.toString();
         if (endetMitOperatorOderKlammerAuf()) return ausdruck.toString();
 
-        ausdruck.append(op);
+        ausdruck.append(operator);
         return ausdruck.toString();
     }
 
     public String potenz()
     {
         if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf()) return ausdruck.toString();
+
         gleichGedrueckt = false;
         ausdruck.append("^");
         return ausdruck.toString();
@@ -172,27 +182,21 @@ public class TaschenrechnerLogik
         try
         {
             String original = ausdruck.toString();
-            double result = TaschenrechnerParser.auswerten(
-                    original,
-                    ans,
-                    winkelModus == WinkelModus.DEG
-                            ? TaschenrechnerParser.WinkelModus.DEG
-                            : TaschenrechnerParser.WinkelModus.RAD
-            );
+            double ergebnis = TaschenrechnerParser.auswerten(original, letzteAntwort, gibParserWinkelModus());
 
-            if (!Double.isFinite(result)) return fehler();
+            if (!Double.isFinite(ergebnis)) return fehler();
 
-            ans = result;
+            letzteAntwort = ergebnis;
 
             ausdruck.setLength(0);
-            ausdruck.append(toInternal(result));
+            ausdruck.append(interneDarstellung(ergebnis));
 
             gleichGedrueckt = true;
 
             verlauf.setLength(0);
-            verlauf.append(original).append(" = ").append(formatDouble(result));
+            verlauf.append(original).append(" = ").append(formatiereZahl(ergebnis));
 
-            return formatDouble(result);
+            return formatiereZahl(ergebnis);
         } catch (Exception e)
         {
             return fehler();
@@ -201,271 +205,83 @@ public class TaschenrechnerLogik
 
     public String prozent()
     {
-        return applyToLastNumber(x -> x / 100.0, x -> true);
+        return wendeAufLetzteZahlAn(x -> x / 100.0, x -> true);
     }
 
     public String quadriere()
     {
-        return letztenTermEinrahmen("(",")^2");
+        return letztenTermEinrahmen("(", ")^2");
     }
 
     public String wurzel()
     {
-        return funktionEinfuegenOderWrappen("sqrt");
+        return funktionEinfuegenOderUmklammern("sqrt");
     }
 
     public String reziprok()
     {
-        return letztenTermEinrahmen("1/(",")");
+        return letztenTermEinrahmen("1/(", ")");
     }
 
     public String zehnHoch()
     {
-        return prefixOperatorEinfuegenOderWrappen("10^(");
+        return praefixOperatorEinfuegenOderUmklammern("10^(");
     }
 
     public String ln()
     {
-        return funktionEinfuegenOderWrappen("ln");
+        return funktionEinfuegenOderUmklammern("ln");
     }
 
     public String log()
     {
-        return funktionEinfuegenOderWrappen("log");
+        return funktionEinfuegenOderUmklammern("log");
     }
 
     public String sin()
     {
-        return funktionEinfuegenOderWrappen("sin");
+        return funktionEinfuegenOderUmklammern("sin");
     }
 
     public String cos()
     {
-        return funktionEinfuegenOderWrappen("cos");
+        return funktionEinfuegenOderUmklammern("cos");
     }
 
     public String exp()
     {
-        return funktionEinfuegenOderWrappen("exp");
+        return funktionEinfuegenOderUmklammern("exp");
     }
 
     public String betrag()
     {
-        return funktionEinfuegenOderWrappen("abs");
+        return funktionEinfuegenOderUmklammern("abs");
     }
 
     public String tan()
     {
-        return funktionEinfuegenOderWrappen("tan");
+        return funktionEinfuegenOderUmklammern("tan");
     }
 
     public String fakultaet()
     {
         if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
+
         int start = startLetzteZahl();
         double wert = letzteZahlAlsDouble();
 
         if (wert < 0 || wert != Math.floor(wert)) return fehler();
 
         long n = (long) wert;
-        long result = 1;
-        for (long i = 2; i <= n; i++) result *= i;
+        long ergebnis = 1;
+        for (long i = 2; i <= n; i++)
+        {
+            ergebnis *= i;
+        }
 
         ausdruck.delete(start, ausdruck.length());
-        ausdruck.append(result);
-        return String.valueOf(result);
-    }
-
-    private String konstanteEinsetzen(double wert)
-    {
-        resetAfterEqualsIfNeeded();
-
-        if (ausdruck.length() > 0)
-        {
-            char last = lastChar();
-            if (Character.isDigit(last) || last == ')' || last == ',')
-            {
-                ausdruck.append('*');
-            }
-        }
-
-        ausdruck.append(toInternal(wert));
-        return ausdruck.toString();
-    }
-
-    private String funktionEinfuegen(String name)
-    {
-        resetAfterEqualsIfNeeded();
-
-        if (ausdruck.length() > 0)
-        {
-            char last = lastChar();
-            if (Character.isDigit(last) || last == ')' || last == ',')
-            {
-                ausdruck.append('*');
-            }
-        }
-
-        ausdruck.append(name).append("(");
-        gleichGedrueckt = false;
-        return ausdruck.toString();
-    }
-
-    private String funktionEinfuegenOderWrappen(String name)
-    {
-        resetAfterEqualsIfNeeded();
-
-        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
-        {
-            ausdruck.append(name).append("(");
-            gleichGedrueckt = false;
-            return ausdruck.toString();
-        }
-
-        int start = startLetzterTerm();
-
-        if (start < 0 || start >= ausdruck.length())
-        {
-            ausdruck.append(name).append("(");
-            gleichGedrueckt = false;
-            return ausdruck.toString();
-        }
-
-        String term = ausdruck.substring(start);
-        ausdruck.delete(start, ausdruck.length());
-        ausdruck.append(name).append("(").append(term).append(")");
-
-        gleichGedrueckt = false;
-        return ausdruck.toString();
-    }
-
-    private int startLetzterTerm()
-    {
-        int i = ausdruck.length() - 1;
-        if (i < 0) return 0;
-
-        char last = ausdruck.charAt(i);
-
-        if (last == ')')
-        {
-            int balance = 1;
-            i--;
-
-            while (i >= 0 && balance > 0)
-            {
-                char c = ausdruck.charAt(i);
-
-                if (c == ')') balance++;
-                else if (c == '(') balance--;
-
-                i--;
-            }
-
-            if (balance != 0) return 0;
-
-            while (i >= 0 && Character.isLetter(ausdruck.charAt(i)))
-            {
-                i--;
-            }
-
-            return includeUnaryMinus(i + 1);
-        }
-
-        if (Character.isDigit(last) || last == ',' || last == '.')
-        {
-            while (i >= 0)
-            {
-                char c = ausdruck.charAt(i);
-
-                if (Character.isDigit(c) || c == ',' || c == '.')
-                {
-                    i--;
-                } else
-                {
-                    break;
-                }
-            }
-
-            return includeUnaryMinus(i + 1);
-        }
-
-        if (Character.isLetter(last))
-        {
-            while (i >= 0 && Character.isLetter(ausdruck.charAt(i)))
-            {
-                i--;
-            }
-
-            return includeUnaryMinus(i + 1);
-        }
-
-        return ausdruck.length();
-    }
-
-    private String letztenTermEinrahmen(String prefix, String suffix)
-    {
-        resetAfterEqualsIfNeeded();
-
-        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
-        {
-            return ausdruck.toString();
-        }
-
-        int start = startLetzterTerm();
-        if (start < 0 || start >= ausdruck.length())
-        {
-            return ausdruck.toString();
-        }
-
-        String term = ausdruck.substring(start);
-        ausdruck.delete(start, ausdruck.length());
-        ausdruck.append(prefix).append(term).append(suffix);
-
-        gleichGedrueckt = false;
-        return ausdruck.toString();
-    }
-
-    private String prefixOperatorEinfuegenOderWrappen(String prefix)
-    {
-        resetAfterEqualsIfNeeded();
-
-        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
-        {
-            ausdruck.append(prefix);
-            gleichGedrueckt = false;
-            return ausdruck.toString();
-        }
-
-        int start = startLetzterTerm();
-        if (start < 0 || start >= ausdruck.length())
-        {
-            ausdruck.append(prefix);
-            gleichGedrueckt = false;
-            return ausdruck.toString();
-        }
-
-        String term = ausdruck.substring(start);
-        ausdruck.delete(start, ausdruck.length());
-        ausdruck.append(prefix).append(term).append(")");
-
-        gleichGedrueckt = false;
-        return ausdruck.toString();
-    }
-
-    private int includeUnaryMinus(int start)
-    {
-        if (start > 0 && ausdruck.charAt(start - 1) == '-')
-        {
-            if (start - 1 == 0) return start - 1;
-
-            char before = ausdruck.charAt(start - 2);
-            if (isOperatorChar(before) || before == '(')
-            {
-                return start - 1;
-            }
-        }
-
-        return start;
+        ausdruck.append(ergebnis);
+        return String.valueOf(ergebnis);
     }
 
     public String pi()
@@ -478,7 +294,7 @@ public class TaschenrechnerLogik
         return konstanteEinsetzen(Math.E);
     }
 
-    public void toggleWinkelModus()
+    public void winkelModusUmschalten()
     {
         winkelModus = (winkelModus == WinkelModus.DEG) ? WinkelModus.RAD : WinkelModus.DEG;
     }
@@ -493,78 +309,267 @@ public class TaschenrechnerLogik
         return verlauf.toString();
     }
 
-    public String formatDouble(double d)
+    public String formatiereZahl(double zahl)
     {
-        DecimalFormatSymbols sym = new DecimalFormatSymbols(Locale.GERMANY);
-        sym.setDecimalSeparator(',');
-        sym.setGroupingSeparator('.');
+        DecimalFormatSymbols symbole = new DecimalFormatSymbols(Locale.GERMANY);
+        symbole.setDecimalSeparator(',');
+        symbole.setGroupingSeparator('.');
 
-        DecimalFormat df = new DecimalFormat("#,###.###########", sym);
-        String num = df.format(d);
+        DecimalFormat format = new DecimalFormat("#,###.###########", symbole);
+        String text = format.format(zahl);
 
-        if (num.contains(",") && num.endsWith(",0"))
+        if (text.contains(",") && text.endsWith(",0"))
         {
-            num = num.substring(0, num.indexOf(","));
+            text = text.substring(0, text.indexOf(","));
         }
-        return num;
+
+        return text;
     }
 
-    public String formatLiveAnzeige()
+    public String formatiereLiveAnzeige()
     {
         if (ausdruck.isEmpty()) return "0";
 
-        String raw = ausdruck.toString();
+        String roh = ausdruck.toString();
 
-        if (!raw.matches("-?[0-9.,]+"))
+        if (!roh.matches("-?[0-9.,]+"))
         {
-            return raw;
+            return roh;
         }
 
-        boolean negativ = raw.startsWith("-");
-        if (negativ) raw = raw.substring(1);
+        boolean negativ = roh.startsWith("-");
+        if (negativ) roh = roh.substring(1);
 
-        String ganz = raw;
-        String dezimal = "";
+        String ganzzahlTeil = roh;
+        String dezimalTeil = "";
 
-        if (raw.contains(","))
+        if (roh.contains(","))
         {
-            String[] parts = raw.split(",", 2);
-            ganz = parts[0];
-            dezimal = "," + parts[1];
+            String[] teile = roh.split(",", 2);
+            ganzzahlTeil = teile[0];
+            dezimalTeil = "," + teile[1];
         }
 
-        ganz = ganz.replace(".", "");
-        ganz = ganz.replaceAll("\\B(?=(\\d{3})+(?!\\d))", ".");
+        ganzzahlTeil = ganzzahlTeil.replace(".", "");
+        ganzzahlTeil = ganzzahlTeil.replaceAll("\\B(?=(\\d{3})+(?!\\d))", ".");
 
-        return (negativ ? "-" : "") + ganz + dezimal;
+        return (negativ ? "-" : "") + ganzzahlTeil + dezimalTeil;
     }
 
     public String ans()
     {
-        return konstanteEinsetzen(ans);
+        return konstanteEinsetzen(letzteAntwort);
     }
 
-    public String memoryClear()
+    public String speicherLoeschen()
     {
-        memory = 0.0;
+        speicher = 0.0;
         return "0";
     }
 
-    public String memoryRecall()
+    public String speicherAbrufen()
     {
-        return konstanteEinsetzen(memory);
+        return konstanteEinsetzen(speicher);
     }
 
-    public String memoryAdd()
+    public String speicherAddieren()
     {
-        memory += aktuellerWertOder0();
-        return formatDouble(memory);
+        speicher += aktuellerWertOder0();
+        return formatiereZahl(speicher);
     }
 
-    public String memorySub()
+    public String speicherSubtrahieren()
     {
-        memory -= aktuellerWertOder0();
-        return formatDouble(memory);
+        speicher -= aktuellerWertOder0();
+        return formatiereZahl(speicher);
+    }
+
+    public void setzeAusdruckAusVerlaufErgebnis(String verlaufErgebnis)
+    {
+        if (verlaufErgebnis == null) return;
+
+        String text = verlaufErgebnis.trim();
+        text = text.replace(" ", "");
+        text = text.replace(".", "");
+        text = text.replace('−', '-').replace('–', '-').replace('—', '-');
+
+        ausdruck.setLength(0);
+        ausdruck.append(text);
+        gleichGedrueckt = false;
+    }
+
+    private String konstanteEinsetzen(double wert)
+    {
+        resetNachGleichWennNoetig();
+
+        if (ausdruck.length() > 0)
+        {
+            char letztesZeichen = letztesZeichen();
+            if (Character.isDigit(letztesZeichen) || letztesZeichen == ')' || letztesZeichen == ',')
+            {
+                ausdruck.append("*");
+            }
+        }
+
+        ausdruck.append(interneDarstellung(wert));
+        return ausdruck.toString();
+    }
+
+    private String funktionEinfuegenOderUmklammern(String funktionsName)
+    {
+        resetNachGleichWennNoetig();
+
+        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
+        {
+            ausdruck.append(funktionsName).append("(");
+            gleichGedrueckt = false;
+            return ausdruck.toString();
+        }
+
+        int start = startLetzterTerm();
+
+        if (start < 0 || start >= ausdruck.length())
+        {
+            ausdruck.append(funktionsName).append("(");
+            gleichGedrueckt = false;
+            return ausdruck.toString();
+        }
+
+        String term = ausdruck.substring(start);
+        ausdruck.delete(start, ausdruck.length());
+        ausdruck.append(funktionsName).append("(").append(term).append(")");
+
+        gleichGedrueckt = false;
+        return ausdruck.toString();
+    }
+
+    private String letztenTermEinrahmen(String praefix, String suffix)
+    {
+        resetNachGleichWennNoetig();
+
+        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
+        {
+            return ausdruck.toString();
+        }
+
+        int start = startLetzterTerm();
+        if (start < 0 || start >= ausdruck.length())
+        {
+            return ausdruck.toString();
+        }
+
+        String term = ausdruck.substring(start);
+        ausdruck.delete(start, ausdruck.length());
+        ausdruck.append(praefix).append(term).append(suffix);
+
+        gleichGedrueckt = false;
+        return ausdruck.toString();
+    }
+
+    private String praefixOperatorEinfuegenOderUmklammern(String praefix)
+    {
+        resetNachGleichWennNoetig();
+
+        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
+        {
+            ausdruck.append(praefix);
+            gleichGedrueckt = false;
+            return ausdruck.toString();
+        }
+
+        int start = startLetzterTerm();
+        if (start < 0 || start >= ausdruck.length())
+        {
+            ausdruck.append(praefix);
+            gleichGedrueckt = false;
+            return ausdruck.toString();
+        }
+
+        String term = ausdruck.substring(start);
+        ausdruck.delete(start, ausdruck.length());
+        ausdruck.append(praefix).append(term).append(")");
+
+        gleichGedrueckt = false;
+        return ausdruck.toString();
+    }
+
+    private int startLetzterTerm()
+    {
+        int i = ausdruck.length() - 1;
+        if (i < 0) return 0;
+
+        char letztesZeichen = ausdruck.charAt(i);
+
+        if (letztesZeichen == ')')
+        {
+            int klammerStand = 1;
+            i--;
+
+            while (i >= 0 && klammerStand > 0)
+            {
+                char zeichen = ausdruck.charAt(i);
+
+                if (zeichen == ')') klammerStand++;
+                else if (zeichen == '(') klammerStand--;
+
+                i--;
+            }
+
+            if (klammerStand != 0) return 0;
+
+            while (i >= 0 && Character.isLetter(ausdruck.charAt(i)))
+            {
+                i--;
+            }
+
+            return bezieheUnaeresMinusEin(i + 1);
+        }
+
+        if (Character.isDigit(letztesZeichen) || letztesZeichen == ',' || letztesZeichen == '.')
+        {
+            while (i >= 0)
+            {
+                char zeichen = ausdruck.charAt(i);
+
+                if (Character.isDigit(zeichen) || zeichen == ',' || zeichen == '.')
+                {
+                    i--;
+                } else
+                {
+                    break;
+                }
+            }
+
+            return bezieheUnaeresMinusEin(i + 1);
+        }
+
+        if (Character.isLetter(letztesZeichen))
+        {
+            while (i >= 0 && Character.isLetter(ausdruck.charAt(i)))
+            {
+                i--;
+            }
+
+            return bezieheUnaeresMinusEin(i + 1);
+        }
+
+        return ausdruck.length();
+    }
+
+    private int bezieheUnaeresMinusEin(int start)
+    {
+        if (start > 0 && ausdruck.charAt(start - 1) == '-')
+        {
+            if (start - 1 == 0) return start - 1;
+
+            char davor = ausdruck.charAt(start - 2);
+            if (istOperatorZeichen(davor) || davor == '(')
+            {
+                return start - 1;
+            }
+        }
+
+        return start;
     }
 
     private double aktuellerWertOder0()
@@ -575,66 +580,91 @@ public class TaschenrechnerLogik
         {
             if (endetMitOperatorOderKlammerAuf()) return 0.0;
 
-            double v = TaschenrechnerParser.auswerten(
-                    ausdruck.toString(),
-                    ans,
-                    winkelModus == WinkelModus.DEG
-                            ? TaschenrechnerParser.WinkelModus.DEG
-                            : TaschenrechnerParser.WinkelModus.RAD
-            );
+            double wert = TaschenrechnerParser.auswerten(ausdruck.toString(), letzteAntwort, gibParserWinkelModus());
 
-            return Double.isFinite(v) ? v : 0.0;
+            return Double.isFinite(wert) ? wert : 0.0;
         } catch (Exception e)
         {
             return 0.0;
         }
     }
 
-    private void resetAfterEqualsIfNeeded()
+    private TaschenrechnerParser.WinkelModus gibParserWinkelModus()
+    {
+        return winkelModus == WinkelModus.DEG ? TaschenrechnerParser.WinkelModus.DEG : TaschenrechnerParser.WinkelModus.RAD;
+    }
+
+    private void resetNachGleichWennNoetig()
     {
         if (!gleichGedrueckt) return;
+
         ausdruck.setLength(0);
         gleichGedrueckt = false;
     }
 
-    private String applyToLastNumber(DoubleUnaryOperator operation, DoublePredicate isValidInput)
+    private String wendeAufLetzteZahlAn(DoubleUnaryOperator operation, DoublePredicate eingabeGueltig)
     {
         if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
+
         int start = startLetzteZahl();
+        double eingabe = letzteZahlAlsDouble();
 
-        double input = letzteZahlAlsDouble();
-        if (!isValidInput.test(input)) return fehler();
+        if (!eingabeGueltig.test(eingabe)) return fehler();
 
-        double value = operation.applyAsDouble(input);
-        if (!Double.isFinite(value)) return fehler();
+        double ergebnis = operation.applyAsDouble(eingabe);
+        if (!Double.isFinite(ergebnis)) return fehler();
 
-        ersetzeLetzteZahl(start, value);
-        return formatDouble(value);
+        ersetzeLetzteZahl(start, ergebnis);
+        return formatiereZahl(ergebnis);
     }
 
     private boolean kannLetzteZahlBearbeiten()
     {
         if (ausdruck.isEmpty()) return false;
         if (endetMitOperatorOderKlammerAuf()) return false;
-        if (lastChar() == ')') return false;
+        if (letztesZeichen() == ')') return false;
         return true;
     }
 
     private boolean endetMitOperatorOderKlammerAuf()
     {
         if (ausdruck.isEmpty()) return true;
-        char c = lastChar();
-        return isOperatorChar(c) || c == '(';
+
+        char zeichen = letztesZeichen();
+        return istOperatorZeichen(zeichen) || zeichen == '(';
     }
 
-    private char lastChar()
+    private boolean kannKlammerSchliessen()
+    {
+        if (ausdruck.isEmpty()) return false;
+        if (zaehleOffeneKlammern() <= 0) return false;
+
+        char zeichen = letztesZeichen();
+        return !istOperatorZeichen(zeichen) && zeichen != '(';
+    }
+
+    private int zaehleOffeneKlammern()
+    {
+        int stand = 0;
+
+        for (int i = 0; i < ausdruck.length(); i++)
+        {
+            char zeichen = ausdruck.charAt(i);
+            if (zeichen == '(') stand++;
+            else if (zeichen == ')') stand--;
+        }
+
+        return stand;
+    }
+
+    private char letztesZeichen()
     {
         return ausdruck.charAt(ausdruck.length() - 1);
     }
 
-    private boolean isOperatorChar(char c)
+    private boolean istOperatorZeichen(char zeichen)
     {
-        return "+-*/^%".indexOf(c) >= 0;
+        return "+-*/^%".indexOf(zeichen) >= 0;
     }
 
     private int startLetzteZahl()
@@ -643,8 +673,8 @@ public class TaschenrechnerLogik
 
         while (i >= 0)
         {
-            char ch = ausdruck.charAt(i);
-            if (Character.isDigit(ch) || ch == ',' || ch == '.') i--;
+            char zeichen = ausdruck.charAt(i);
+            if (Character.isDigit(zeichen) || zeichen == ',' || zeichen == '.') i--;
             else break;
         }
 
@@ -652,8 +682,8 @@ public class TaschenrechnerLogik
         {
             if (i == 0) return 0;
 
-            char before = ausdruck.charAt(i - 1);
-            if (isOperatorChar(before) || before == '(')
+            char davor = ausdruck.charAt(i - 1);
+            if (istOperatorZeichen(davor) || davor == '(')
             {
                 return i;
             }
@@ -669,50 +699,31 @@ public class TaschenrechnerLogik
         return Double.parseDouble(zahl);
     }
 
-    private double toRadians(double wert)
-    {
-        return (winkelModus == WinkelModus.DEG) ? Math.toRadians(wert) : wert;
-    }
-
     private String fehler()
     {
         ausdruck.setLength(0);
         verlauf.setLength(0);
         gleichGedrueckt = true;
-        return ERROR_TEXT;
+        return FEHLER_TEXT;
     }
 
-    private String toInternal(double wert)
+    private String interneDarstellung(double wert)
     {
-        String s = BigDecimal.valueOf(wert).stripTrailingZeros().toPlainString();
-        return s.replace('.', ',');
+        String text = BigDecimal.valueOf(wert).stripTrailingZeros().toPlainString();
+        return text.replace('.', ',');
     }
 
     private void ersetzeLetzteZahl(int start, double wert)
     {
         ausdruck.delete(start, ausdruck.length());
-        ausdruck.append(toInternal(wert));
+        ausdruck.append(interneDarstellung(wert));
         gleichGedrueckt = false;
     }
 
-    private String normalizeOperator(String op)
+    private String normalisiereOperator(String operator)
     {
-        if ("×".equals(op)) return "*";
-        if ("÷".equals(op)) return "/";
-        return op;
-    }
-
-    public void setAusdruckVonHistoryResult(String resultDisplay)
-    {
-        if (resultDisplay == null) return;
-
-        String s = resultDisplay.trim();
-        s = s.replace(" ", "");
-        s = s.replace(".", "");
-        s = s.replace('−', '-').replace('–', '-').replace('—', '-');
-
-        ausdruck.setLength(0);
-        ausdruck.append(s);
-        gleichGedrueckt = false;
+        if ("×".equals(operator)) return "*";
+        if ("÷".equals(operator)) return "/";
+        return operator;
     }
 }
