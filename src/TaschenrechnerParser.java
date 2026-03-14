@@ -111,7 +111,7 @@ public final class TaschenrechnerParser
             }
 
             boolean unaryNumber =
-                    c == '-' && number.length() == 0 &&
+                    c == '-' && number.isEmpty() &&
                             (prev == null || isOperator(prev) || OPEN.equals(prev)) &&
                             i + 1 < expr.length() &&
                             (Character.isDigit(expr.charAt(i + 1)) || expr.charAt(i + 1) == ',');
@@ -119,7 +119,7 @@ public final class TaschenrechnerParser
             if (Character.isDigit(c) || c == ',' || c == '.' || unaryNumber)
             {
                 flush(ident, tokens);
-                if (number.length() == 0 && isValue(prev)) tokens.add(MUL);
+                if (number.isEmpty() && isValue(prev)) tokens.add(MUL);
 
                 number.append(c);
                 prev = null;
@@ -131,7 +131,7 @@ public final class TaschenrechnerParser
 
             String t = String.valueOf(c);
 
-            if (OPEN.equals(t) && isValue(prev)) tokens.add(MUL);
+            if (OPEN.equals(t) && isValue(prev) && !isFunction(prev)) tokens.add(MUL);
 
             if ("-".equals(t) &&
                     (prev == null || isOperator(prev) || OPEN.equals(prev)) &&
@@ -278,7 +278,14 @@ public final class TaschenrechnerParser
                 {
                     case "sin" -> Math.sin(trigArg);
                     case "cos" -> Math.cos(trigArg);
-                    case "tan" -> Math.tan(trigArg);
+                    case "tan" ->
+                    {
+                        if(Math.abs(Math.cos(trigArg)) < 1e-12)
+                        {
+                            throw new IllegalArgumentException("tan undefined");
+                        }
+                        yield Math.tan(trigArg);
+                    }
                     case "ln" -> Math.log(x);
                     case "log" -> Math.log10(x);
                     case "sqrt" -> Math.sqrt(x);
@@ -311,7 +318,7 @@ public final class TaschenrechnerParser
 
     private static void flush(StringBuilder sb, List<String> out)
     {
-        if (sb.length() == 0) return;
+        if (sb.isEmpty()) return;
         out.add(sb.toString());
         sb.setLength(0);
     }

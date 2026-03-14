@@ -54,7 +54,7 @@ public class TaschenrechnerLogik
             gleichGedrueckt = false;
         }
 
-        if (ausdruck.length() == 0 || endetMitOperatorOderKlammerAuf() || lastChar() == '(')
+        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf() || lastChar() == '(')
         {
             ausdruck.append("-");
             return ausdruck.toString();
@@ -107,7 +107,7 @@ public class TaschenrechnerLogik
         {
             ausdruck.deleteCharAt(ausdruck.length() - 1);
         }
-        return ausdruck.length() == 0 ? "0" : ausdruck.toString();
+        return ausdruck.isEmpty() ? "0" : ausdruck.toString();
     }
 
     public String ce()
@@ -139,7 +139,7 @@ public class TaschenrechnerLogik
 
         if ("-".equals(op))
         {
-            if (ausdruck.length() == 0)
+            if (ausdruck.isEmpty())
             {
                 ausdruck.append('-');
                 return ausdruck.toString();
@@ -152,7 +152,7 @@ public class TaschenrechnerLogik
             }
         }
 
-        if (ausdruck.length() == 0) return ausdruck.toString();
+        if (ausdruck.isEmpty()) return ausdruck.toString();
         if (endetMitOperatorOderKlammerAuf()) return ausdruck.toString();
 
         ausdruck.append(op);
@@ -161,7 +161,7 @@ public class TaschenrechnerLogik
 
     public String potenz()
     {
-        if (ausdruck.length() == 0 || endetMitOperatorOderKlammerAuf()) return ausdruck.toString();
+        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf()) return ausdruck.toString();
         gleichGedrueckt = false;
         ausdruck.append("^");
         return ausdruck.toString();
@@ -211,7 +211,7 @@ public class TaschenrechnerLogik
 
     public String wurzel()
     {
-        return applyToLastNumber(Math::sqrt, x -> x >= 0);
+        return funktionEinfuegenOderWrappen("sqrt");
     }
 
     public String reziprok()
@@ -226,49 +226,37 @@ public class TaschenrechnerLogik
 
     public String ln()
     {
-        return applyToLastNumber(Math::log, x -> x > 0);
+        return funktionEinfuegenOderWrappen("ln");
     }
 
     public String log()
     {
-        return applyToLastNumber(Math::log10, x -> x > 0);
+        return funktionEinfuegenOderWrappen("log");
     }
 
     public String sin()
     {
-        return applyToLastNumber(x -> Math.sin(toRadians(x)), x -> true);
+        return funktionEinfuegenOderWrappen("sin");
     }
 
     public String cos()
     {
-        return applyToLastNumber(x -> Math.cos(toRadians(x)), x -> true);
+        return funktionEinfuegenOderWrappen("cos");
     }
 
     public String exp()
     {
-        return applyToLastNumber(Math::exp, x -> true);
+        return funktionEinfuegenOderWrappen("exp");
     }
 
     public String betrag()
     {
-        return applyToLastNumber(Math::abs, x -> true);
+        return funktionEinfuegenOderWrappen("abs");
     }
 
     public String tan()
     {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
-        int start = startLetzteZahl();
-
-        double input = letzteZahlAlsDouble();
-        double rad = toRadians(input);
-
-        if (Math.abs(Math.cos(rad)) < 1e-12) return fehler();
-
-        double wert = Math.tan(rad);
-        if (!Double.isFinite(wert)) return fehler();
-
-        ersetzeLetzteZahl(start, wert);
-        return formatDouble(wert);
+        return funktionEinfuegenOderWrappen("tan");
     }
 
     public String fakultaet()
@@ -303,6 +291,132 @@ public class TaschenrechnerLogik
 
         ausdruck.append(toInternal(wert));
         return ausdruck.toString();
+    }
+
+    private String funktionEinfuegen(String name)
+    {
+        resetAfterEqualsIfNeeded();
+
+        if (ausdruck.length() > 0)
+        {
+            char last = lastChar();
+            if (Character.isDigit(last) || last == ')' || last == ',')
+            {
+                ausdruck.append('*');
+            }
+        }
+
+        ausdruck.append(name).append("(");
+        gleichGedrueckt = false;
+        return ausdruck.toString();
+    }
+
+    private String funktionEinfuegenOderWrappen(String name)
+    {
+        resetAfterEqualsIfNeeded();
+
+        if (ausdruck.length() == 0 || endetMitOperatorOderKlammerAuf())
+        {
+            ausdruck.append(name).append("(");
+            gleichGedrueckt = false;
+            return ausdruck.toString();
+        }
+
+        int start = startLetzterTerm();
+
+        if (start < 0 || start >= ausdruck.length())
+        {
+            ausdruck.append(name).append("(");
+            gleichGedrueckt = false;
+            return ausdruck.toString();
+        }
+
+        String term = ausdruck.substring(start);
+        ausdruck.delete(start, ausdruck.length());
+        ausdruck.append(name).append("(").append(term).append(")");
+
+        gleichGedrueckt = false;
+        return ausdruck.toString();
+    }
+
+    private int startLetzterTerm()
+    {
+        int i = ausdruck.length() - 1;
+        if (i < 0) return 0;
+
+        char last = ausdruck.charAt(i);
+
+        if (last == ')')
+        {
+            int balance = 1;
+            i--;
+
+            while (i >= 0 && balance > 0)
+            {
+                char c = ausdruck.charAt(i);
+
+                if (c == ')') balance++;
+                else if (c == '(') balance--;
+
+                i--;
+            }
+
+            if (balance != 0) return 0;
+
+            while (i >= 0 && Character.isLetter(ausdruck.charAt(i)))
+            {
+                i--;
+            }
+
+            return includeUnaryMinus(i + 1);
+        }
+
+        if (Character.isDigit(last) || last == ',' || last == '.')
+        {
+            while (i >= 0)
+            {
+                char c = ausdruck.charAt(i);
+
+                if (Character.isDigit(c) || c == ',' || c == '.')
+                {
+                    i--;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return includeUnaryMinus(i + 1);
+        }
+
+        if (Character.isLetter(last))
+        {
+            while (i >= 0 && Character.isLetter(ausdruck.charAt(i)))
+            {
+                i--;
+            }
+
+            return includeUnaryMinus(i + 1);
+        }
+
+        return ausdruck.length();
+    }
+
+    private int includeUnaryMinus(int start)
+    {
+        if (start > 0 && ausdruck.charAt(start - 1) == '-')
+        {
+            if (start - 1 == 0) return start - 1;
+
+            char before = ausdruck.charAt(start - 2);
+            if (isOperatorChar(before) || before == '(')
+            {
+                return start - 1;
+            }
+        }
+
+        return start;
     }
 
     public String pi()

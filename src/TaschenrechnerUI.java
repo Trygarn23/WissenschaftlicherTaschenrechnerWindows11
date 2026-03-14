@@ -28,7 +28,7 @@ public class TaschenrechnerUI extends JFrame
             "xʸ", "7", "8", "9", "×",
             "10ˣ", "4", "5", "6", "-",
             "log", "1", "2", "3", "+",
-            "ln", "+/_", "0", ",", "="
+            "ln", "±", "0", ",", "="
     };
 
     private final JTextPane display = new JTextPane();
@@ -130,7 +130,7 @@ public class TaschenrechnerUI extends JFrame
 
         historyScroll.setBorder(null);
         historyScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        historyScroll.setPreferredSize(new Dimension(240, 0));
+        historyScroll.setPreferredSize(new Dimension(200, 0));
 
         clearHistoryBtn.setFocusable(false);
         clearHistoryBtn.addActionListener(e -> clearHistory());
@@ -278,7 +278,7 @@ public class TaschenrechnerUI extends JFrame
 
     private void styleButton(JButton btn, String text)
     {
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 24));
+        btn.setFont(new Font("Segoe UI", Font.PLAIN, 20));
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setOpaque(true);
@@ -771,7 +771,7 @@ public class TaschenrechnerUI extends JFrame
 
         actions.put("=", this::evaluate);
 
-        actions.put("+/_", () -> { rechner.wechselVorzeichen(); refresh(); });
+        actions.put("±", () -> { rechner.wechselVorzeichen(); refresh(); });
 
         actions.put("C",  () -> { rechner.allesLoeschen(); refresh(); });
         actions.put("CE", () -> { rechner.ce(); refresh(); });

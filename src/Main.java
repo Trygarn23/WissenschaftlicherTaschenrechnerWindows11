@@ -1,6 +1,8 @@
 import javax.swing.*;
-
-void main()
+public class Main
 {
-    SwingUtilities.invokeLater(() -> new TaschenrechnerUI().setVisible(true));
+    public static void main(String[] args)
+    {
+        SwingUtilities.invokeLater(() -> new TaschenrechnerUI().setVisible(true));
+    }
 }
