@@ -206,7 +206,7 @@ public class TaschenrechnerLogik
 
     public String quadriere()
     {
-        return applyToLastNumber(x -> x * x, x -> true);
+        return letztenTermEinrahmen("(",")^2");
     }
 
     public String wurzel()
@@ -216,12 +216,12 @@ public class TaschenrechnerLogik
 
     public String reziprok()
     {
-        return applyToLastNumber(x -> 1.0 / x, x -> x != 0.0);
+        return letztenTermEinrahmen("1/(",")^2");
     }
 
     public String zehnHoch()
     {
-        return applyToLastNumber(x -> Math.pow(10, x), x -> true);
+        return prefixOperatorEinfuegenOderWrappen("10^(");
     }
 
     public String ln()
@@ -315,7 +315,7 @@ public class TaschenrechnerLogik
     {
         resetAfterEqualsIfNeeded();
 
-        if (ausdruck.length() == 0 || endetMitOperatorOderKlammerAuf())
+        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
         {
             ausdruck.append(name).append("(");
             gleichGedrueckt = false;
@@ -380,8 +380,7 @@ public class TaschenrechnerLogik
                 if (Character.isDigit(c) || c == ',' || c == '.')
                 {
                     i--;
-                }
-                else
+                } else
                 {
                     break;
                 }
@@ -401,6 +400,56 @@ public class TaschenrechnerLogik
         }
 
         return ausdruck.length();
+    }
+
+    private String letztenTermEinrahmen(String prefix, String suffix)
+    {
+        resetAfterEqualsIfNeeded();
+
+        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
+        {
+            return ausdruck.toString();
+        }
+
+        int start = startLetzterTerm();
+        if (start < 0 || start >= ausdruck.length())
+        {
+            return ausdruck.toString();
+        }
+
+        String term = ausdruck.substring(start);
+        ausdruck.delete(start, ausdruck.length());
+        ausdruck.append(prefix).append(term).append(suffix);
+
+        gleichGedrueckt = false;
+        return ausdruck.toString();
+    }
+
+    private String prefixOperatorEinfuegenOderWrappen(String prefix)
+    {
+        resetAfterEqualsIfNeeded();
+
+        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
+        {
+            ausdruck.append(prefix);
+            gleichGedrueckt = false;
+            return ausdruck.toString();
+        }
+
+        int start = startLetzterTerm();
+        if (start < 0 || start >= ausdruck.length())
+        {
+            ausdruck.append(prefix);
+            gleichGedrueckt = false;
+            return ausdruck.toString();
+        }
+
+        String term = ausdruck.substring(start);
+        ausdruck.delete(start, ausdruck.length());
+        ausdruck.append(prefix).append(term).append(")");
+
+        gleichGedrueckt = false;
+        return ausdruck.toString();
     }
 
     private int includeUnaryMinus(int start)
