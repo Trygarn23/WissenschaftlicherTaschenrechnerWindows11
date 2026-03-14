@@ -216,7 +216,7 @@ public class TaschenrechnerLogik
 
     public String reziprok()
     {
-        return letztenTermEinrahmen("1/(",")^2");
+        return letztenTermEinrahmen("1/(",")");
     }
 
     public String zehnHoch()
