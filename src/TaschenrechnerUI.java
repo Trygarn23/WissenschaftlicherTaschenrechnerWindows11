@@ -10,6 +10,14 @@ import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TaschenrechnerUI extends JFrame
 {
@@ -20,6 +28,9 @@ public class TaschenrechnerUI extends JFrame
     private static final Color PLACEHOLDER_FG = new Color(140, 140, 140);
 
     private static final String[] BUTTONS = {
+            "asin", "acos", "atan", "sinh", "cosh",
+            "tanh", "floor", "ceil", "round", "rand",
+
             "MC", "MR", "M+", "M-", "Ans",
             "DEG", "π", "e", "CE", "C",
             "sin", "cos", "tan", "←", "Dark",
@@ -31,9 +42,12 @@ public class TaschenrechnerUI extends JFrame
             "ln", "±", "0", ",", "="
     };
 
+    private static final Path HISTORY_FILE =
+            Paths.get(System.getProperty("user.home"), ".wissenschaftlicher_taschenrechner_history.txt");
+
     private final JTextPane display = new JTextPane();
     private final JTextPane recDisplay = new JTextPane();
-    private final JPanel buttonPanel = new JPanel(new GridLayout(9, 5, 6, 6));
+    private final JPanel buttonPanel = new JPanel(new GridLayout(11, 5, 6, 6));
 
     private boolean darkMode = true;
 
@@ -65,6 +79,7 @@ public class TaschenrechnerUI extends JFrame
         setupKeyboard();
         setupHistorySearch();
         setupHistoryInteractions();
+        ladeVerlauf();
         setupSearchFieldKeyForwarding();
 
         refresh();
@@ -212,6 +227,7 @@ public class TaschenrechnerUI extends JFrame
         allHistoryModel.clear();
         historyModel.clear();
         historySearchField.setText("");
+        speichereVerlauf();
     }
 
     private void alignRight(JTextPane pane)
@@ -278,7 +294,7 @@ public class TaschenrechnerUI extends JFrame
 
     private void styleButton(JButton btn, String text)
     {
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 20));
+        btn.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setOpaque(true);
@@ -290,25 +306,20 @@ public class TaschenrechnerUI extends JFrame
         if (text.matches("\\d"))
         {
             baseColor = new Color(45, 45, 45);
-        }
-        else if ("+-×÷".contains(text))
+        } else if ("+-×÷".contains(text))
         {
             baseColor = new Color(173, 41, 99);
             textColor = Color.BLACK;
-        }
-        else if (text.equals("C") || text.equals("CE") || text.equals("←"))
+        } else if (text.equals("C") || text.equals("CE") || text.equals("←"))
         {
             baseColor = new Color(100, 60, 60);
-        }
-        else if (text.equals("Dark") || text.equals("Light"))
+        } else if (text.equals("Dark") || text.equals("Light"))
         {
             baseColor = new Color(70, 70, 120);
-        }
-        else if (text.equals("DEG") || text.equals("RAD"))
+        } else if (text.equals("DEG") || text.equals("RAD"))
         {
             baseColor = new Color(80, 100, 140);
-        }
-        else
+        } else
         {
             baseColor = new Color(60, 60, 60);
         }
@@ -441,8 +452,7 @@ public class TaschenrechnerUI extends JFrame
         if (SEARCH_PLACEHOLDER.equals(historySearchField.getText()))
         {
             historySearchField.setForeground(PLACEHOLDER_FG);
-        }
-        else
+        } else
         {
             historySearchField.setForeground(fg);
         }
@@ -478,19 +488,46 @@ public class TaschenrechnerUI extends JFrame
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, 0), "periodVK", commaAction);
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_DECIMAL, 0), "decimalVK", commaAction);
 
-        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0), "plusPad", () -> { rechner.operatorSetzen("+"); refresh(); });
-        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, 0), "plusVK", () -> { rechner.operatorSetzen("+"); refresh(); });
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0), "plusPad", () -> {
+            rechner.operatorSetzen("+");
+            refresh();
+        });
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, 0), "plusVK", () -> {
+            rechner.operatorSetzen("+");
+            refresh();
+        });
 
-        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, 0), "minusPad", () -> { rechner.operatorSetzen("-"); refresh(); });
-        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "minusVK", () -> { rechner.operatorSetzen("-"); refresh(); });
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, 0), "minusPad", () -> {
+            rechner.operatorSetzen("-");
+            refresh();
+        });
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "minusVK", () -> {
+            rechner.operatorSetzen("-");
+            refresh();
+        });
 
-        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_MULTIPLY, 0), "mulPad", () -> { rechner.operatorSetzen("*"); refresh(); });
-        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ASTERISK, 0), "mulVK", () -> { rechner.operatorSetzen("*"); refresh(); });
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_MULTIPLY, 0), "mulPad", () -> {
+            rechner.operatorSetzen("*");
+            refresh();
+        });
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ASTERISK, 0), "mulVK", () -> {
+            rechner.operatorSetzen("*");
+            refresh();
+        });
 
-        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_DIVIDE, 0), "divPad", () -> { rechner.operatorSetzen("/"); refresh(); });
-        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, 0), "divVK", () -> { rechner.operatorSetzen("/"); refresh(); });
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_DIVIDE, 0), "divPad", () -> {
+            rechner.operatorSetzen("/");
+            refresh();
+        });
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, 0), "divVK", () -> {
+            rechner.operatorSetzen("/");
+            refresh();
+        });
 
-        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_P, 0), "modVK", () -> { rechner.operatorSetzen("%"); refresh(); });
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_P, 0), "modVK", () -> {
+            rechner.operatorSetzen("%");
+            refresh();
+        });
 
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enterMain", this::evaluate);
 
@@ -526,9 +563,23 @@ public class TaschenrechnerUI extends JFrame
     {
         historySearchField.getDocument().addDocumentListener(new DocumentListener()
         {
-            @Override public void insertUpdate(DocumentEvent e) { applyHistoryFilter(); }
-            @Override public void removeUpdate(DocumentEvent e) { applyHistoryFilter(); }
-            @Override public void changedUpdate(DocumentEvent e) { applyHistoryFilter(); }
+            @Override
+            public void insertUpdate(DocumentEvent e)
+            {
+                applyHistoryFilter();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e)
+            {
+                applyHistoryFilter();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e)
+            {
+                applyHistoryFilter();
+            }
         });
     }
 
@@ -597,6 +648,7 @@ public class TaschenrechnerUI extends JFrame
             int last = historyModel.size() - 1;
             if (last >= 0) historyList.ensureIndexIsVisible(last);
         }
+        speichereVerlauf();
     }
 
     private class HistoryHighlightRenderer extends DefaultListCellRenderer
@@ -626,8 +678,7 @@ public class TaschenrechnerUI extends JFrame
                 );
 
                 lbl.setText("<html><div style='white-space:nowrap;'>" + highlighted + "</div></html>");
-            }
-            else
+            } else
             {
                 lbl.setText(text);
             }
@@ -641,8 +692,7 @@ public class TaschenrechnerUI extends JFrame
             {
                 lbl.setBackground(helleColor(bg, 30));
                 lbl.setForeground(fg);
-            }
-            else
+            } else
             {
                 lbl.setBackground(bg);
                 lbl.setForeground(fg);
@@ -747,6 +797,49 @@ public class TaschenrechnerUI extends JFrame
         });
     }
 
+    private void ladeVerlauf()
+    {
+        try
+        {
+            if (!Files.exists(HISTORY_FILE)) return;
+
+            List<String> zeilen = Files.readAllLines(HISTORY_FILE, StandardCharsets.UTF_8);
+            for (String zeile : zeilen)
+            {
+                if (zeile == null || zeile.isBlank()) continue;
+                allHistoryModel.addElement(zeile);
+            }
+
+            applyHistoryFilter();
+        }
+        catch (IOException ignored)
+        {
+        }
+    }
+
+    private void speichereVerlauf()
+    {
+        List<String> zeilen = new ArrayList<>();
+        for (int i = 0; i < allHistoryModel.size(); i++)
+        {
+            zeilen.add(allHistoryModel.getElementAt(i));
+        }
+
+        try
+        {
+            Files.write(
+                    HISTORY_FILE,
+                    zeilen,
+                    StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING
+            );
+        }
+        catch (IOException ignored)
+        {
+        }
+    }
+
     private boolean keyboardBlockedBySearch()
     {
         return historySearchField.isFocusOwner();
@@ -762,53 +855,187 @@ public class TaschenrechnerUI extends JFrame
 
     private void initActions()
     {
-        actions.put(",", () -> { rechner.eingabeKomma(); refresh(); });
+        actions.put(",", () -> {
+            rechner.eingabeKomma();
+            refresh();
+        });
 
-        actions.put("+", () -> { rechner.operatorSetzen("+"); refresh(); });
-        actions.put("-", () -> { rechner.operatorSetzen("-"); refresh(); });
-        actions.put("×", () -> { rechner.operatorSetzen("×"); refresh(); });
-        actions.put("÷", () -> { rechner.operatorSetzen("÷"); refresh(); });
+        actions.put("+", () -> {
+            rechner.operatorSetzen("+");
+            refresh();
+        });
+        actions.put("-", () -> {
+            rechner.operatorSetzen("-");
+            refresh();
+        });
+        actions.put("×", () -> {
+            rechner.operatorSetzen("×");
+            refresh();
+        });
+        actions.put("÷", () -> {
+            rechner.operatorSetzen("÷");
+            refresh();
+        });
 
         actions.put("=", this::evaluate);
 
-        actions.put("±", () -> { rechner.wechselVorzeichen(); refresh(); });
+        actions.put("±", () -> {
+            rechner.wechselVorzeichen();
+            refresh();
+        });
 
-        actions.put("C",  () -> { rechner.allesLoeschen(); refresh(); });
-        actions.put("CE", () -> { rechner.ce(); refresh(); });
-        actions.put("←",  () -> { rechner.loeschen(); refresh(); });
+        actions.put("C", () -> {
+            rechner.allesLoeschen();
+            refresh();
+        });
+        actions.put("CE", () -> {
+            rechner.ce();
+            refresh();
+        });
+        actions.put("←", () -> {
+            rechner.loeschen();
+            refresh();
+        });
 
-        actions.put("mod", () -> { rechner.operatorSetzen("%"); refresh(); });
+        actions.put("mod", () -> {
+            rechner.operatorSetzen("%");
+            refresh();
+        });
 
-        actions.put("x²", () -> { rechner.quadriere(); refresh(); });
-        actions.put("√x", () -> { rechner.wurzel(); refresh(); });
-        actions.put("1/x", () -> { rechner.reziprok(); refresh(); });
+        actions.put("x²", () -> {
+            rechner.quadriere();
+            refresh();
+        });
+        actions.put("√x", () -> {
+            rechner.wurzel();
+            refresh();
+        });
+        actions.put("1/x", () -> {
+            rechner.reziprok();
+            refresh();
+        });
 
-        actions.put("(", () -> { rechner.klammerAuf(); refresh(); });
-        actions.put(")", () -> { rechner.klammerZu(); refresh(); });
+        actions.put("(", () -> {
+            rechner.klammerAuf();
+            refresh();
+        });
+        actions.put(")", () -> {
+            rechner.klammerZu();
+            refresh();
+        });
 
-        actions.put("n!", () -> { rechner.fakultaet(); refresh(); });
+        actions.put("n!", () -> {
+            rechner.fakultaet();
+            refresh();
+        });
 
-        actions.put("10ˣ", () -> { rechner.zehnHoch(); refresh(); });
-        actions.put("xʸ",  () -> { rechner.potenz(); refresh(); });
+        actions.put("10ˣ", () -> {
+            rechner.zehnHoch();
+            refresh();
+        });
+        actions.put("xʸ", () -> {
+            rechner.potenz();
+            refresh();
+        });
 
-        actions.put("ln",  () -> { rechner.ln(); refresh(); });
-        actions.put("log", () -> { rechner.log(); refresh(); });
+        actions.put("ln", () -> {
+            rechner.ln();
+            refresh();
+        });
+        actions.put("log", () -> {
+            rechner.log();
+            refresh();
+        });
 
-        actions.put("sin", () -> { rechner.sin(); refresh(); });
-        actions.put("cos", () -> { rechner.cos(); refresh(); });
-        actions.put("tan", () -> { rechner.tan(); refresh(); });
+        actions.put("sin", () -> {
+            rechner.sin();
+            refresh();
+        });
+        actions.put("cos", () -> {
+            rechner.cos();
+            refresh();
+        });
+        actions.put("tan", () -> {
+            rechner.tan();
+            refresh();
+        });
 
-        actions.put("π", () -> { rechner.pi(); refresh(); });
-        actions.put("e", () -> { rechner.e(); refresh(); });
+        actions.put("π", () -> {
+            rechner.pi();
+            refresh();
+        });
+        actions.put("e", () -> {
+            rechner.e();
+            refresh();
+        });
 
-        actions.put("exp", () -> { rechner.exp(); refresh(); });
-        actions.put("|x|", () -> { rechner.betrag(); refresh(); });
+        actions.put("exp", () -> {
+            rechner.exp();
+            refresh();
+        });
+        actions.put("|x|", () -> {
+            rechner.betrag();
+            refresh();
+        });
 
-        actions.put("MC", () -> { rechner.speicherLoeschen(); refreshWithExtraInfo("M = 0"); });
-        actions.put("MR", () -> { rechner.speicherAbrufen(); refresh(); });
+        actions.put("MC", () -> {
+            rechner.speicherLoeschen();
+            refreshWithExtraInfo("M = 0");
+        });
+        actions.put("MR", () -> {
+            rechner.speicherAbrufen();
+            refresh();
+        });
         actions.put("M+", () -> refreshWithExtraInfo("M = " + rechner.speicherAddieren()));
         actions.put("M-", () -> refreshWithExtraInfo("M = " + rechner.speicherSubtrahieren()));
 
-        actions.put("Ans", () -> { rechner.ans(); refresh(); });
+        actions.put("Ans", () -> {
+            rechner.ans();
+            refresh();
+        });
+
+        actions.put("asin", () -> {
+            rechner.arcsin();
+            refresh();
+        });
+        actions.put("acos", () -> {
+            rechner.arccos();
+            refresh();
+        });
+        actions.put("atan", () -> {
+            rechner.arctan();
+            refresh();
+        });
+
+        actions.put("sinh", () -> {
+            rechner.sinusHyperbolicus();
+            refresh();
+        });
+        actions.put("cosh", () -> {
+            rechner.cosinusHyperbolicus();
+            refresh();
+        });
+        actions.put("tanh", () -> {
+            rechner.tangensHyperbolicus();
+            refresh();
+        });
+
+        actions.put("floor", () -> {
+            rechner.abrunden();
+            refresh();
+        });
+        actions.put("ceil", () -> {
+            rechner.aufrunden();
+            refresh();
+        });
+        actions.put("round", () -> {
+            rechner.runden();
+            refresh();
+        });
+
+        actions.put("rand", () -> {
+            rechner.zufall();
+            refresh();
+        });
     }
 }

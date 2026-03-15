@@ -4,6 +4,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
+import java.math.BigInteger;
 
 public class TaschenrechnerLogik
 {
@@ -263,6 +264,56 @@ public class TaschenrechnerLogik
         return funktionEinfuegenOderUmklammern("tan");
     }
 
+    public String arcsin()
+    {
+        return funktionEinfuegenOderUmklammern("asin");
+    }
+
+    public String arccos()
+    {
+        return funktionEinfuegenOderUmklammern("acos");
+    }
+
+    public String arctan()
+    {
+        return funktionEinfuegenOderUmklammern("atan");
+    }
+
+    public String sinusHyperbolicus()
+    {
+        return funktionEinfuegenOderUmklammern("sinh");
+    }
+
+    public String cosinusHyperbolicus()
+    {
+        return funktionEinfuegenOderUmklammern("cosh");
+    }
+
+    public String tangensHyperbolicus()
+    {
+        return funktionEinfuegenOderUmklammern("tanh");
+    }
+
+    public String abrunden()
+    {
+        return funktionEinfuegenOderUmklammern("floor");
+    }
+
+    public String aufrunden()
+    {
+        return funktionEinfuegenOderUmklammern("ceil");
+    }
+
+    public String runden()
+    {
+        return funktionEinfuegenOderUmklammern("round");
+    }
+
+    public String zufall()
+    {
+        return funktionOhneArgumenteEinfuegen("rand");
+    }
+
     public String fakultaet()
     {
         if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
@@ -272,16 +323,24 @@ public class TaschenrechnerLogik
 
         if (wert < 0 || wert != Math.floor(wert)) return fehler();
 
-        long n = (long) wert;
-        long ergebnis = 1;
-        for (long i = 2; i <= n; i++)
+        int n = (int) wert;
+
+        if (n > 5000)
         {
-            ergebnis *= i;
+            return fehler();
+        }
+
+        BigInteger ergebnis = BigInteger.ONE;
+        for (int i = 2; i <= n; i++)
+        {
+            ergebnis = ergebnis.multiply(BigInteger.valueOf(i));
         }
 
         ausdruck.delete(start, ausdruck.length());
         ausdruck.append(ergebnis);
-        return String.valueOf(ergebnis);
+        gleichGedrueckt = false;
+
+        return ergebnis.toString();
     }
 
     public String pi()
@@ -439,6 +498,24 @@ public class TaschenrechnerLogik
         ausdruck.delete(start, ausdruck.length());
         ausdruck.append(funktionsName).append("(").append(term).append(")");
 
+        gleichGedrueckt = false;
+        return ausdruck.toString();
+    }
+
+    private String funktionOhneArgumenteEinfuegen(String funktionsName)
+    {
+        resetNachGleichWennNoetig();
+
+        if (ausdruck.length() > 0)
+        {
+            char letztesZeichen = letztesZeichen();
+            if (Character.isDigit(letztesZeichen) || letztesZeichen == ')' || letztesZeichen == ',')
+            {
+                ausdruck.append("*");
+            }
+        }
+
+        ausdruck.append(funktionsName).append("()");
         gleichGedrueckt = false;
         return ausdruck.toString();
     }

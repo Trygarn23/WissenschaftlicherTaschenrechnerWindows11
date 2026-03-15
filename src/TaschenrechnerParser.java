@@ -21,7 +21,12 @@ public final class TaschenrechnerParser
     );
 
     private static final Set<String> FUNCTIONS = Set.of(
-            "sin", "cos", "tan", "ln", "log", "sqrt", "abs", "exp"
+            "sin", "cos", "tan",
+            "asin", "acos", "atan",
+            "sinh", "cosh", "tanh",
+            "ln", "log", "sqrt", "abs", "exp",
+            "floor", "ceil", "round",
+            "rand"
     );
 
     private TaschenrechnerParser()
@@ -257,38 +262,79 @@ public final class TaschenrechnerParser
                     case "^" -> Math.pow(a, b);
                     default -> throw new IllegalArgumentException("Unknown operator: " + t);
                 });
-            } else if (isFunction(t))
+            }
+            else if (isFunction(t))
             {
-                double x = stack.pop();
+                double r;
 
-                double trigArg = x;
-                if (mode == WinkelModus.DEG && ("sin".equals(t) || "cos".equals(t) || "tan".equals(t)))
+                if ("rand".equals(t))
                 {
-                    trigArg = Math.toRadians(x);
+                    r = Math.random();
+                }
+                else
+                {
+                    double x = stack.pop();
+
+                    double trigArg = x;
+                    if (mode == WinkelModus.DEG && ("sin".equals(t) || "cos".equals(t) || "tan".equals(t)))
+                    {
+                        trigArg = Math.toRadians(x);
+                    }
+
+                    r = switch (t)
+                    {
+                        case "sin" -> Math.sin(trigArg);
+                        case "cos" -> Math.cos(trigArg);
+                        case "tan" ->
+                        {
+                            if (Math.abs(Math.cos(trigArg)) < 1e-12)
+                            {
+                                throw new IllegalArgumentException("tan undefined");
+                            }
+                            yield Math.tan(trigArg);
+                        }
+
+                        case "asin" ->
+                        {
+                            double wert = Math.asin(x);
+                            yield mode == WinkelModus.DEG ? Math.toDegrees(wert) : wert;
+                        }
+                        case "acos" ->
+                        {
+                            double wert = Math.acos(x);
+                            yield mode == WinkelModus.DEG ? Math.toDegrees(wert) : wert;
+                        }
+                        case "atan" ->
+                        {
+                            double wert = Math.atan(x);
+                            yield mode == WinkelModus.DEG ? Math.toDegrees(wert) : wert;
+                        }
+
+                        case "sinh" -> Math.sinh(x);
+                        case "cosh" -> Math.cosh(x);
+                        case "tanh" -> Math.tanh(x);
+
+                        case "ln" -> Math.log(x);
+                        case "log" -> Math.log10(x);
+                        case "sqrt" -> Math.sqrt(x);
+                        case "abs" -> Math.abs(x);
+                        case "exp" -> Math.exp(x);
+
+                        case "floor" -> Math.floor(x);
+                        case "ceil" -> Math.ceil(x);
+                        case "round" -> (double) Math.round(x);
+
+                        default -> throw new IllegalArgumentException("Unknown function: " + t);
+                    };
                 }
 
-                double r = switch (t)
+                if (!Double.isFinite(r))
                 {
-                    case "sin" -> Math.sin(trigArg);
-                    case "cos" -> Math.cos(trigArg);
-                    case "tan" ->
-                    {
-                        if (Math.abs(Math.cos(trigArg)) < 1e-12)
-                        {
-                            throw new IllegalArgumentException("tan undefined");
-                        }
-                        yield Math.tan(trigArg);
-                    }
-                    case "ln" -> Math.log(x);
-                    case "log" -> Math.log10(x);
-                    case "sqrt" -> Math.sqrt(x);
-                    case "abs" -> Math.abs(x);
-                    case "exp" -> Math.exp(x);
-                    default -> throw new IllegalArgumentException("Unknown function: " + t);
-                };
+                    throw new IllegalArgumentException("Invalid function result: " + t);
+                }
 
                 stack.push(r);
-            } else
+            }else
             {
                 throw new IllegalArgumentException("Unknown token: " + t);
             }
