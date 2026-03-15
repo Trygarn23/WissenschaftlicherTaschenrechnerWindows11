@@ -1,7 +1,3 @@
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.math.BigInteger;
@@ -20,6 +16,8 @@ public class TaschenrechnerLogik
 
     private final StringBuilder verlauf = new StringBuilder();
     private final StringBuilder ausdruck = new StringBuilder();
+
+    private final ZahlenFormatierer zahlenFormatierer = new ZahlenFormatierer();
 
     private double speicher = 0.0;
     private double letzteAntwort = 0.0;
@@ -370,49 +368,12 @@ public class TaschenrechnerLogik
 
     public String formatiereZahl(double zahl)
     {
-        DecimalFormatSymbols symbole = new DecimalFormatSymbols(Locale.GERMANY);
-        symbole.setDecimalSeparator(',');
-        symbole.setGroupingSeparator('.');
-
-        DecimalFormat format = new DecimalFormat("#,###.###########", symbole);
-        String text = format.format(zahl);
-
-        if (text.contains(",") && text.endsWith(",0"))
-        {
-            text = text.substring(0, text.indexOf(","));
-        }
-
-        return text;
+        return zahlenFormatierer.formatiereZahl(zahl);
     }
 
     public String formatiereLiveAnzeige()
     {
-        if (ausdruck.isEmpty()) return "0";
-
-        String roh = ausdruck.toString();
-
-        if (!roh.matches("-?[0-9.,]+"))
-        {
-            return roh;
-        }
-
-        boolean negativ = roh.startsWith("-");
-        if (negativ) roh = roh.substring(1);
-
-        String ganzzahlTeil = roh;
-        String dezimalTeil = "";
-
-        if (roh.contains(","))
-        {
-            String[] teile = roh.split(",", 2);
-            ganzzahlTeil = teile[0];
-            dezimalTeil = "," + teile[1];
-        }
-
-        ganzzahlTeil = ganzzahlTeil.replace(".", "");
-        ganzzahlTeil = ganzzahlTeil.replaceAll("\\B(?=(\\d{3})+(?!\\d))", ".");
-
-        return (negativ ? "-" : "") + ganzzahlTeil + dezimalTeil;
+        return zahlenFormatierer.formatiereLiveAnzeige(ausdruck.toString());
     }
 
     public String ans()
@@ -786,8 +747,7 @@ public class TaschenrechnerLogik
 
     private String interneDarstellung(double wert)
     {
-        String text = BigDecimal.valueOf(wert).stripTrailingZeros().toPlainString();
-        return text.replace('.', ',');
+        return zahlenFormatierer.interneDarstellung(wert);
     }
 
     private void ersetzeLetzteZahl(int start, double wert)
