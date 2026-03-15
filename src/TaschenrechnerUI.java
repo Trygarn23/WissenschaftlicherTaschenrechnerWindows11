@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.EnumMap;
 
 public class TaschenrechnerUI extends JFrame
 {
@@ -25,7 +26,21 @@ public class TaschenrechnerUI extends JFrame
 
     private final ThemeManager themeManager = new ThemeManager();
 
-    private static final String[] BUTTONS = {
+    private enum Modus
+    {
+        STANDARD, WISSENSCHAFTLICH, PROGRAMMIERER, GRAPH, KOMPLEX
+    }
+
+    private static final String[] STANDARD_BUTTONS = {
+            "%", "CE", "C", "←",
+            "1/x", "x²", "√x", "÷",
+            "7", "8", "9", "×",
+            "4", "5", "6", "-",
+            "1", "2", "3", "+",
+            "±", "0", ",", "=",
+    };
+
+    private static final String[] WISSENSCHAFTLICH_BUTTONS = {
             "asin", "acos", "atan", "sinh", "cosh",
             "tanh", "floor", "ceil", "round", "rand",
 
@@ -40,12 +55,22 @@ public class TaschenrechnerUI extends JFrame
             "ln", "±", "0", ",", "="
     };
 
+    private static final Color MODE_BAR_BG = new Color(18, 22, 30);
+    private static final Color MODE_ACTIVE_BG = new Color(0, 145, 210);
+    private static final Color MODE_INACTIVE_BG = new Color(34, 39, 52);
+    private static final Color MODE_BORDER = new Color(58, 66, 84);
+
+    private final CardLayout modusLayout = new CardLayout();
+    private final JPanel modusKarten = new JPanel(modusLayout);
+    private final Map<Modus, JButton> modusButtons = new EnumMap<>(Modus.class);
+    private final Map<Modus, JPanel> modusButtonPanels = new EnumMap<>(Modus.class);
+
+    private Modus aktuellerModus = Modus.STANDARD;
     private static final Path HISTORY_FILE =
             Paths.get(System.getProperty("user.home"), ".wissenschaftlicher_taschenrechner_history.txt");
 
     private final JTextPane display = new JTextPane();
     private final JTextPane recDisplay = new JTextPane();
-    private final JPanel buttonPanel = new JPanel(new GridLayout(11, 5, 6, 6));
 
     private boolean darkMode = true;
 
@@ -66,14 +91,14 @@ public class TaschenrechnerUI extends JFrame
 
         JPanel contentPane = new JPanel(new BorderLayout(10, 10));
         contentPane.setBackground(ThemeManager.DARK_BG);
-        contentPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+        contentPane.setBorder(new EmptyBorder(14, 14, 14, 14));
         setContentPane(contentPane);
 
-        contentPane.add(buildTopPanel(), BorderLayout.NORTH);
-        contentPane.add(buildCenterPanel(), BorderLayout.CENTER);
-
         initActions();
-        buildButtons();
+
+        contentPane.add(buildModeBar(), BorderLayout.NORTH);
+        contentPane.add(buildMainContent(), BorderLayout.CENTER);
+
         setupKeyboard();
         setupHistorySearch();
         setupHistoryInteractions();
@@ -97,9 +122,155 @@ public class TaschenrechnerUI extends JFrame
     {
         setTitle("Taschenrechner");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(700, 850);
+        setSize(980, 900);
         setLocationRelativeTo(null);
-        setMinimumSize(new Dimension(550, 650));
+        setMinimumSize(new Dimension(820, 720));
+    }
+
+    private JPanel buildModeBar()
+    {
+        JPanel wrap = new JPanel(new BorderLayout());
+        wrap.setOpaque(false);
+        wrap.setBorder(new EmptyBorder(0, 0, 12, 0));
+
+        JPanel modeBar = new JPanel(new GridLayout(1, 5, 8, 0));
+        modeBar.setBackground(MODE_BAR_BG);
+        modeBar.setBorder(new EmptyBorder(8, 8, 8, 8));
+
+        modeBar.add(buildModeButton("Standard", Modus.STANDARD));
+        modeBar.add(buildModeButton("Wissenschaftlich", Modus.WISSENSCHAFTLICH));
+        modeBar.add(buildModeButton("PRG", Modus.PROGRAMMIERER));
+        modeBar.add(buildModeButton("Graph", Modus.GRAPH));
+        modeBar.add(buildModeButton("Komplex", Modus.KOMPLEX));
+
+        wrap.add(modeBar, BorderLayout.CENTER);
+        return wrap;
+    }
+
+    private JButton buildModeButton(String text, Modus modus)
+    {
+        JButton button = new JButton(text);
+        button.setFocusPainted(false);
+        button.setBorderPainted(true);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        button.setOpaque(true);
+        button.setFocusable(false);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(MODE_BORDER, 1),
+                BorderFactory.createEmptyBorder(12, 14, 12, 14)
+        ));
+
+        button.addActionListener(e -> setAktuellerModus(modus));
+
+        modusButtons.put(modus, button);
+        aktualisiereModusButtons();
+
+        return button;
+    }
+
+    private JPanel buildMainContent()
+    {
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setOpaque(false);
+
+        mainPanel.add(buildTopPanel(), BorderLayout.NORTH);
+
+        JPanel centerWrap = new JPanel(new BorderLayout(10, 10));
+        centerWrap.setOpaque(false);
+        centerWrap.add(buildModeCards(), BorderLayout.CENTER);
+        centerWrap.add(buildHistoryPanel(), BorderLayout.EAST);
+
+        mainPanel.add(centerWrap, BorderLayout.CENTER);
+        return mainPanel;
+    }
+
+    private JPanel buildModeCards()
+    {
+        modusKarten.setOpaque(false);
+
+        JPanel standardPanel = buildButtonGrid(STANDARD_BUTTONS, 6, 4);
+        JPanel wissenschaftlichPanel = buildButtonGrid(WISSENSCHAFTLICH_BUTTONS, 11, 5);
+
+        modusButtonPanels.put(Modus.STANDARD, standardPanel);
+        modusButtonPanels.put(Modus.WISSENSCHAFTLICH, wissenschaftlichPanel);
+
+        modusKarten.add(standardPanel, Modus.STANDARD.name());
+        modusKarten.add(wissenschaftlichPanel, Modus.WISSENSCHAFTLICH.name());
+        modusKarten.add(buildPlaceholderPanel("Programmierer-Modus"), Modus.PROGRAMMIERER.name());
+        modusKarten.add(buildPlaceholderPanel("Graph-Modus"), Modus.GRAPH.name());
+        modusKarten.add(buildPlaceholderPanel("Komplex-Modus"), Modus.KOMPLEX.name());
+
+        modusLayout.show(modusKarten, aktuellerModus.name());
+        return modusKarten;
+    }
+
+    private JPanel buildButtonGrid(String[] buttons, int rows, int cols)
+    {
+        JPanel panel = new JPanel(new GridLayout(rows, cols, 6, 6));
+        panel.setBackground(ThemeManager.DARK_BG);
+        panel.setOpaque(true);
+
+        for (String text : buttons)
+        {
+            JButton btn = new JButton(text);
+            themeManager.styleButton(btn, text);
+            btn.addActionListener(e -> handleButton((JButton) e.getSource()));
+            panel.add(btn);
+        }
+
+        panel.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(MouseEvent e)
+            {
+                defocusSearchIfNeeded();
+            }
+        });
+
+        return panel;
+    }
+
+    private JPanel buildPlaceholderPanel(String titel)
+    {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setOpaque(false);
+
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(darkMode ? new Color(22, 26, 34) : new Color(245, 245, 245));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(55, 65, 85), 1),
+                new EmptyBorder(40, 30, 40, 30)
+        ));
+
+        JLabel label = new JLabel(titel + " folgt bald", SwingConstants.CENTER);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        label.setForeground(darkMode ? Color.WHITE : Color.BLACK);
+
+        card.add(label, BorderLayout.CENTER);
+        panel.add(card, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private void setAktuellerModus(Modus modus)
+    {
+        aktuellerModus = modus;
+        modusLayout.show(modusKarten, modus.name());
+        aktualisiereModusButtons();
+        defocusSearchIfNeeded();
+    }
+
+    private void aktualisiereModusButtons()
+    {
+        for (Map.Entry<Modus, JButton> entry : modusButtons.entrySet())
+        {
+            boolean aktiv = entry.getKey() == aktuellerModus;
+            JButton button = entry.getValue();
+
+            button.setBackground(aktiv ? MODE_ACTIVE_BG : MODE_INACTIVE_BG);
+            button.setForeground(Color.WHITE);
+        }
     }
 
     private JPanel buildTopPanel()
@@ -114,28 +285,6 @@ public class TaschenrechnerUI extends JFrame
         topPanel.add(display, BorderLayout.CENTER);
 
         return topPanel;
-    }
-
-    private JPanel buildCenterPanel()
-    {
-        buttonPanel.setBackground(ThemeManager.DARK_BG);
-
-        JPanel centerWrap = new JPanel(new BorderLayout(10, 10));
-        centerWrap.setOpaque(false);
-
-        centerWrap.add(buttonPanel, BorderLayout.CENTER);
-        centerWrap.add(buildHistoryPanel(), BorderLayout.EAST);
-
-        buttonPanel.addMouseListener(new MouseAdapter()
-        {
-            @Override
-            public void mousePressed(MouseEvent e)
-            {
-                defocusSearchIfNeeded();
-            }
-        });
-
-        return centerWrap;
     }
 
     private JPanel buildHistoryPanel()
@@ -256,17 +405,6 @@ public class TaschenrechnerUI extends JFrame
         recDisplay.setText(info + (v.isEmpty() ? "" : " | " + v));
     }
 
-    private void buildButtons()
-    {
-        for (String text : BUTTONS)
-        {
-            JButton btn = new JButton(text);
-            themeManager.styleButton(btn, text);
-            btn.addActionListener(e -> handleButton((JButton) e.getSource()));
-            buttonPanel.add(btn);
-        }
-    }
-
     private void handleButton(JButton sourceBtn)
     {
         defocusSearchIfNeeded();
@@ -298,9 +436,6 @@ public class TaschenrechnerUI extends JFrame
     }
 
 
-
-
-
     private void toggleDarkMode(JButton darkBtn)
     {
         darkMode = !darkMode;
@@ -323,7 +458,7 @@ public class TaschenrechnerUI extends JFrame
             Color fg = themeManager.lerp(startFg, targetFg, t);
 
             getContentPane().setBackground(bg);
-            buttonPanel.setBackground(bg);
+            modusKarten.setBackground(bg);
 
             display.setBackground(bg);
             display.setForeground(fg);
@@ -331,7 +466,12 @@ public class TaschenrechnerUI extends JFrame
             recDisplay.setBackground(bg);
             recDisplay.setForeground(darkMode ? new Color(180, 180, 180) : new Color(70, 70, 70));
 
-            themeManager.resetButtonColors(buttonPanel);
+            for (JPanel panel : modusButtonPanels.values())
+            {
+                panel.setBackground(bg);
+                themeManager.resetButtonColors(panel);
+            }
+
             themeManager.applyHistoryColors(
                     darkMode,
                     historyList,
@@ -341,21 +481,16 @@ public class TaschenrechnerUI extends JFrame
                     SEARCH_PLACEHOLDER
             );
 
+            aktualisiereModusButtons();
+            modusKarten.repaint();
+            modusKarten.revalidate();
+
             step[0]++;
             if (step[0] > steps) timer.stop();
         });
 
         timer.start();
     }
-
-    private Color lerp(Color a, Color b, float t)
-    {
-        int r = (int) (a.getRed() + (b.getRed() - a.getRed()) * t);
-        int g = (int) (a.getGreen() + (b.getGreen() - a.getGreen()) * t);
-        int bl = (int) (a.getBlue() + (b.getBlue() - a.getBlue()) * t);
-        return new Color(r, g, bl);
-    }
-
 
     private void setupKeyboard()
     {
@@ -710,8 +845,7 @@ public class TaschenrechnerUI extends JFrame
             }
 
             applyHistoryFilter();
-        }
-        catch (IOException ignored)
+        } catch (IOException ignored)
         {
         }
     }
@@ -733,8 +867,7 @@ public class TaschenrechnerUI extends JFrame
                     StandardOpenOption.CREATE,
                     StandardOpenOption.TRUNCATE_EXISTING
             );
-        }
-        catch (IOException ignored)
+        } catch (IOException ignored)
         {
         }
     }
