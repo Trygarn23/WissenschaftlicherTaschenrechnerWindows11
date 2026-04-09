@@ -2,6 +2,7 @@ package Theme;
 
 import Theme.themes.DarkTheme;
 import Theme.themes.LightTheme;
+import Theme.themes.Win11Theme;
 
 public class ThemeManager
 {
@@ -35,6 +36,7 @@ public class ThemeManager
         {
             case DARK -> new DarkTheme();
             case LIGHT ->  new LightTheme();
+            case WIN11 -> new Win11Theme();
             default -> new DarkTheme();
         };
     }

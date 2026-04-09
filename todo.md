@@ -58,26 +58,26 @@
 - [ ] Formatter für komplexe Zahlen ergänzen
 
 ## Struktur
-- [ ] TaschenrechnerUI weiter entschlacken
-- [ ] TaschenrechnerLogik in kleinere Verantwortlichkeiten aufteilen
+- [ ] ui.TaschenrechnerUI weiter entschlacken
+- [ ] logic.TaschenrechnerLogik in kleinere Verantwortlichkeiten aufteilen
 - [ ] ExpressionEditor einführen
 - [ ] CalculatorState einführen
 - [ ] MemoryStore einführen
 - [ ] CalculationService einführen
 - [ ] Button-Action-System statt String-Runnable-Map bauen
-- [ ] HistoryService aus TaschenrechnerUI auslagern
+- [ ] HistoryService aus ui.TaschenrechnerUI auslagern
 - [ ] HistoryRepository für Laden und Speichern des Verlaufs bauen
-- [ ] DisplayPanel aus TaschenrechnerUI auslagern
-- [ ] ModeBarPanel aus TaschenrechnerUI auslagern
+- [ ] DisplayPanel aus ui.TaschenrechnerUI auslagern
+- [ ] ModeBarPanel aus ui.TaschenrechnerUI auslagern
 
 ## Refactoring
 - [x] Parser-Tests vorhanden
 - [x] Logik-Tests vorhanden
 - [ ] Parser-Tests prüfen und fehlende Edgecases ergänzen
 - [ ] Logik-Tests prüfen und fehlende Edgecases ergänzen
-- [x] ! Theme-System in echte Themes umbauen
-- [x] ! Dark Theme verbessern
-- [x] ! Light Theme verbessern
+- [x] Theme-System in echte Themes umbauen
+- [x] Dark Theme verbessern
+- [x] Light Theme verbessern
 - [ ] ! Neon Theme hinzufügen
 - [ ] ! Matrix Theme hinzufügen
 - [ ] ! Win95 Theme hinzufügen
@@ -91,7 +91,11 @@
 - [ ] Schritt-für-Schritt-Auswertung bauen
 - [ ] Statistikmodus hinzufügen
 - [ ] Matrixmodus hinzufügen
-
+- [ ] Layouts überarbeiten für: 
+  - [ ] Standard
+  - [ ] Wissenschaftlich
+  - [ ] Programmierer
+- [ ] Display überarbeiten
 ## Legende
 - [x] fertig
 - [ ] offen

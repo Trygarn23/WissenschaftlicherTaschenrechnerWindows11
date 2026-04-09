@@ -1,3 +1,5 @@
+package logic;
+
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 import java.math.BigInteger;

@@ -1,3 +1,5 @@
+package logic;
+
 import java.util.*;
 
 public final class TaschenrechnerParser
