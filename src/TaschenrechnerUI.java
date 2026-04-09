@@ -1,5 +1,7 @@
 import ProgrammierRechner.ProgrammiererPanel;
-import ProgrammierRechner.ProgrammiererState;
+import Theme.AppTheme;
+import Theme.ThemeManager;
+import Theme.ThemeType;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -58,11 +60,6 @@ public class TaschenrechnerUI extends JFrame
             "ln", "±", "0", ",", "="
     };
 
-    private static final Color MODE_BAR_BG = new Color(18, 22, 30);
-    private static final Color MODE_ACTIVE_BG = new Color(0, 145, 210);
-    private static final Color MODE_INACTIVE_BG = new Color(34, 39, 52);
-    private static final Color MODE_BORDER = new Color(58, 66, 84);
-
     private final CardLayout modusLayout = new CardLayout();
     private final JPanel modusKarten = new JPanel(modusLayout);
     private final Map<Modus, JButton> modusButtons = new EnumMap<>(Modus.class);
@@ -74,8 +71,6 @@ public class TaschenrechnerUI extends JFrame
 
     private final JTextPane display = new JTextPane();
     private final JTextPane recDisplay = new JTextPane();
-
-    private boolean darkMode = true;
 
     private final TaschenrechnerLogik rechner = new TaschenrechnerLogik();
     private final ProgrammiererPanel prgPanel = new ProgrammiererPanel();
@@ -89,12 +84,17 @@ public class TaschenrechnerUI extends JFrame
 
     private final Map<String, Runnable> actions = new HashMap<>();
 
+    private final JPanel modeBar = new JPanel(new GridLayout(1, 5, 8, 0));
+
+    private final Map<Modus, JPanel> placeholderCards = new EnumMap<>(Modus.class);
+    private final Map<Modus, JLabel> placeholderLabels = new EnumMap<>(Modus.class);
+
     public TaschenrechnerUI()
     {
         configureFrame();
 
         JPanel contentPane = new JPanel(new BorderLayout(10, 10));
-        contentPane.setBackground(ThemeManager.DARK_BG);
+        contentPane.setBackground(theme().windowBackground());
         contentPane.setBorder(new EmptyBorder(14, 14, 14, 14));
         setContentPane(contentPane);
 
@@ -110,14 +110,7 @@ public class TaschenrechnerUI extends JFrame
         setupSearchFieldKeyForwarding();
 
         refresh();
-        themeManager.applyHistoryColors(
-                darkMode,
-                historyList,
-                historyScroll,
-                clearHistoryBtn,
-                historySearchField,
-                SEARCH_PLACEHOLDER
-        );
+        applyCurrentTheme();
 
         SwingUtilities.invokeLater(() -> getRootPane().requestFocusInWindow());
     }
@@ -131,14 +124,18 @@ public class TaschenrechnerUI extends JFrame
         setMinimumSize(new Dimension(820, 720));
     }
 
+    private AppTheme theme()
+    {
+        return themeManager.getCurrentTheme();
+    }
+
     private JPanel buildModeBar()
     {
         JPanel wrap = new JPanel(new BorderLayout());
         wrap.setOpaque(false);
         wrap.setBorder(new EmptyBorder(0, 0, 12, 0));
 
-        JPanel modeBar = new JPanel(new GridLayout(1, 5, 8, 0));
-        modeBar.setBackground(MODE_BAR_BG);
+        modeBar.setBackground(theme().modeBarBackground());
         modeBar.setBorder(new EmptyBorder(8, 8, 8, 8));
 
         modeBar.add(buildModeButton("Standard", Modus.STANDARD));
@@ -151,6 +148,35 @@ public class TaschenrechnerUI extends JFrame
         return wrap;
     }
 
+
+    private void applyHistoryTheme()
+    {
+        historyList.setBackground(theme().historyBackground());
+        historyList.setForeground(theme().historyForeground());
+        historyList.setSelectionBackground(theme().historySelectionBackground());
+        historyList.setSelectionForeground(theme().historyForeground());
+
+        historyScroll.getViewport().setBackground(theme().historyBackground());
+
+        clearHistoryBtn.setBackground(theme().specialButtonBackground());
+        clearHistoryBtn.setForeground(theme().specialButtonForeground());
+        clearHistoryBtn.setBorderPainted(false);
+        clearHistoryBtn.setOpaque(true);
+        clearHistoryBtn.setFont(theme().buttonFont());
+
+        historySearchField.setBackground(theme().historySearchBackground());
+        historySearchField.setCaretColor(theme().historyForeground());
+
+        if (SEARCH_PLACEHOLDER.equals(historySearchField.getText()))
+        {
+            historySearchField.setForeground(theme().placeholderForeground());
+        }
+        else
+        {
+            historySearchField.setForeground(theme().historyForeground());
+        }
+    }
+
     private JButton buildModeButton(String text, Modus modus)
     {
         JButton button = new JButton(text);
@@ -161,7 +187,7 @@ public class TaschenrechnerUI extends JFrame
         button.setFocusable(false);
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         button.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(MODE_BORDER, 1),
+                BorderFactory.createLineBorder(theme().modeBorder(), 1),
                 BorderFactory.createEmptyBorder(12, 14, 12, 14)
         ));
 
@@ -202,25 +228,61 @@ public class TaschenrechnerUI extends JFrame
 
         modusKarten.add(standardPanel, Modus.STANDARD.name());
         modusKarten.add(wissenschaftlichPanel, Modus.WISSENSCHAFTLICH.name());
-//        modusKarten.add(buildPlaceholderPanel("Programmierer-Modus"), Modus.PROGRAMMIERER.name());
         modusKarten.add(prgPanel, Modus.PROGRAMMIERER.name());
-        modusKarten.add(buildPlaceholderPanel("Graph-Modus"), Modus.GRAPH.name());
-        modusKarten.add(buildPlaceholderPanel("Komplex-Modus"), Modus.KOMPLEX.name());
+        modusKarten.add(buildPlaceholderPanel("Graph-Modus", Modus.GRAPH), Modus.GRAPH.name());
+        modusKarten.add(buildPlaceholderPanel("Komplex-Modus", Modus.KOMPLEX), Modus.KOMPLEX.name());
 
         modusLayout.show(modusKarten, aktuellerModus.name());
         return modusKarten;
     }
 
+    private void styleButton(JButton btn, String text)
+    {
+        btn.setFont(theme().buttonFont());
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setOpaque(true);
+        btn.setFocusable(false);
+
+        Color bg;
+        Color fg;
+
+        if (text.matches("\\d"))
+        {
+            bg = theme().numberButtonBackground();
+            fg = theme().numberButtonForeground();
+        } else if ("+-×÷".contains(text))
+        {
+            bg = theme().operatorButtonBackground();
+            fg = theme().operatorButtonForeground();
+        } else if (text.equals("C") || text.equals("CE") || text.equals("←"))
+        {
+            bg = theme().specialButtonBackground();
+            fg = theme().specialButtonForeground();
+        } else if (text.equals("Dark") || text.equals("Light") || text.equals("DEG") || text.equals("RAD"))
+        {
+            bg = theme().toggleButtonBackground();
+            fg = theme().toggleButtonForeground();
+        } else
+        {
+            bg = theme().functionButtonBackground();
+            fg = theme().functionButtonForeground();
+        }
+
+        btn.setBackground(bg);
+        btn.setForeground(fg);
+    }
+
     private JPanel buildButtonGrid(String[] buttons, int rows, int cols)
     {
         JPanel panel = new JPanel(new GridLayout(rows, cols, 6, 6));
-        panel.setBackground(ThemeManager.DARK_BG);
+        panel.setBackground(theme().panelBackground());
         panel.setOpaque(true);
 
         for (String text : buttons)
         {
             JButton btn = new JButton(text);
-            themeManager.styleButton(btn, text);
+            styleButton(btn, text);
             btn.addActionListener(e -> handleButton((JButton) e.getSource()));
             panel.add(btn);
         }
@@ -237,28 +299,30 @@ public class TaschenrechnerUI extends JFrame
         return panel;
     }
 
-    private JPanel buildPlaceholderPanel(String titel)
+    private JPanel buildPlaceholderPanel(String titel, Modus modus)
     {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
 
         JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(darkMode ? new Color(22, 26, 34) : new Color(245, 245, 245));
+        card.setBackground(theme().panelBackground());
         card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(55, 65, 85), 1),
+                BorderFactory.createLineBorder(theme().modeBorder(), 1),
                 new EmptyBorder(40, 30, 40, 30)
         ));
 
         JLabel label = new JLabel(titel + " folgt bald", SwingConstants.CENTER);
         label.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        label.setForeground(darkMode ? Color.WHITE : Color.BLACK);
+        label.setForeground(theme().displayForeground());
 
         card.add(label, BorderLayout.CENTER);
         panel.add(card, BorderLayout.CENTER);
 
+        placeholderCards.put(modus, card);
+        placeholderLabels.put(modus, label);
+
         return panel;
     }
-
     private void setAktuellerModus(Modus modus)
     {
         aktuellerModus = modus;
@@ -274,7 +338,11 @@ public class TaschenrechnerUI extends JFrame
             boolean aktiv = entry.getKey() == aktuellerModus;
             JButton button = entry.getValue();
 
-            button.setBackground(aktiv ? MODE_ACTIVE_BG : MODE_INACTIVE_BG);
+            button.setBackground(
+                    aktiv
+                            ? theme().modeButtonActiveBackground()
+                            : theme().modeButtonInactiveBackground()
+            );
             button.setForeground(Color.WHITE);
         }
     }
@@ -326,9 +394,9 @@ public class TaschenrechnerUI extends JFrame
     private void configureRecDisplay()
     {
         recDisplay.setEditable(false);
-        recDisplay.setBackground(ThemeManager.DARK_BG);
-        recDisplay.setForeground(new Color(180, 180, 180));
-        recDisplay.setFont(new Font("Segoe UI", Font.PLAIN, 22));
+        recDisplay.setBackground(theme().displayBackground());
+        recDisplay.setForeground(theme().secondaryDisplayForeground());
+        recDisplay.setFont(theme().secondaryDisplayFont());
         recDisplay.setOpaque(true);
         recDisplay.setBorder(null);
         recDisplay.setFocusable(false);
@@ -338,9 +406,9 @@ public class TaschenrechnerUI extends JFrame
     private void configureDisplay()
     {
         display.setEditable(false);
-        display.setBackground(ThemeManager.DARK_BG);
-        display.setForeground(Color.WHITE);
-        display.setFont(new Font("Segoe UI", Font.PLAIN, 48));
+        display.setBackground(theme().displayBackground());
+        display.setForeground(theme().displayForeground());
+        display.setFont(theme().displayFont());
         display.setText("0");
         display.setBorder(null);
         display.setOpaque(true);
@@ -353,8 +421,10 @@ public class TaschenrechnerUI extends JFrame
         historySearchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         historySearchField.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
         historySearchField.setOpaque(true);
+        historySearchField.setBackground(theme().historySearchBackground());
         historySearchField.setText(SEARCH_PLACEHOLDER);
-        historySearchField.setForeground(ThemeManager.PLACEHOLDER_FG);
+        historySearchField.setForeground(theme().placeholderForeground());
+        historySearchField.setCaretColor(theme().historyForeground());
 
         historySearchField.addFocusListener(new FocusAdapter()
         {
@@ -364,7 +434,7 @@ public class TaschenrechnerUI extends JFrame
                 if (SEARCH_PLACEHOLDER.equals(historySearchField.getText()))
                 {
                     historySearchField.setText("");
-                    historySearchField.setForeground(darkMode ? Color.WHITE : Color.BLACK);
+                    historySearchField.setForeground(theme().historyForeground());
                 }
             }
 
@@ -374,7 +444,7 @@ public class TaschenrechnerUI extends JFrame
                 if (historySearchField.getText().isBlank())
                 {
                     historySearchField.setText(SEARCH_PLACEHOLDER);
-                    historySearchField.setForeground(ThemeManager.PLACEHOLDER_FG);
+                    historySearchField.setForeground(theme().placeholderForeground());
                 }
             }
         });
@@ -444,58 +514,73 @@ public class TaschenrechnerUI extends JFrame
 
     private void toggleDarkMode(JButton darkBtn)
     {
-        darkMode = !darkMode;
-        darkBtn.setText(darkMode ? "Dark" : "Light");
+        ThemeType nextType =
+                themeManager.getCurrentThemeType() == ThemeType.DARK
+                        ? ThemeType.LIGHT
+                        : ThemeType.DARK;
 
-        Color startBg = display.getBackground();
-        Color targetBg = darkMode ? ThemeManager.DARK_BG : Color.WHITE;
+        themeManager.setTheme(nextType);
+        darkBtn.setText(themeManager.getCurrentTheme().getDisplayName());
 
-        Color startFg = display.getForeground();
-        Color targetFg = darkMode ? Color.WHITE : Color.BLACK;
+        applyCurrentTheme();
+    }
 
-        Timer timer = new Timer(15, null);
-        final int[] step = {0};
-        int steps = 20;
+    private void applyCurrentTheme()
+    {
+        getContentPane().setBackground(theme().windowBackground());
+        modusKarten.setBackground(theme().panelBackground());
 
-        timer.addActionListener(e -> {
-            float t = step[0] / (float) steps;
+        display.setBackground(theme().displayBackground());
+        display.setForeground(theme().displayForeground());
+        display.setFont(theme().displayFont());
 
-            Color bg = themeManager.lerp(startBg, targetBg, t);
-            Color fg = themeManager.lerp(startFg, targetFg, t);
+        recDisplay.setBackground(theme().displayBackground());
+        recDisplay.setForeground(theme().secondaryDisplayForeground());
+        recDisplay.setFont(theme().secondaryDisplayFont());
 
-            getContentPane().setBackground(bg);
-            modusKarten.setBackground(bg);
+        applyHistoryTheme();
 
-            display.setBackground(bg);
-            display.setForeground(fg);
+        for (JPanel panel : modusButtonPanels.values())
+        {
+            panel.setBackground(theme().panelBackground());
 
-            recDisplay.setBackground(bg);
-            recDisplay.setForeground(darkMode ? new Color(180, 180, 180) : new Color(70, 70, 70));
-
-            for (JPanel panel : modusButtonPanels.values())
+            for (Component c : panel.getComponents())
             {
-                panel.setBackground(bg);
-                themeManager.resetButtonColors(panel);
+                if (c instanceof JButton btn)
+                {
+                    styleButton(btn, btn.getText());
+                }
             }
+        }
 
-            themeManager.applyHistoryColors(
-                    darkMode,
-                    historyList,
-                    historyScroll,
-                    clearHistoryBtn,
-                    historySearchField,
-                    SEARCH_PLACEHOLDER
-            );
+        aktualisiereModusButtons();
 
-            aktualisiereModusButtons();
-            modusKarten.repaint();
-            modusKarten.revalidate();
+        repaint();
+        revalidate();
 
-            step[0]++;
-            if (step[0] > steps) timer.stop();
-        });
+        modeBar.setBackground(theme().modeBarBackground());
 
-        timer.start();
+        for (JButton button : modusButtons.values())
+        {
+            button.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(theme().modeBorder(), 1),
+                    BorderFactory.createEmptyBorder(12, 14, 12, 14)
+            ));
+        }
+
+        for (JPanel card : placeholderCards.values())
+        {
+            card.setBackground(theme().panelBackground());
+            card.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(theme().modeBorder(), 1),
+                    new EmptyBorder(40, 30, 40, 30)
+            ));
+        }
+
+        for (JLabel label : placeholderLabels.values())
+        {
+            label.setForeground(theme().displayForeground());
+        }
     }
 
     private void setupKeyboard()
@@ -725,12 +810,13 @@ public class TaschenrechnerUI extends JFrame
 
             lbl.setBorder(pad);
 
-            Color bg = darkMode ? ThemeManager.DARK_BG : Color.WHITE;
-            Color fg = darkMode ? Color.WHITE : Color.BLACK;
+            Color bg = theme().historyBackground();
+            Color fg = theme().historyForeground();
+            Color selectedBg = theme().historySelectionBackground();
 
             if (isSelected)
             {
-                lbl.setBackground(themeManager.helleColor(bg, 30));
+                lbl.setBackground(selectedBg);
                 lbl.setForeground(fg);
             } else
             {

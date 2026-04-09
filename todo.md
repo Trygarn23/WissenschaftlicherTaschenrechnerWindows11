@@ -75,13 +75,14 @@
 - [x] Logik-Tests vorhanden
 - [ ] Parser-Tests prüfen und fehlende Edgecases ergänzen
 - [ ] Logik-Tests prüfen und fehlende Edgecases ergänzen
-- [ ] Theme-System in echte Themes umbauen
-- [ ] Dark Theme verbessern
-- [ ] Light Theme verbessern
-- [ ] Neon Theme hinzufügen
-- [ ] Matrix Theme hinzufügen
-- [ ] Win95 Theme hinzufügen
-- [ ] Aktives Theme persistent speichern
+- [x] ! Theme-System in echte Themes umbauen
+- [x] ! Dark Theme verbessern
+- [x] ! Light Theme verbessern
+- [ ] ! Neon Theme hinzufügen
+- [ ] ! Matrix Theme hinzufügen
+- [ ] ! Win95 Theme hinzufügen
+- [ ] ! Aktives Theme persistent speichern
+- [ ] ! Themes für Programmier Modus übernehmen
 - [ ] Einheitenumrechnung hinzufügen
 - [ ] Konstantenbibliothek hinzufügen
 - [ ] Benutzerdefinierte Funktionen unterstützen
