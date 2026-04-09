@@ -1,3 +1,6 @@
+import ProgrammierRechner.ProgrammiererPanel;
+import ProgrammierRechner.ProgrammiererState;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
@@ -75,6 +78,7 @@ public class TaschenrechnerUI extends JFrame
     private boolean darkMode = true;
 
     private final TaschenrechnerLogik rechner = new TaschenrechnerLogik();
+    private final ProgrammiererPanel prgPanel = new ProgrammiererPanel();
 
     private final DefaultListModel<String> allHistoryModel = new DefaultListModel<>();
     private final DefaultListModel<String> historyModel = new DefaultListModel<>();
@@ -194,10 +198,12 @@ public class TaschenrechnerUI extends JFrame
 
         modusButtonPanels.put(Modus.STANDARD, standardPanel);
         modusButtonPanels.put(Modus.WISSENSCHAFTLICH, wissenschaftlichPanel);
+        modusButtonPanels.put(Modus.PROGRAMMIERER, prgPanel);
 
         modusKarten.add(standardPanel, Modus.STANDARD.name());
         modusKarten.add(wissenschaftlichPanel, Modus.WISSENSCHAFTLICH.name());
-        modusKarten.add(buildPlaceholderPanel("Programmierer-Modus"), Modus.PROGRAMMIERER.name());
+//        modusKarten.add(buildPlaceholderPanel("Programmierer-Modus"), Modus.PROGRAMMIERER.name());
+        modusKarten.add(prgPanel, Modus.PROGRAMMIERER.name());
         modusKarten.add(buildPlaceholderPanel("Graph-Modus"), Modus.GRAPH.name());
         modusKarten.add(buildPlaceholderPanel("Komplex-Modus"), Modus.KOMPLEX.name());
 
