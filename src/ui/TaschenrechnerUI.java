@@ -109,12 +109,21 @@ public class TaschenrechnerUI extends JFrame
     private void initModeContent()
     {
         registerMode(RechnerModus.STANDARD, new StandardPanel());
-        registerMode(RechnerModus.WISSENSCHAFTLICH, new WissenschaftlichPanel());
+
+        WissenschaftlichPanel wissenschaftlichPanel = new WissenschaftlichPanel();
+        wissenschaftlichPanel.setFunctionSelectionListener(this::handleScientificMenuAction);
+
+        registerMode(RechnerModus.WISSENSCHAFTLICH, wissenschaftlichPanel);
         registerMode(RechnerModus.PROGRAMMIERER, new ProgrammiererHostPanel());
         registerMode(RechnerModus.GRAPH, new GraphPlaceholderPanel());
         registerMode(RechnerModus.KOMPLEX, new KomplexPlaceholderPanel());
 
         setAktuellerModus(aktuellerModus);
+    }
+
+    private void handleScientificMenuAction(String functionName)
+    {
+        actions.getOrDefault(functionName, Toolkit.getDefaultToolkit()::beep).run();
     }
 
     private void registerMode(RechnerModus modus, JPanel panel)
@@ -139,7 +148,7 @@ public class TaschenrechnerUI extends JFrame
             refreshWithExtraInfo(rechner.getWinkelModus().name());
         });
 
-        globalActionBarPanel.setThemeToggleListener(e -> toggleTheme());
+        globalActionBarPanel.setThemeSelectionListener(this::setTheme);
 
         historyPanel.setClearHistoryListener(e -> speichereVerlauf());
 
@@ -208,14 +217,10 @@ public class TaschenrechnerUI extends JFrame
         actions.getOrDefault(text, Toolkit.getDefaultToolkit()::beep).run();
     }
 
-    private void toggleTheme()
-    {
-        ThemeType nextType =
-                themeManager.getCurrentThemeType() == ThemeType.DARK
-                        ? ThemeType.LIGHT
-                        : ThemeType.DARK;
 
-        themeManager.setTheme(nextType);
+    private void setTheme(ThemeType themeType)
+    {
+        themeManager.setTheme(themeType);
         applyCurrentTheme();
     }
 
@@ -226,6 +231,7 @@ public class TaschenrechnerUI extends JFrame
         globalActionBarPanel.applyTheme(theme());
         globalActionBarPanel.setThemeButtonText(theme().getDisplayName());
         globalActionBarPanel.setAngleModeText(rechner.getWinkelModus().name());
+        globalActionBarPanel.highlightSelectedTheme(themeManager.getCurrentThemeType());
 
         modeBarPanel.setSelectedMode(aktuellerModus, theme());
         displayPanel.applyTheme(theme());
@@ -250,12 +256,10 @@ public class TaschenrechnerUI extends JFrame
         if (component instanceof JButton button)
         {
             styleButton(button, button.getText());
-        }
-        else if (component instanceof JLabel label)
+        } else if (component instanceof JLabel label)
         {
             label.setForeground(theme().displayForeground());
-        }
-        else if (component instanceof JPanel panel)
+        } else if (component instanceof JPanel panel)
         {
             panel.setBackground(theme().panelBackground());
         }
@@ -284,18 +288,15 @@ public class TaschenrechnerUI extends JFrame
         {
             bg = theme().numberButtonBackground();
             fg = theme().numberButtonForeground();
-        }
-        else if (text != null && "+-×÷".contains(text))
+        } else if (text != null && "+-×÷".contains(text))
         {
             bg = theme().operatorButtonBackground();
             fg = theme().operatorButtonForeground();
-        }
-        else if ("C".equals(text) || "CE".equals(text) || "←".equals(text))
+        } else if ("C".equals(text) || "CE".equals(text) || "←".equals(text))
         {
             bg = theme().specialButtonBackground();
             fg = theme().specialButtonForeground();
-        }
-        else
+        } else
         {
             bg = theme().functionButtonBackground();
             fg = theme().functionButtonForeground();
@@ -528,8 +529,7 @@ public class TaschenrechnerUI extends JFrame
 
             List<String> zeilen = Files.readAllLines(HISTORY_FILE, StandardCharsets.UTF_8);
             historyPanel.setAllEntries(zeilen);
-        }
-        catch (IOException ignored)
+        } catch (IOException ignored)
         {
         }
     }
@@ -545,8 +545,7 @@ public class TaschenrechnerUI extends JFrame
                     StandardOpenOption.CREATE,
                     StandardOpenOption.TRUNCATE_EXISTING
             );
-        }
-        catch (IOException ignored)
+        } catch (IOException ignored)
         {
         }
     }

@@ -58,7 +58,7 @@
 - [ ] Formatter für komplexe Zahlen ergänzen
 
 ## Struktur
-- [ ] ui.TaschenrechnerUI weiter entschlacken
+- [x] ui.TaschenrechnerUI weiter entschlacken
 - [ ] logic.TaschenrechnerLogik in kleinere Verantwortlichkeiten aufteilen
 - [ ] ExpressionEditor einführen
 - [ ] CalculatorState einführen
@@ -67,8 +67,8 @@
 - [ ] Button-Action-System statt String-Runnable-Map bauen
 - [ ] HistoryService aus ui.TaschenrechnerUI auslagern
 - [ ] HistoryRepository für Laden und Speichern des Verlaufs bauen
-- [ ] DisplayPanel aus ui.TaschenrechnerUI auslagern
-- [ ] ModeBarPanel aus ui.TaschenrechnerUI auslagern
+- [x] DisplayPanel aus ui.TaschenrechnerUI auslagern
+- [x] ModeBarPanel aus ui.TaschenrechnerUI auslagern
 
 ## Refactoring
 - [x] Parser-Tests vorhanden
@@ -78,9 +78,10 @@
 - [x] Theme-System in echte Themes umbauen
 - [x] Dark Theme verbessern
 - [x] Light Theme verbessern
-- [ ] ! Neon Theme hinzufügen
-- [ ] ! Matrix Theme hinzufügen
-- [ ] ! Win95 Theme hinzufügen
+- [x] ! Win95 Theme hinzufügen
+- [x] ! Win11 Theme hinzufügen
+- [x] ! Neon Theme hinzufügen
+- [x] ! Matrix Theme hinzufügen
 - [ ] ! Aktives Theme persistent speichern
 - [ ] ! Themes für Programmier Modus übernehmen
 - [ ] Einheitenumrechnung hinzufügen

@@ -1,8 +1,6 @@
 package Theme;
 
-import Theme.themes.DarkTheme;
-import Theme.themes.LightTheme;
-import Theme.themes.Win11Theme;
+import Theme.themes.*;
 
 public class ThemeManager
 {
@@ -35,9 +33,11 @@ public class ThemeManager
         return switch (type)
         {
             case DARK -> new DarkTheme();
-            case LIGHT ->  new LightTheme();
+            case LIGHT -> new LightTheme();
+            case NEON -> new NeonTheme();
+            case MATRIX -> new MatrixTheme();
+            case WIN95 -> new Win95Theme();
             case WIN11 -> new Win11Theme();
-            default -> new DarkTheme();
         };
     }
 }

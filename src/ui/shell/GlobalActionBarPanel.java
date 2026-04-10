@@ -1,18 +1,26 @@
 package ui.shell;
 
 import Theme.AppTheme;
+import Theme.ThemeType;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class GlobalActionBarPanel extends JPanel
 {
     private final JLabel titleLabel = new JLabel("Taschenrechner");
     private final JButton angleModeButton = new JButton("DEG");
-    private final JButton themeToggleButton = new JButton("Dark");
+    private final JButton themeButton = new JButton("Theme");
     private final JButton menuButton = new JButton("⋮");
+
+    private final JPopupMenu themePopupMenu = new JPopupMenu();
+    private final Map<ThemeType, JButton> themeOptionButtons = new LinkedHashMap<>();
+
+    private Consumer<ThemeType> themeSelectionListener;
 
     public GlobalActionBarPanel()
     {
@@ -24,15 +32,69 @@ public class GlobalActionBarPanel extends JPanel
         actionsPanel.setOpaque(false);
 
         angleModeButton.setFocusable(false);
-        themeToggleButton.setFocusable(false);
+        themeButton.setFocusable(false);
         menuButton.setFocusable(false);
 
+        buildThemePopup();
+
+        themeButton.addActionListener(e -> themePopupMenu.show(themeButton, 0, themeButton.getHeight()));
+
         actionsPanel.add(angleModeButton);
-        actionsPanel.add(themeToggleButton);
+        actionsPanel.add(themeButton);
         actionsPanel.add(menuButton);
 
         add(titleLabel, BorderLayout.WEST);
         add(actionsPanel, BorderLayout.EAST);
+    }
+
+    private void buildThemePopup()
+    {
+        JPanel popupContent = new JPanel(new BorderLayout(0, 10));
+        popupContent.setBorder(new EmptyBorder(10, 10, 10, 10));
+        popupContent.setBackground(new Color(28, 28, 28));
+
+        JLabel popupTitle = new JLabel("Theme auswählen");
+        popupTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        popupTitle.setForeground(Color.WHITE);
+
+        JPanel themeGrid = new JPanel(new GridLayout(0, 2, 8, 8));
+        themeGrid.setOpaque(false);
+
+        addThemeOption(themeGrid, ThemeType.DARK, "Dark");
+        addThemeOption(themeGrid, ThemeType.LIGHT, "Light");
+        addThemeOption(themeGrid, ThemeType.NEON, "Neon");
+        addThemeOption(themeGrid, ThemeType.MATRIX, "Matrix");
+        addThemeOption(themeGrid, ThemeType.WIN95, "Win95");
+
+        popupContent.add(popupTitle, BorderLayout.NORTH);
+        popupContent.add(themeGrid, BorderLayout.CENTER);
+
+        themePopupMenu.setBorder(BorderFactory.createLineBorder(new Color(55, 55, 55), 1));
+        themePopupMenu.add(popupContent);
+    }
+
+    private void addThemeOption(JPanel parent, ThemeType themeType, String label)
+    {
+        JButton optionButton = new JButton(label);
+        optionButton.setFocusable(false);
+        optionButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        optionButton.setBackground(new Color(55, 55, 55));
+        optionButton.setForeground(Color.WHITE);
+        optionButton.setBorderPainted(false);
+        optionButton.setOpaque(true);
+        optionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        optionButton.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+
+        optionButton.addActionListener(e -> {
+            themePopupMenu.setVisible(false);
+            if (themeSelectionListener != null)
+            {
+                themeSelectionListener.accept(themeType);
+            }
+        });
+
+        themeOptionButtons.put(themeType, optionButton);
+        parent.add(optionButton);
     }
 
     public void setAngleModeText(String text)
@@ -42,22 +104,41 @@ public class GlobalActionBarPanel extends JPanel
 
     public void setThemeButtonText(String text)
     {
-        themeToggleButton.setText(text);
+        themeButton.setText("Theme: " + text);
     }
 
-    public void setAngleModeListener(ActionListener listener)
+    public void setAngleModeListener(java.awt.event.ActionListener listener)
     {
         angleModeButton.addActionListener(listener);
     }
 
-    public void setThemeToggleListener(ActionListener listener)
+    public void setThemeSelectionListener(Consumer<ThemeType> listener)
     {
-        themeToggleButton.addActionListener(listener);
+        this.themeSelectionListener = listener;
     }
 
-    public void setMenuListener(ActionListener listener)
+    public void setMenuListener(java.awt.event.ActionListener listener)
     {
         menuButton.addActionListener(listener);
+    }
+
+    public void highlightSelectedTheme(ThemeType selectedTheme)
+    {
+        for (Map.Entry<ThemeType, JButton> entry : themeOptionButtons.entrySet())
+        {
+            boolean selected = entry.getKey() == selectedTheme;
+            JButton button = entry.getValue();
+
+            if (selected)
+            {
+                button.setBackground(new Color(24, 153, 219));
+                button.setForeground(Color.WHITE);
+            } else
+            {
+                button.setBackground(new Color(55, 55, 55));
+                button.setForeground(Color.WHITE);
+            }
+        }
     }
 
     public void applyTheme(AppTheme theme)
@@ -68,7 +149,7 @@ public class GlobalActionBarPanel extends JPanel
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
 
         styleActionButton(angleModeButton, theme);
-        styleActionButton(themeToggleButton, theme);
+        styleActionButton(themeButton, theme);
         styleActionButton(menuButton, theme);
     }
 
