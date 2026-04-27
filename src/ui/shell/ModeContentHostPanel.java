@@ -1,6 +1,6 @@
 package ui.shell;
 
-import ui.modes.RechnerModus;
+import common.state.RechnerModus;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,7 +1,7 @@
 package ui.shell;
 
-import Theme.AppTheme;
-import ui.modes.RechnerModus;
+import ui.theme.AppTheme;
+import common.state.RechnerModus;
 
 import javax.swing.*;
 import java.awt.*;

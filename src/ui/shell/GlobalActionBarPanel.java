@@ -1,7 +1,7 @@
 package ui.shell;
 
-import Theme.AppTheme;
-import Theme.ThemeType;
+import ui.theme.AppTheme;
+import ui.theme.ThemeType;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -14,7 +14,7 @@ public class GlobalActionBarPanel extends JPanel
 {
     private final JLabel titleLabel = new JLabel("Taschenrechner");
     private final JButton angleModeButton = new JButton("DEG");
-    private final JButton themeButton = new JButton("Theme");
+    private final JButton themeButton = new JButton("ui/Theme");
     private final JButton menuButton = new JButton("⋮");
 
     private final JPopupMenu themePopupMenu = new JPopupMenu();
@@ -65,6 +65,7 @@ public class GlobalActionBarPanel extends JPanel
         addThemeOption(themeGrid, ThemeType.NEON, "Neon");
         addThemeOption(themeGrid, ThemeType.MATRIX, "Matrix");
         addThemeOption(themeGrid, ThemeType.WIN95, "Win95");
+        addThemeOption(themeGrid, ThemeType.WIN11, "Win11");
 
         popupContent.add(popupTitle, BorderLayout.NORTH);
         popupContent.add(themeGrid, BorderLayout.CENTER);

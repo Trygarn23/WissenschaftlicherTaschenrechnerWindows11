@@ -1,6 +1,6 @@
 package ui.shell;
 
-import Theme.AppTheme;
+import ui.theme.AppTheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

@@ -1,4 +1,4 @@
-import ui.TaschenrechnerUI;
+import ui.shell.TaschenrechnerUI;
 
 import javax.swing.*;
 public class Main
