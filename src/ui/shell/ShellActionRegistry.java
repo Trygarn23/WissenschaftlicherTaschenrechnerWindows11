@@ -1,6 +1,7 @@
 package ui.shell;
 
-import modes.wissenschaftlich.logic.WissenschaftlichRechnerService;
+import common.logic.RechnerService;
+import modes.wissenschaftlich.logic.WissenschaftlichOperationen;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,19 +11,22 @@ import java.util.function.Consumer;
 
 public class ShellActionRegistry
 {
-    private final WissenschaftlichRechnerService rechner;
+    private final RechnerService rechner;
+    private final WissenschaftlichOperationen wissenschaftlichOperationen;
     private final Runnable refresh;
     private final Consumer<String> refreshWithExtraInfo;
     private final Runnable evaluate;
     private final Map<String, Runnable> actions = new HashMap<>();
 
     public ShellActionRegistry(
-            WissenschaftlichRechnerService rechner,
+            RechnerService rechner,
+            WissenschaftlichOperationen wissenschaftlichOperationen,
             Runnable refresh,
             Consumer<String> refreshWithExtraInfo,
             Runnable evaluate)
     {
         this.rechner = rechner;
+        this.wissenschaftlichOperationen = wissenschaftlichOperationen;
         this.refresh = refresh;
         this.refreshWithExtraInfo = refreshWithExtraInfo;
         this.evaluate = evaluate;
@@ -30,6 +34,13 @@ public class ShellActionRegistry
     }
 
     private void initActions()
+    {
+        initCommonActions();
+        initScientificActions();
+        initMemoryActions();
+    }
+
+    private void initCommonActions()
     {
         actions.put(",", () -> {
             rechner.eingabeKomma();
@@ -104,60 +115,116 @@ public class ShellActionRegistry
             refresh.run();
         });
 
-        actions.put("n!", () -> {
-            rechner.fakultaet();
-            refresh.run();
-        });
-
-        actions.put("10ˣ", () -> {
-            rechner.zehnHoch();
-            refresh.run();
-        });
         actions.put("xʸ", () -> {
             rechner.potenz();
             refresh.run();
         });
 
+        actions.put("Ans", () -> {
+            rechner.ans();
+            refresh.run();
+        });
+    }
+
+    private void initScientificActions()
+    {
+        actions.put("n!", () -> {
+            wissenschaftlichOperationen.fakultaet();
+            refresh.run();
+        });
+
+        actions.put("10ˣ", () -> {
+            wissenschaftlichOperationen.zehnHoch();
+            refresh.run();
+        });
+
         actions.put("ln", () -> {
-            rechner.ln();
+            wissenschaftlichOperationen.ln();
             refresh.run();
         });
         actions.put("log", () -> {
-            rechner.log();
+            wissenschaftlichOperationen.log();
             refresh.run();
         });
 
         actions.put("sin", () -> {
-            rechner.sin();
+            wissenschaftlichOperationen.sin();
             refresh.run();
         });
         actions.put("cos", () -> {
-            rechner.cos();
+            wissenschaftlichOperationen.cos();
             refresh.run();
         });
         actions.put("tan", () -> {
-            rechner.tan();
+            wissenschaftlichOperationen.tan();
+            refresh.run();
+        });
+
+        actions.put("asin", () -> {
+            wissenschaftlichOperationen.arcsin();
+            refresh.run();
+        });
+        actions.put("acos", () -> {
+            wissenschaftlichOperationen.arccos();
+            refresh.run();
+        });
+        actions.put("atan", () -> {
+            wissenschaftlichOperationen.arctan();
+            refresh.run();
+        });
+
+        actions.put("sinh", () -> {
+            wissenschaftlichOperationen.sinusHyperbolicus();
+            refresh.run();
+        });
+        actions.put("cosh", () -> {
+            wissenschaftlichOperationen.cosinusHyperbolicus();
+            refresh.run();
+        });
+        actions.put("tanh", () -> {
+            wissenschaftlichOperationen.tangensHyperbolicus();
             refresh.run();
         });
 
         actions.put("π", () -> {
-            rechner.pi();
+            wissenschaftlichOperationen.pi();
             refresh.run();
         });
         actions.put("e", () -> {
-            rechner.e();
+            wissenschaftlichOperationen.e();
             refresh.run();
         });
 
         actions.put("exp", () -> {
-            rechner.exp();
+            wissenschaftlichOperationen.exp();
             refresh.run();
         });
         actions.put("|x|", () -> {
-            rechner.betrag();
+            wissenschaftlichOperationen.betrag();
             refresh.run();
         });
 
+        actions.put("floor", () -> {
+            wissenschaftlichOperationen.abrunden();
+            refresh.run();
+        });
+        actions.put("ceil", () -> {
+            wissenschaftlichOperationen.aufrunden();
+            refresh.run();
+        });
+        actions.put("round", () -> {
+            wissenschaftlichOperationen.runden();
+            refresh.run();
+        });
+
+        actions.put("rand", () -> {
+            wissenschaftlichOperationen.zufall();
+            refresh.run();
+        });
+    }
+
+    private void initMemoryActions()
+    {
         actions.put("MC", () -> {
             rechner.speicherLoeschen();
             refreshWithExtraInfo.accept("M = 0");
@@ -168,55 +235,6 @@ public class ShellActionRegistry
         });
         actions.put("M+", () -> refreshWithExtraInfo.accept("M = " + rechner.speicherAddieren()));
         actions.put("M-", () -> refreshWithExtraInfo.accept("M = " + rechner.speicherSubtrahieren()));
-
-        actions.put("Ans", () -> {
-            rechner.ans();
-            refresh.run();
-        });
-
-        actions.put("asin", () -> {
-            rechner.arcsin();
-            refresh.run();
-        });
-        actions.put("acos", () -> {
-            rechner.arccos();
-            refresh.run();
-        });
-        actions.put("atan", () -> {
-            rechner.arctan();
-            refresh.run();
-        });
-
-        actions.put("sinh", () -> {
-            rechner.sinusHyperbolicus();
-            refresh.run();
-        });
-        actions.put("cosh", () -> {
-            rechner.cosinusHyperbolicus();
-            refresh.run();
-        });
-        actions.put("tanh", () -> {
-            rechner.tangensHyperbolicus();
-            refresh.run();
-        });
-
-        actions.put("floor", () -> {
-            rechner.abrunden();
-            refresh.run();
-        });
-        actions.put("ceil", () -> {
-            rechner.aufrunden();
-            refresh.run();
-        });
-        actions.put("round", () -> {
-            rechner.runden();
-            refresh.run();
-        });
-
-        actions.put("rand", () -> {
-            rechner.zufall();
-            refresh.run();
-        });
     }
 
     public void handleButton(JButton sourceBtn)

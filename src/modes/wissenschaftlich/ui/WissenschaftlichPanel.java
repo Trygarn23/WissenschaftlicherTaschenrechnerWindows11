@@ -1,8 +1,12 @@
 package modes.wissenschaftlich.ui;
 
+import ui.theme.AppTheme;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class WissenschaftlichPanel extends JPanel
@@ -26,6 +30,10 @@ public class WissenschaftlichPanel extends JPanel
     };
 
     private Consumer<String> functionSelectionListener;
+    private JPopupMenu functionPopupMenu;
+    private JPanel functionPopupContent;
+    private JLabel functionPopupTitleLabel;
+    private final List<JButton> functionPopupButtons = new ArrayList<>();
 
     public WissenschaftlichPanel()
     {
@@ -50,6 +58,37 @@ public class WissenschaftlichPanel extends JPanel
         this.functionSelectionListener = listener;
     }
 
+    public void applyTheme(AppTheme theme)
+    {
+        setBackground(theme.panelBackground());
+
+        if (functionPopupMenu != null)
+        {
+            functionPopupMenu.setBorder(BorderFactory.createLineBorder(theme.modeBorder(), 1));
+        }
+
+        if (functionPopupContent != null)
+        {
+            functionPopupContent.setBackground(theme.panelBackground());
+        }
+
+        if (functionPopupTitleLabel != null)
+        {
+            functionPopupTitleLabel.setFont(theme.buttonFont().deriveFont(Font.BOLD));
+            functionPopupTitleLabel.setForeground(theme.displayForeground());
+        }
+
+        for (JButton button : functionPopupButtons)
+        {
+            button.setFont(theme.buttonFont());
+            button.setBackground(theme.functionButtonBackground());
+            button.setForeground(theme.functionButtonForeground());
+            button.setBorderPainted(false);
+            button.setFocusPainted(false);
+            button.setOpaque(true);
+        }
+    }
+
     private JButton createButton(String text)
     {
         JButton button = new JButton(text);
@@ -62,16 +101,13 @@ public class WissenschaftlichPanel extends JPanel
         JButton triggerButton = new JButton("f(x) ▼");
         triggerButton.setFocusable(false);
 
-        JPopupMenu popupMenu = new JPopupMenu();
-        popupMenu.setBorder(BorderFactory.createLineBorder(new Color(55, 55, 55), 1));
+        functionPopupMenu = new JPopupMenu();
 
-        JPanel popupContent = new JPanel(new BorderLayout(0, 8));
-        popupContent.setBorder(new EmptyBorder(10, 10, 10, 10));
-        popupContent.setBackground(new Color(28, 28, 28));
+        functionPopupContent = new JPanel(new BorderLayout(0, 8));
+        functionPopupContent.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JLabel titleLabel = new JLabel("Funktionen");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        titleLabel.setForeground(Color.WHITE);
+        functionPopupTitleLabel = new JLabel("Funktionen");
+        functionPopupTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         JPanel buttonGrid = new JPanel(new GridLayout(3, 3, 6, 6));
         buttonGrid.setOpaque(false);
@@ -81,27 +117,26 @@ public class WissenschaftlichPanel extends JPanel
             JButton fnButton = new JButton(functionName);
             fnButton.setFocusable(false);
             fnButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-            fnButton.setBackground(new Color(55, 55, 55));
-            fnButton.setForeground(Color.WHITE);
             fnButton.setBorderPainted(false);
             fnButton.setOpaque(true);
 
             fnButton.addActionListener(e -> {
-                popupMenu.setVisible(false);
+                functionPopupMenu.setVisible(false);
                 if (functionSelectionListener != null)
                 {
                     functionSelectionListener.accept(functionName);
                 }
             });
 
+            functionPopupButtons.add(fnButton);
             buttonGrid.add(fnButton);
         }
 
-        popupContent.add(titleLabel, BorderLayout.NORTH);
-        popupContent.add(buttonGrid, BorderLayout.CENTER);
-        popupMenu.add(popupContent);
+        functionPopupContent.add(functionPopupTitleLabel, BorderLayout.NORTH);
+        functionPopupContent.add(buttonGrid, BorderLayout.CENTER);
+        functionPopupMenu.add(functionPopupContent);
 
-        triggerButton.addActionListener(e -> popupMenu.show(triggerButton, 0, triggerButton.getHeight()));
+        triggerButton.addActionListener(e -> functionPopupMenu.show(triggerButton, 0, triggerButton.getHeight()));
 
         return triggerButton;
     }

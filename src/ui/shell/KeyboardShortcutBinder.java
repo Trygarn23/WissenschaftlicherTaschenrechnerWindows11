@@ -1,6 +1,6 @@
 package ui.shell;
 
-import modes.wissenschaftlich.logic.WissenschaftlichRechnerService;
+import common.logic.RechnerService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,7 +12,7 @@ public class KeyboardShortcutBinder
 {
     private final JRootPane rootPane;
     private final HistoryPanel historyPanel;
-    private final WissenschaftlichRechnerService rechner;
+    private final RechnerService rechner;
     private final Runnable refresh;
     private final Runnable evaluate;
     private final Runnable closeAction;
@@ -20,7 +20,7 @@ public class KeyboardShortcutBinder
     public KeyboardShortcutBinder(
             JRootPane rootPane,
             HistoryPanel historyPanel,
-            WissenschaftlichRechnerService rechner,
+            RechnerService rechner,
             Runnable refresh,
             Runnable evaluate,
             Runnable closeAction)

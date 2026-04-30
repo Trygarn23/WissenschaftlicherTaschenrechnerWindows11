@@ -12,9 +12,9 @@
 
 - [x] `StandardPanel` als reine UI-Klasse behalten.
 - [x] `%`-Button korrekt mit Prozentfunktion verdrahten.
-- [ ] Standardmodus auf `common.logic.RechnerService` umstellen.
-- [ ] Prüfen, ob `StandardActionFactory` nach dem Action-Refactoring sinnvoll ist.
-- [ ] Standard nicht mehr indirekt über `WissenschaftlichRechnerService` betreiben.
+- [x] Standardmodus auf `common.logic.RechnerService` umstellen.
+- [x] Prüfen, ob `StandardActionFactory` nach dem Action-Refactoring sinnvoll ist. Ergebnis: aktuell nicht nötig.
+- [x] Standard nicht mehr indirekt über `WissenschaftlichRechnerService` betreiben.
 
 ---
 ## Wissenschaftlich
@@ -26,13 +26,13 @@
 - [ ] Wissenschaftliche Schreibweise wie `1,2e-5` unterstützen.
 - [ ] Domain-Prüfungen für `ln`, `sqrt`, `asin`, `acos` verbessern.
 - [ ] Funktionsregistrierung zentralisieren.
-- [ ] `WissenschaftlichOperationen` einführen.
+- [x] `WissenschaftlichOperationen` einführen.
 - [x] `sin`, `cos`, `tan`, `asin`, `acos`, `atan` nach `WissenschaftlichOperationen` verschieben.
 - [x] `sinh`, `cosh`, `tanh` nach `WissenschaftlichOperationen` verschieben.
 - [x] `ln`, `log`, `exp`, `abs`, `floor`, `ceil`, `round`, `rand` nach `WissenschaftlichOperationen` verschieben.
-- [ ] ! `fakultaet()` nach `WissenschaftlichOperationen` verschieben oder später als Parser-Funktion ergänzen.
+- [x] `fakultaet()` nach `WissenschaftlichOperationen` verschieben oder später als Parser-Funktion ergänzen.
 - [x] Wissenschaftliches `f(x)`-Popup ans Theme-System anbinden.
-- [ ] Wissenschaftliche Funktionsbuttons nicht mehr direkt in `TaschenrechnerUI` verdrahten.
+- [x] Wissenschaftliche Funktionsbuttons nicht mehr direkt in `TaschenrechnerUI` verdrahten.
 ---
 
 ## Programmierer
@@ -52,7 +52,7 @@
 - [ ] A-F-Buttons bei BIN/OCT/DEC deaktivieren.
 - [ ] Ungültige Ziffern nicht nur logisch ignorieren, sondern UI-seitig deaktivieren.
 - [ ] Logischen Right Shift ergänzen.
-- [ ] PRG-Tests ergänzen.
+- [x] PRG-Tests ergänzen.
 - [ ] Operatoren für PRG-Modus im Parser ergänzen.
 - [ ] Formatter für BIN OCT HEX ergänzen.
 - [ ] `formatBinary()` aus `ProgrammiererPanel` in `ProgrammiererFormatter` verschieben.
@@ -61,8 +61,8 @@
 ---
 
 ## Graph
-- [ ] `GraphPlaceholderPanel` vorerst behalten.
-- [ ] Kein leeres `logic`/`model`-Package erzwingen.
+- [x] `GraphPlaceholderPanel` vorerst behalten.
+- [x] Kein leeres `logic`/`model`-Package erzwingen.
 - [ ] Parser erst um Variablenunterstützung für `x` erweitern, wenn `common.parser` stabil ist.
 - [ ] Parser um Variablenunterstützung für `x` erweitern.
 - [ ] Danach `GraphState`, `GraphPanel`, `FunktionsDefinition` und `Wertetabelle` planen.
@@ -75,8 +75,8 @@
 ---
 
 ## Komplex
-- [ ] `KomplexPlaceholderPanel` vorerst behalten.
-- [ ] Kein leeres `logic`/`model`-Package erzwingen.
+- [x] `KomplexPlaceholderPanel` vorerst behalten.
+- [x] Kein leeres `logic`/`model`-Package erzwingen.
 - [ ] Später `KomplexeZahl` als erstes echtes Modell einführen.
 - [ ] Danach `KomplexParser`, `KomplexFormatter` und `KomplexRechnerService` planen.
 - [ ] Komplex-Modus UI bauen.
@@ -102,8 +102,8 @@
 ## Refactoring
 - [x] Parser-Tests vorhanden.
 - [x] Logik-Tests vorhanden.
-- [ ] Parser-Tests prüfen und fehlende Edgecases ergänzen.
-- [ ] Logik-Tests prüfen und fehlende Edgecases ergänzen.
+- [x] Parser-Tests prüfen und fehlende Edgecases ergänzen.
+- [x] Logik-Tests prüfen und fehlende Edgecases ergänzen.
 - [x] Theme-System in echte Themes umbauen.
 - [x] Dark Theme verbessern.
 - [x] Light Theme verbessern.

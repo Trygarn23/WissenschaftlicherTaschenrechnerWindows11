@@ -24,7 +24,7 @@ public class RechnerService
         this.speicherService = new SpeicherService(speicherState, berechnungsService, ausdruckEditor, zahlenFormatierer);
     }
 
-    protected AusdruckEditor getAusdruckEditor()
+    public AusdruckEditor getAusdruckEditor()
     {
         return ausdruckEditor;
     }

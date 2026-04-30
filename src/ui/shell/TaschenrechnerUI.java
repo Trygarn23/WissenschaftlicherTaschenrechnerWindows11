@@ -7,7 +7,8 @@ import modes.graph.ui.GraphPlaceholderPanel;
 import modes.komplex.ui.KomplexPlaceholderPanel;
 import modes.programmierer.ui.ProgrammiererHostPanel;
 import modes.standard.ui.StandardPanel;
-import modes.wissenschaftlich.logic.WissenschaftlichRechnerService;
+import common.logic.RechnerService;
+import modes.wissenschaftlich.logic.WissenschaftlichOperationen;
 import modes.wissenschaftlich.ui.WissenschaftlichPanel;
 import ui.theme.AppTheme;
 import ui.theme.ThemeManager;
@@ -22,7 +23,8 @@ import java.util.Map;
 public class TaschenrechnerUI extends JFrame
 {
     private final ThemeManager themeManager = new ThemeManager();
-    private final WissenschaftlichRechnerService rechner = new WissenschaftlichRechnerService();
+    private final RechnerService rechner = new RechnerService();
+    private final WissenschaftlichOperationen wissenschaftlichOperationen = new WissenschaftlichOperationen(rechner.getAusdruckEditor());
     private final VerlaufService verlaufService = new VerlaufService(new DateiVerlaufRepository());
 
     private RechnerModus aktuellerModus = RechnerModus.STANDARD;
@@ -42,7 +44,7 @@ public class TaschenrechnerUI extends JFrame
         configureFrame();
         buildLayout();
 
-        shellActionRegistry = new ShellActionRegistry(rechner, this::refresh, this::refreshWithExtraInfo, this::evaluate);
+        shellActionRegistry = new ShellActionRegistry(rechner, wissenschaftlichOperationen, this::refresh, this::refreshWithExtraInfo, this::evaluate);
 
         initModeContent();
         wireShellEvents();
@@ -210,6 +212,11 @@ public class TaschenrechnerUI extends JFrame
 
     private void applyThemeRecursively(Component component)
     {
+        if (component instanceof WissenschaftlichPanel wissenschaftlichPanel)
+        {
+            wissenschaftlichPanel.applyTheme(theme());
+        }
+
         if (component instanceof JButton button)
         {
             styleButton(button, button.getText());
