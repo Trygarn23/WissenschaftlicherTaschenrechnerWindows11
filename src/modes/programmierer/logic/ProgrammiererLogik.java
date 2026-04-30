@@ -47,6 +47,29 @@ public class ProgrammiererLogik
         return state.getWortbreite();
     }
 
+    public boolean isUnsigned()
+    {
+        return state.isUnsigned();
+    }
+
+    public void setUnsigned(boolean unsigned)
+    {
+        if (state.isUnsigned() == unsigned)
+        {
+            return;
+        }
+
+        state.setUnsigned(unsigned);
+        state.setWert(maskiere(state.getWert()));
+        linkerOperand = maskiere(linkerOperand);
+        eingabeSetzenAusWert();
+    }
+
+    public void toggleUnsigned()
+    {
+        setUnsigned(!state.isUnsigned());
+    }
+
     public void clear()
     {
         eingabe.setLength(0);
@@ -101,7 +124,7 @@ public class ProgrammiererLogik
 
     public void vorzeichenWechseln()
     {
-        if (state.getBasis() != Basis.DEC)
+        if (state.getBasis() != Basis.DEC || state.isUnsigned())
         {
             return;
         }
@@ -149,7 +172,22 @@ public class ProgrammiererLogik
 
     public void shiftRight()
     {
+        shiftRightArithmetic();
+    }
+
+    public void shiftRightArithmetic()
+    {
         state.setWert(maskiere(state.getWert() >> 1));
+        pendingOperation = Operation.NONE;
+        neuesEingabefeld = true;
+        eingabeSetzenAusWert();
+    }
+
+    public void shiftRightLogical()
+    {
+        long unsignedValue = unsignedDarstellung(state.getWert());
+
+        state.setWert(maskiere(unsignedValue >>> 1));
         pendingOperation = Operation.NONE;
         neuesEingabefeld = true;
         eingabeSetzenAusWert();
@@ -212,7 +250,9 @@ public class ProgrammiererLogik
         {
             case BIN -> Long.toBinaryString(unsignedDarstellung(wert));
             case OCT -> Long.toOctalString(unsignedDarstellung(wert));
-            case DEC -> Long.toString(wert);
+            case DEC -> state.isUnsigned()
+                    ? unsignedDecimalString(wert)
+                    : Long.toString(wert);
             case HEX -> Long.toHexString(unsignedDarstellung(wert)).toUpperCase();
         };
     }
@@ -259,16 +299,25 @@ public class ProgrammiererLogik
 
         try
         {
-            long wert = (state.getBasis() == Basis.DEC)
-                    ? Long.parseLong(text)
-                    : Long.parseUnsignedLong(text, state.getBasis().getRadix());
-
+            long wert = parseEingabe(text);
             state.setWert(maskiere(wert));
         }
         catch (NumberFormatException ex)
         {
             state.setWert(0);
         }
+    }
+
+    private long parseEingabe(String text)
+    {
+        if (state.getBasis() == Basis.DEC)
+        {
+            return state.isUnsigned()
+                    ? Long.parseUnsignedLong(text)
+                    : Long.parseLong(text);
+        }
+
+        return Long.parseUnsignedLong(text, state.getBasis().getRadix());
     }
 
     private void eingabeSetzenAusWert()
@@ -302,7 +351,7 @@ public class ProgrammiererLogik
         long maske = (1L << bits) - 1;
         long masked = wert & maske;
 
-        if (state.getBasis() == Basis.DEC)
+        if (!state.isUnsigned())
         {
             long signBit = 1L << (bits - 1);
             if ((masked & signBit) != 0)
@@ -325,5 +374,17 @@ public class ProgrammiererLogik
 
         long maske = (1L << bits) - 1;
         return wert & maske;
+    }
+
+    private String unsignedDecimalString(long wert)
+    {
+        int bits = state.getWortbreite().getBits();
+
+        if (bits == 64)
+        {
+            return Long.toUnsignedString(wert);
+        }
+
+        return Long.toString(unsignedDarstellung(wert));
     }
 }

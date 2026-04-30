@@ -1,5 +1,6 @@
 package modes.programmierer.ui;
 
+import modes.programmierer.formatting.ProgrammiererFormatter;
 import modes.programmierer.logic.ProgrammiererLogik;
 import modes.programmierer.model.Basis;
 import modes.programmierer.model.Wortbreite;
@@ -10,6 +11,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ProgrammiererPanel extends JPanel
@@ -25,10 +27,14 @@ public class ProgrammiererPanel extends JPanel
     private static final Color MODE_INACTIVE_BG = new Color(34, 39, 52);
     private static final Color MODE_BORDER = new Color(58, 66, 84);
 
+    private static final Color DISABLED_BG = new Color(35, 35, 35);
+    private static final Color DISABLED_FG = new Color(105, 105, 105);
+
     private static final String BASE_COLOR_KEY = "baseColor";
     private static final String ACTIVE_KEY = "active";
 
     private final ProgrammiererLogik logik = new ProgrammiererLogik();
+    private final ProgrammiererFormatter formatter = new ProgrammiererFormatter();
 
     private final JLabel aktuelleBasisLabel = new JLabel("DEC: 0", SwingConstants.RIGHT);
     private final JLabel hexLabel = new JLabel("HEX: 0", SwingConstants.RIGHT);
@@ -38,6 +44,9 @@ public class ProgrammiererPanel extends JPanel
 
     private final Map<Basis, JButton> basisButtons = new EnumMap<>(Basis.class);
     private final Map<Wortbreite, JButton> wortbreiteButtons = new EnumMap<>(Wortbreite.class);
+    private final Map<String, JButton> tastenButtons = new HashMap<>();
+
+    private JButton unsignedButton;
 
     public ProgrammiererPanel()
     {
@@ -122,8 +131,8 @@ public class ProgrammiererPanel extends JPanel
                 "A", "B", "C", "D", "←",
                 "E", "F", "NOT", "<<", ">>",
                 "7", "8", "9", "AND", "OR",
-                "4", "5", "6", "XOR", "C",
-                "1", "2", "3", "(", ")",
+                "4", "5", "6", "XOR", "CLR",
+                "1", "2", "3", ">>>", "SIGNED",
                 "±", "0", "=", "+", "-"
         };
 
@@ -132,6 +141,13 @@ public class ProgrammiererPanel extends JPanel
             JButton btn = createStyledButton(text);
             btn.addActionListener(e -> handleButton(text));
             panel.add(btn);
+
+            tastenButtons.put(text, btn);
+
+            if ("SIGNED".equals(text))
+            {
+                unsignedButton = btn;
+            }
         }
 
         return panel;
@@ -201,24 +217,28 @@ public class ProgrammiererPanel extends JPanel
             @Override
             public void mousePressed(MouseEvent e)
             {
+                if (!btn.isEnabled()) return;
                 btn.setBackground(dunkelColor(baseColor, 25));
             }
 
             @Override
             public void mouseReleased(MouseEvent e)
             {
+                if (!btn.isEnabled()) return;
                 btn.setBackground(helleColor(baseColor, 20));
             }
 
             @Override
             public void mouseEntered(MouseEvent e)
             {
+                if (!btn.isEnabled()) return;
                 btn.setBackground(helleColor(baseColor, 20));
             }
 
             @Override
             public void mouseExited(MouseEvent e)
             {
+                if (!btn.isEnabled()) return;
                 btn.setBackground((Color) btn.getClientProperty(BASE_COLOR_KEY));
             }
         });
@@ -297,11 +317,12 @@ public class ProgrammiererPanel extends JPanel
     {
         switch (text)
         {
-            case "C" -> logik.clear();
+            case "CLR" -> logik.clear();
             case "←" -> logik.backspace();
             case "NOT" -> logik.not();
             case "<<" -> logik.shiftLeft();
-            case ">>" -> logik.shiftRight();
+            case ">>" -> logik.shiftRightArithmetic();
+            case ">>>" -> logik.shiftRightLogical();
             case "AND" -> logik.and();
             case "OR" -> logik.or();
             case "XOR" -> logik.xor();
@@ -309,9 +330,7 @@ public class ProgrammiererPanel extends JPanel
             case "-" -> logik.minus();
             case "=" -> logik.berechne();
             case "±" -> logik.vorzeichenWechseln();
-            case "(", ")" ->
-            {
-            }
+            case "SIGNED", "UNSIGNED" -> logik.toggleUnsigned();
             default -> logik.digitEingeben(text);
         }
 
@@ -321,18 +340,22 @@ public class ProgrammiererPanel extends JPanel
     private void refreshAnzeige()
     {
         String op = logik.getPendingOperationText();
+
         aktuelleBasisLabel.setText(
                 logik.getBasis().name() + ": "
-                        + emptyAsZero(logik.getAktuelleEingabe())
+                        + formatter.emptyAsZero(logik.getAktuelleEingabe())
                         + (op.isEmpty() ? "" : "   [" + op + "]")
         );
-        hexLabel.setText("HEX: " + emptyAsZero(logik.getAnzeige(Basis.HEX)));
-        decLabel.setText("DEC: " + emptyAsZero(logik.getAnzeige(Basis.DEC)));
-        octLabel.setText("OCT: " + emptyAsZero(logik.getAnzeige(Basis.OCT)));
-        binLabel.setText("BIN: " + formatBinary(emptyAsZero(logik.getAnzeige(Basis.BIN))));
+
+        hexLabel.setText("HEX: " + formatter.formatHex(logik.getAnzeige(Basis.HEX)));
+        decLabel.setText("DEC: " + formatter.formatDec(logik.getAnzeige(Basis.DEC)));
+        octLabel.setText("OCT: " + formatter.formatOct(logik.getAnzeige(Basis.OCT)));
+        binLabel.setText("BIN: " + formatter.formatBinary(logik.getAnzeige(Basis.BIN)));
 
         updateBasisButtons();
         updateWortbreiteButtons();
+        updateDigitButtonsByBasis();
+        updateUnsignedButton();
     }
 
     private void updateBasisButtons()
@@ -351,6 +374,71 @@ public class ProgrammiererPanel extends JPanel
             boolean active = entry.getKey() == logik.getWortbreite();
             setModeButtonActive(entry.getValue(), active);
         }
+    }
+
+    private void updateDigitButtonsByBasis()
+    {
+        for (Map.Entry<String, JButton> entry : tastenButtons.entrySet())
+        {
+            String text = entry.getKey();
+            JButton button = entry.getValue();
+
+            if (!text.matches("[0-9A-F]"))
+            {
+                continue;
+            }
+
+            boolean enabled = istTasteGueltigFuerBasis(text, logik.getBasis());
+            setButtonEnabledState(button, text, enabled);
+        }
+
+        JButton plusMinusButton = tastenButtons.get("±");
+        if (plusMinusButton != null)
+        {
+            boolean enabled = logik.getBasis() == Basis.DEC && !logik.isUnsigned();
+            setButtonEnabledState(plusMinusButton, "±", enabled);
+        }
+    }
+
+    private void updateUnsignedButton()
+    {
+        if (unsignedButton == null)
+        {
+            return;
+        }
+
+        unsignedButton.setText(logik.isUnsigned() ? "UNSIGNED" : "SIGNED");
+    }
+
+    private void setButtonEnabledState(JButton button, String text, boolean enabled)
+    {
+        button.setEnabled(enabled);
+
+        if (enabled)
+        {
+            Color baseColor = getButtonBaseColor(text);
+            button.putClientProperty(BASE_COLOR_KEY, baseColor);
+            button.setBackground(baseColor);
+            button.setForeground(getButtonTextColor(text));
+            button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        }
+        else
+        {
+            button.setBackground(DISABLED_BG);
+            button.setForeground(DISABLED_FG);
+            button.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private boolean istTasteGueltigFuerBasis(String text, Basis basis)
+    {
+        return switch (basis)
+        {
+            case BIN -> text.matches("[01]");
+            case OCT -> text.matches("[0-7]");
+            case DEC -> text.matches("[0-9]");
+            case HEX -> text.matches("[0-9A-F]");
+        };
     }
 
     private void setModeButtonActive(JButton button, boolean active)
@@ -378,13 +466,13 @@ public class ProgrammiererPanel extends JPanel
             return new Color(173, 41, 99);
         }
 
-        if (text.equals("C") || text.equals("←"))
+        if (text.equals("CLR") || text.equals("←"))
         {
             return new Color(100, 60, 60);
         }
 
         if (text.equals("NOT") || text.equals("AND") || text.equals("OR") || text.equals("XOR")
-                || text.equals("<<") || text.equals(">>"))
+                || text.equals("<<") || text.equals(">>") || text.equals(">>>"))
         {
             return new Color(173, 41, 99);
         }
@@ -394,7 +482,7 @@ public class ProgrammiererPanel extends JPanel
             return new Color(70, 70, 70);
         }
 
-        if (text.matches("[A-F]") || text.equals("(") || text.equals(")") || text.equals("±"))
+        if (text.matches("[A-F]") || text.equals("±") || text.equals("SIGNED") || text.equals("UNSIGNED"))
         {
             return new Color(60, 60, 60);
         }
@@ -405,44 +493,12 @@ public class ProgrammiererPanel extends JPanel
     private Color getButtonTextColor(String text)
     {
         if ("+-".contains(text) || text.equals("NOT") || text.equals("AND") || text.equals("OR")
-                || text.equals("XOR") || text.equals("<<") || text.equals(">>"))
+                || text.equals("XOR") || text.equals("<<") || text.equals(">>") || text.equals(">>>"))
         {
             return Color.BLACK;
         }
 
         return Color.WHITE;
-    }
-
-    private String emptyAsZero(String value)
-    {
-        return (value == null || value.isBlank()) ? "0" : value;
-    }
-
-    private String formatBinary(String raw)
-    {
-        String text = emptyAsZero(raw).replace(" ", "");
-        StringBuilder sb = new StringBuilder();
-
-        int firstGroupLen = text.length() % 4;
-        if (firstGroupLen == 0)
-        {
-            firstGroupLen = 4;
-        }
-
-        for (int i = 0; i < text.length(); i++)
-        {
-            if (i > 0)
-            {
-                boolean groupBreak = (i == firstGroupLen) || (i > firstGroupLen && (i - firstGroupLen) % 4 == 0);
-                if (groupBreak)
-                {
-                    sb.append(' ');
-                }
-            }
-            sb.append(text.charAt(i));
-        }
-
-        return sb.toString();
     }
 
     private Color helleColor(Color c, int amount)
