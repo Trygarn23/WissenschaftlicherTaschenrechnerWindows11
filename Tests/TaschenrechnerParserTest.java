@@ -1,4 +1,5 @@
-import logic.TaschenrechnerParser;
+import common.parser.AusdruckParser;
+import common.state.WinkelModus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -7,26 +8,34 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TaschenrechnerParserTest {
+public class TaschenrechnerParserTest
+{
+    private static final double EPSILON = 1e-10;
 
-    private static final double EPS = 1e-10;
-
-    @ParameterizedTest
+    @ParameterizedTest(name = "{0} = {1}")
     @MethodSource("basicExpressions")
-    void evaluates_basic_expressions(String expr, double expected) {
-        double actual = TaschenrechnerParser.auswerten(expr, 0.0, TaschenrechnerParser.WinkelModus.DEG);
-        assertEquals(expected, actual, EPS, "expr=" + expr);
+    void auswerten_ShouldEvaluateBasicExpression_WhenExpressionIsValid(String expression, double expected)
+    {
+        // Arrange
+        WinkelModus winkelModus = WinkelModus.DEG;
+
+        // Act
+        double actual = AusdruckParser.auswerten(expression, 0.0, winkelModus);
+
+        // Assert
+        assertEquals(expected, actual, EPSILON);
     }
 
-    static Stream<Object[]> basicExpressions() {
+    static Stream<Object[]> basicExpressions()
+    {
         return Stream.of(
                 new Object[]{"1+2", 3.0},
                 new Object[]{"2*3+4", 10.0},
                 new Object[]{"2*(3+4)", 14.0},
                 new Object[]{"10/4", 2.5},
-                new Object[]{"2^3^2", 512.0},      // right associative: 2^(3^2)
-                new Object[]{"-3+5", 2.0},         // unary number
-                new Object[]{"-(3+5)", -8.0},      // unary minus token u-
+                new Object[]{"2^3^2", 512.0},
+                new Object[]{"-3+5", 2.0},
+                new Object[]{"-(3+5)", -8.0},
                 new Object[]{"5--3", 8.0},
                 new Object[]{"5*-3", -15.0},
                 new Object[]{"10%4", 2.0}
@@ -34,80 +43,251 @@ public class TaschenrechnerParserTest {
     }
 
     @Test
-    void supports_implicit_multiplication_number_parenthesis() {
-        double actual = TaschenrechnerParser.auswerten("2(3+4)", 0.0, TaschenrechnerParser.WinkelModus.DEG);
-        assertEquals(14.0, actual, EPS);
+    void auswerten_ShouldSupportImplicitMultiplication_WhenNumberIsBeforeParenthesis()
+    {
+        // Arrange
+        String expression = "2(3+4)";
+
+        // Act
+        double actual = AusdruckParser.auswerten(expression, 0.0, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(14.0, actual, EPSILON);
     }
 
     @Test
-    void supports_implicit_multiplication_constant() {
-        double actual = TaschenrechnerParser.auswerten("2pi", 0.0, TaschenrechnerParser.WinkelModus.DEG);
-        assertEquals(2.0 * Math.PI, actual, EPS);
+    void auswerten_ShouldSupportImplicitMultiplication_WhenNumberIsBeforeConstant()
+    {
+        // Arrange
+        String expression = "2pi";
+
+        // Act
+        double actual = AusdruckParser.auswerten(expression, 0.0, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(2.0 * Math.PI, actual, EPSILON);
     }
 
     @Test
-    void supports_constants_pi_and_e() {
-        assertEquals(Math.PI, TaschenrechnerParser.auswerten("pi", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
-        assertEquals(Math.E, TaschenrechnerParser.auswerten("e", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
+    void auswerten_ShouldSupportConstants_WhenPiAndEAreUsed()
+    {
+        // Arrange
+        String piExpression = "pi";
+        String eExpression = "e";
+
+        // Act
+        double piActual = AusdruckParser.auswerten(piExpression, 0.0, WinkelModus.DEG);
+        double eActual = AusdruckParser.auswerten(eExpression, 0.0, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(Math.PI, piActual, EPSILON);
+        assertEquals(Math.E, eActual, EPSILON);
     }
 
     @Test
-    void supports_ans_identifier() {
-        double actual = TaschenrechnerParser.auswerten("ans+2", 5.0, TaschenrechnerParser.WinkelModus.DEG);
-        assertEquals(7.0, actual, EPS);
+    void auswerten_ShouldSupportUnicodePi_WhenExpressionUsesPiSymbol()
+    {
+        // Arrange
+        String expression = "2π";
+
+        // Act
+        double actual = AusdruckParser.auswerten(expression, 0.0, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(2.0 * Math.PI, actual, EPSILON);
     }
 
     @Test
-    void supports_decimal_comma_and_dot() {
-        assertEquals(3.5, TaschenrechnerParser.auswerten("3,5", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
-        assertEquals(3.5, TaschenrechnerParser.auswerten("3.5", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
+    void auswerten_ShouldUsePreviousAnswer_WhenAnsIdentifierIsUsed()
+    {
+        // Arrange
+        String expression = "ans+2";
+        double previousAnswer = 5.0;
+
+        // Act
+        double actual = AusdruckParser.auswerten(expression, previousAnswer, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(7.0, actual, EPSILON);
     }
 
     @Test
-    void adds_trailing_zero_if_expression_ends_with_separator() {
-        assertEquals(1.2, TaschenrechnerParser.auswerten("1,2", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
-        assertEquals(1.2, TaschenrechnerParser.auswerten("1,2", 0.0, TaschenrechnerParser.WinkelModus.RAD), EPS);
+    void auswerten_ShouldSupportCommaAndDotDecimals_WhenDecimalSeparatorsAreUsed()
+    {
+        // Arrange
+        String commaExpression = "3,5";
+        String dotExpression = "3.5";
 
-        // ends with comma => should become "1,0"
-        assertEquals(1.0, TaschenrechnerParser.auswerten("1,", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
-        assertEquals(1.0, TaschenrechnerParser.auswerten("1.", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
+        // Act
+        double commaActual = AusdruckParser.auswerten(commaExpression, 0.0, WinkelModus.DEG);
+        double dotActual = AusdruckParser.auswerten(dotExpression, 0.0, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(3.5, commaActual, EPSILON);
+        assertEquals(3.5, dotActual, EPSILON);
     }
 
     @Test
-    void trig_in_deg_mode() {
-        assertEquals(0.0, TaschenrechnerParser.auswerten("sin(0)", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
-        assertEquals(1.0, TaschenrechnerParser.auswerten("sin(90)", 0.0, TaschenrechnerParser.WinkelModus.DEG), 1e-9);
-        assertEquals(0.0, TaschenrechnerParser.auswerten("cos(90)", 0.0, TaschenrechnerParser.WinkelModus.DEG), 1e-9);
+    void auswerten_ShouldAddTrailingZero_WhenExpressionEndsWithSeparator()
+    {
+        // Arrange
+        String commaExpression = "1,";
+        String dotExpression = "1.";
+
+        // Act
+        double commaActual = AusdruckParser.auswerten(commaExpression, 0.0, WinkelModus.DEG);
+        double dotActual = AusdruckParser.auswerten(dotExpression, 0.0, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(1.0, commaActual, EPSILON);
+        assertEquals(1.0, dotActual, EPSILON);
     }
 
     @Test
-    void trig_in_rad_mode() {
-        assertEquals(1.0, TaschenrechnerParser.auswerten("sin(pi/2)", 0.0, TaschenrechnerParser.WinkelModus.RAD), 1e-9);
-        assertEquals(0.0, TaschenrechnerParser.auswerten("cos(pi/2)", 0.0, TaschenrechnerParser.WinkelModus.RAD), 1e-9);
+    void auswerten_ShouldEvaluateTrigonometryInDegrees_WhenWinkelModusIsDeg()
+    {
+        // Arrange
+        WinkelModus winkelModus = WinkelModus.DEG;
+
+        // Act
+        double sinActual = AusdruckParser.auswerten("sin(90)", 0.0, winkelModus);
+        double cosActual = AusdruckParser.auswerten("cos(90)", 0.0, winkelModus);
+        double tanActual = AusdruckParser.auswerten("tan(45)", 0.0, winkelModus);
+
+        // Assert
+        assertEquals(1.0, sinActual, 1e-9);
+        assertEquals(0.0, cosActual, 1e-9);
+        assertEquals(1.0, tanActual, 1e-9);
     }
 
     @Test
-    void functions_ln_log_sqrt_abs_exp() {
-        assertEquals(Math.log(2.0), TaschenrechnerParser.auswerten("ln(2)", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
-        assertEquals(Math.log10(1000.0), TaschenrechnerParser.auswerten("log(1000)", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
-        assertEquals(3.0, TaschenrechnerParser.auswerten("sqrt(9)", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
-        assertEquals(5.0, TaschenrechnerParser.auswerten("abs(-5)", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
-        assertEquals(Math.exp(2.0), TaschenrechnerParser.auswerten("exp(2)", 0.0, TaschenrechnerParser.WinkelModus.DEG), EPS);
+    void auswerten_ShouldEvaluateTrigonometryInRadians_WhenWinkelModusIsRad()
+    {
+        // Arrange
+        WinkelModus winkelModus = WinkelModus.RAD;
+
+        // Act
+        double sinActual = AusdruckParser.auswerten("sin(pi/2)", 0.0, winkelModus);
+        double cosActual = AusdruckParser.auswerten("cos(pi/2)", 0.0, winkelModus);
+
+        // Assert
+        assertEquals(1.0, sinActual, 1e-9);
+        assertEquals(0.0, cosActual, 1e-9);
     }
 
     @Test
-    void rejects_unbalanced_parentheses() {
+    void auswerten_ShouldEvaluateInverseTrigonometry_WhenInputIsInDomain()
+    {
+        // Arrange
+        WinkelModus winkelModus = WinkelModus.DEG;
+
+        // Act
+        double asinActual = AusdruckParser.auswerten("asin(1)", 0.0, winkelModus);
+        double acosActual = AusdruckParser.auswerten("acos(0)", 0.0, winkelModus);
+        double atanActual = AusdruckParser.auswerten("atan(1)", 0.0, winkelModus);
+
+        // Assert
+        assertEquals(90.0, asinActual, 1e-9);
+        assertEquals(90.0, acosActual, 1e-9);
+        assertEquals(45.0, atanActual, 1e-9);
+    }
+
+    @Test
+    void auswerten_ShouldEvaluateCommonFunctions_WhenFunctionsAreValid()
+    {
+        // Arrange
+        WinkelModus winkelModus = WinkelModus.DEG;
+
+        // Act
+        double lnActual = AusdruckParser.auswerten("ln(2)", 0.0, winkelModus);
+        double logActual = AusdruckParser.auswerten("log(1000)", 0.0, winkelModus);
+        double sqrtActual = AusdruckParser.auswerten("sqrt(9)", 0.0, winkelModus);
+        double absActual = AusdruckParser.auswerten("abs(-5)", 0.0, winkelModus);
+        double expActual = AusdruckParser.auswerten("exp(2)", 0.0, winkelModus);
+
+        // Assert
+        assertEquals(Math.log(2.0), lnActual, EPSILON);
+        assertEquals(3.0, logActual, EPSILON);
+        assertEquals(3.0, sqrtActual, EPSILON);
+        assertEquals(5.0, absActual, EPSILON);
+        assertEquals(Math.exp(2.0), expActual, EPSILON);
+    }
+
+    @Test
+    void auswerten_ShouldEvaluateRoundingFunctions_WhenInputHasDecimals()
+    {
+        // Arrange
+        WinkelModus winkelModus = WinkelModus.DEG;
+
+        // Act
+        double floorActual = AusdruckParser.auswerten("floor(2,9)", 0.0, winkelModus);
+        double ceilActual = AusdruckParser.auswerten("ceil(2,1)", 0.0, winkelModus);
+        double roundActual = AusdruckParser.auswerten("round(2,5)", 0.0, winkelModus);
+
+        // Assert
+        assertEquals(2.0, floorActual, EPSILON);
+        assertEquals(3.0, ceilActual, EPSILON);
+        assertEquals(3.0, roundActual, EPSILON);
+    }
+
+    @Test
+    void auswerten_ShouldReturnRandomBetweenZeroAndOne_WhenRandIsUsed()
+    {
+        // Arrange
+        String expression = "rand()";
+
+        // Act
+        double actual = AusdruckParser.auswerten(expression, 0.0, WinkelModus.DEG);
+
+        // Assert
+        assertTrue(actual >= 0.0 && actual < 1.0);
+    }
+
+    @Test
+    void auswerten_ShouldThrowException_WhenParenthesesAreUnbalanced()
+    {
+        // Arrange
+        String missingClosingParenthesis = "(1+2";
+        String missingOpeningParenthesis = "1+2)";
+
+        // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> TaschenrechnerParser.auswerten("(1+2", 0.0, TaschenrechnerParser.WinkelModus.DEG));
+                () -> AusdruckParser.auswerten(missingClosingParenthesis, 0.0, WinkelModus.DEG));
         assertThrows(IllegalArgumentException.class,
-                () -> TaschenrechnerParser.auswerten("1+2)", 0.0, TaschenrechnerParser.WinkelModus.DEG));
+                () -> AusdruckParser.auswerten(missingOpeningParenthesis, 0.0, WinkelModus.DEG));
     }
 
     @Test
-    void rejects_unknown_tokens() {
+    void auswerten_ShouldThrowException_WhenUnknownIdentifierIsUsed()
+    {
+        // Arrange
+        String unknownVariable = "1+a";
+        String unknownFunction = "foo(2)";
+
+        // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> TaschenrechnerParser.auswerten("1+a", 0.0, TaschenrechnerParser.WinkelModus.DEG));
+                () -> AusdruckParser.auswerten(unknownVariable, 0.0, WinkelModus.DEG));
         assertThrows(IllegalArgumentException.class,
-                () -> TaschenrechnerParser.auswerten("foo(2)", 0.0, TaschenrechnerParser.WinkelModus.DEG));
+                () -> AusdruckParser.auswerten(unknownFunction, 0.0, WinkelModus.DEG));
+    }
+
+    @Test
+    void auswerten_ShouldThrowException_WhenFunctionDomainIsInvalid()
+    {
+        // Arrange
+        String sqrtNegative = "sqrt(-1)";
+        String lnZero = "ln(0)";
+        String asinOutOfDomain = "asin(2)";
+        String tanUndefined = "tan(90)";
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> AusdruckParser.auswerten(sqrtNegative, 0.0, WinkelModus.DEG));
+        assertThrows(IllegalArgumentException.class,
+                () -> AusdruckParser.auswerten(lnZero, 0.0, WinkelModus.DEG));
+        assertThrows(IllegalArgumentException.class,
+                () -> AusdruckParser.auswerten(asinOutOfDomain, 0.0, WinkelModus.DEG));
+        assertThrows(IllegalArgumentException.class,
+                () -> AusdruckParser.auswerten(tanUndefined, 0.0, WinkelModus.DEG));
     }
 }
