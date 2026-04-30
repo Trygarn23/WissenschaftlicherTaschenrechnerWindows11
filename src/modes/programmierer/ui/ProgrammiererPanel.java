@@ -4,6 +4,7 @@ import modes.programmierer.formatting.ProgrammiererFormatter;
 import modes.programmierer.logic.ProgrammiererLogik;
 import modes.programmierer.model.Basis;
 import modes.programmierer.model.Wortbreite;
+import ui.theme.AppTheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -452,6 +453,43 @@ public class ProgrammiererPanel extends JPanel
     {
         Object value = button.getClientProperty(ACTIVE_KEY);
         return value instanceof Boolean b && b;
+    }
+
+    public void applyTheme(AppTheme theme)
+    {
+        setBackground(theme.panelBackground());
+
+        aktuelleBasisLabel.setForeground(theme.displayForeground());
+        hexLabel.setForeground(theme.displayForeground());
+        decLabel.setForeground(theme.displayForeground());
+        octLabel.setForeground(theme.displayForeground());
+        binLabel.setForeground(theme.displayForeground());
+
+        for (JButton button : tastenButtons.values())
+        {
+            String text = button.getText();
+
+            if (button.isEnabled())
+            {
+                Color baseColor = getButtonBaseColor(text);
+                button.putClientProperty(BASE_COLOR_KEY, baseColor);
+                button.setBackground(baseColor);
+                button.setForeground(getButtonTextColor(text));
+            }
+        }
+
+        for (JButton button : basisButtons.values())
+        {
+            button.setForeground(theme.functionButtonForeground());
+        }
+
+        for (JButton button : wortbreiteButtons.values())
+        {
+            button.setForeground(theme.functionButtonForeground());
+        }
+
+        revalidate();
+        repaint();
     }
 
     private Color getButtonBaseColor(String text)

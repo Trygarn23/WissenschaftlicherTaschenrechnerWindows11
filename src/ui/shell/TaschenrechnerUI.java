@@ -6,6 +6,7 @@ import common.state.RechnerModus;
 import modes.graph.ui.GraphPlaceholderPanel;
 import modes.komplex.ui.KomplexPlaceholderPanel;
 import modes.programmierer.ui.ProgrammiererHostPanel;
+import modes.programmierer.ui.ProgrammiererPanel;
 import modes.standard.ui.StandardPanel;
 import common.logic.RechnerService;
 import modes.wissenschaftlich.logic.WissenschaftlichOperationen;
@@ -143,12 +144,24 @@ public class TaschenrechnerUI extends JFrame
     private void setAktuellerModus(RechnerModus modus)
     {
         aktuellerModus = modus;
+
+        modeBarPanel.setSelectedMode(modus, themeManager.getCurrentTheme());
         modeContentHostPanel.showMode(modus);
-        modeBarPanel.setSelectedMode(modus, theme());
-        if (keyboardShortcutBinder != null)
+
+        boolean historySichtbar = modus != RechnerModus.PROGRAMMIERER;
+        historyPanel.setVisible(sollHistoryAnzeigen(modus));
+
+        revalidate();
+        repaint();
+    }
+
+    private boolean sollHistoryAnzeigen(RechnerModus modus)
+    {
+        return switch (modus)
         {
-            keyboardShortcutBinder.defocusSearchIfNeeded();
-        }
+            case STANDARD, WISSENSCHAFTLICH -> true;
+            case PROGRAMMIERER, GRAPH, KOMPLEX -> false;
+        };
     }
 
     private void useHistoryEntryResult(String entry)
@@ -199,10 +212,6 @@ public class TaschenrechnerUI extends JFrame
 
         for (Map.Entry<RechnerModus, JPanel> entry : modePanels.entrySet())
         {
-            if (entry.getKey() == RechnerModus.PROGRAMMIERER)
-            {
-                continue;
-            }
             applyThemeRecursively(entry.getValue());
         }
 
@@ -212,6 +221,12 @@ public class TaschenrechnerUI extends JFrame
 
     private void applyThemeRecursively(Component component)
     {
+        if (component instanceof ProgrammiererPanel programmiererPanel)
+        {
+            programmiererPanel.applyTheme(theme());
+            return;
+        }
+
         if (component instanceof WissenschaftlichPanel wissenschaftlichPanel)
         {
             wissenschaftlichPanel.applyTheme(theme());

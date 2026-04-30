@@ -42,22 +42,23 @@
 - [x] Zahl parallel in BIN OCT DEC HEX anzeigen.
 - [x] Wortbreiten-Grundgerüst mit BYTE WORD DWORD QWORD anlegen.
 - [x] PRG-Code in eigenes Package auslagern.
-- [ ] Bit-Operationen AND OR XOR NOT vervollständigen.
-- [ ] Shift-Operationen links und rechts finalisieren.
-- [ ] Signed/Unsigned-Umschaltung ergänzen.
-- [ ] `unsigned` im UI sichtbar machen.
-- [ ] `ProgrammiererLogik.maskiere()` abhängig von `unsigned` machen.
-- [ ] `shiftRight()` in arithmetischen und logischen Right Shift trennen.
+- [x] Bit-Operationen AND OR XOR NOT vervollständigen.
+- [x] Shift-Operationen links und rechts finalisieren.
+- [x] Signed/Unsigned-Umschaltung ergänzen.
+- [x] `unsigned` im UI sichtbar machen.
+- [x] `ProgrammiererLogik.maskiere()` abhängig von `unsigned` machen.
+- [x] `shiftRight()` in arithmetischen und logischen Right Shift trennen.
 - [ ] Buttons je nach Basis deaktivieren.
-- [ ] A-F-Buttons bei BIN/OCT/DEC deaktivieren.
-- [ ] Ungültige Ziffern nicht nur logisch ignorieren, sondern UI-seitig deaktivieren.
-- [ ] Logischen Right Shift ergänzen.
+- [x] A-F-Buttons bei BIN/OCT/DEC deaktivieren.
+- [x] Ungültige Ziffern nicht nur logisch ignorieren, sondern UI-seitig deaktivieren.
+- [x] Logischen Right Shift ergänzen.
 - [x] PRG-Tests ergänzen.
 - [ ] Operatoren für PRG-Modus im Parser ergänzen.
-- [ ] Formatter für BIN OCT HEX ergänzen.
-- [ ] `formatBinary()` aus `ProgrammiererPanel` in `ProgrammiererFormatter` verschieben.
+- [x] Formatter für BIN OCT HEX ergänzen.
+- [x] `formatBinary()` aus `ProgrammiererPanel` in `ProgrammiererFormatter` verschieben.
 - [ ] `ProgrammiererPanel` erst nach Funktionsabschluss in kleinere Panels splitten.
 - [ ] `ProgrammiererHostPanel` nur behalten, wenn dort zusätzliche Host-Funktion entsteht.
+- [x] History/Suche im Programmiermodus ausblenden.
 ---
 
 ## Graph
@@ -112,7 +113,7 @@
 - [x] Neon Theme hinzufügen.
 - [x] Matrix Theme hinzufügen.
 - [x] Aktives Theme persistent speichern.
-- [ ] ! Themes für Programmiermodus übernehmen.
+- [x] Themes für Programmiermodus übernehmen.
 - [ ] Layouts überarbeiten für:
     - [ ] Standard.
     - [ ] Wissenschaftlich.
