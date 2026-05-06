@@ -1,4 +1,6 @@
 import common.parser.AusdruckParser;
+import common.parser.AusdruckParserException;
+import common.parser.ParserFehler;
 import common.state.WinkelModus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -289,5 +291,19 @@ public class TaschenrechnerParserTest
                 () -> AusdruckParser.auswerten(asinOutOfDomain, 0.0, WinkelModus.DEG));
         assertThrows(IllegalArgumentException.class,
                 () -> AusdruckParser.auswerten(tanUndefined, 0.0, WinkelModus.DEG));
+    }
+
+    @Test
+    void auswerten_ShouldExposeSpecificParserError_WhenDivisionByZeroIsUsed()
+    {
+        // Arrange
+        String expression = "1/0";
+
+        // Act
+        AusdruckParserException exception = assertThrows(AusdruckParserException.class,
+                () -> AusdruckParser.auswerten(expression, 0.0, WinkelModus.DEG));
+
+        // Assert
+        assertEquals(ParserFehler.DIVISION_DURCH_NULL, exception.getFehler());
     }
 }

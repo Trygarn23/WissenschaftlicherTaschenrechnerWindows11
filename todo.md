@@ -1,12 +1,12 @@
 # Taschenrechner Projekt
 
 ## Simple
-- [ ] Tooltips für Buttons hinzufügen.
-- [ ] Tastenkürzel in Tooltips anzeigen.
-- [ ] Copy/Paste fürs Display ergänzen.
-- [ ] Statusanzeige für Winkelmodus, Speicherstatus und Modus ergänzen.
-- [ ] Resize-Verhalten verbessern.
-- [ ] Display überarbeiten.
+- [x] Tooltips für Buttons hinzufügen.
+- [x] Tastenkürzel in Tooltips anzeigen.
+- [x] Copy/Paste fürs Display ergänzen.
+- [x] Statusanzeige für Winkelmodus, Speicherstatus und Modus ergänzen.
+- [x] Resize-Verhalten verbessern.
+- [x] Display überarbeiten.
 ---
 ## Standardmodus
 
@@ -22,7 +22,7 @@
 - [ ] Wissenschaftliche Notation für kleine Zahlen ergänzen.
 - [ ] Einstellbare Präzision hinzufügen.
 - [ ] Live-Formatierung für längere Ausdrücke verbessern.
-- [ ] Bessere Fehlermeldungen statt nur Fehler einführen.
+- [x] Bessere Fehlermeldungen statt nur Fehler einführen.
 - [ ] Wissenschaftliche Schreibweise wie `1,2e-5` unterstützen.
 - [ ] Domain-Prüfungen für `ln`, `sqrt`, `asin`, `acos` verbessern.
 - [ ] Funktionsregistrierung zentralisieren.
@@ -112,6 +112,7 @@
 - [x] Win11 Theme hinzufügen.
 - [x] Neon Theme hinzufügen.
 - [x] Matrix Theme hinzufügen.
+- [ ] Nutzer eigene Theme kreation überlassen
 - [x] Aktives Theme persistent speichern.
 - [x] Themes für Programmiermodus übernehmen.
 - [ ] Layouts überarbeiten für:

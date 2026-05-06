@@ -114,9 +114,19 @@ public class RechnerService
         ausdruckEditor.setzeAusdruckAusVerlaufErgebnis(verlaufErgebnis);
     }
 
+    public void setzeAusdruckAusZwischenablage(String text)
+    {
+        ausdruckEditor.setzeAusdruckAusZwischenablage(text);
+    }
+
     public String berechne()
     {
         return berechnungsService.berechne();
+    }
+
+    public BerechnungsErgebnis berechneDetailliert()
+    {
+        return berechnungsService.berechneDetailliert();
     }
 
     public String formatiereZahl(double zahl)
@@ -162,5 +172,10 @@ public class RechnerService
     public String speicherSubtrahieren()
     {
         return speicherService.speicherSubtrahieren();
+    }
+
+    public boolean hatSpeicherWert()
+    {
+        return speicherService.hatSpeicherWert();
     }
 }

@@ -8,6 +8,7 @@ import modes.komplex.ui.KomplexPlaceholderPanel;
 import modes.programmierer.ui.ProgrammiererHostPanel;
 import modes.programmierer.ui.ProgrammiererPanel;
 import modes.standard.ui.StandardPanel;
+import common.logic.BerechnungsErgebnis;
 import common.logic.RechnerService;
 import modes.wissenschaftlich.logic.WissenschaftlichOperationen;
 import modes.wissenschaftlich.ui.WissenschaftlichPanel;
@@ -139,6 +140,7 @@ public class TaschenrechnerUI extends JFrame
         globalActionBarPanel.setThemeSelectionListener(this::setTheme);
         historyPanel.setClearHistoryListener(e -> speichereVerlauf());
         historyPanel.setEntryDoubleClickListener(this::useHistoryEntryResult);
+        displayPanel.setPasteListener(this::pasteDisplayText);
     }
 
     private void setAktuellerModus(RechnerModus modus)
@@ -148,9 +150,10 @@ public class TaschenrechnerUI extends JFrame
         modeBarPanel.setSelectedMode(modus, themeManager.getCurrentTheme());
         modeContentHostPanel.showMode(modus);
 
-        boolean historySichtbar = modus != RechnerModus.PROGRAMMIERER;
+        displayPanel.setVisible(sollGlobalesDisplayAnzeigen(modus));
         historyPanel.setVisible(sollHistoryAnzeigen(modus));
 
+        updateStatus();
         revalidate();
         repaint();
     }
@@ -162,6 +165,11 @@ public class TaschenrechnerUI extends JFrame
             case STANDARD, WISSENSCHAFTLICH -> true;
             case PROGRAMMIERER, GRAPH, KOMPLEX -> false;
         };
+    }
+
+    private boolean sollGlobalesDisplayAnzeigen(RechnerModus modus)
+    {
+        return modus != RechnerModus.PROGRAMMIERER;
     }
 
     private void useHistoryEntryResult(String entry)
@@ -181,6 +189,7 @@ public class TaschenrechnerUI extends JFrame
         displayPanel.setMainText(rechner.formatiereLiveAnzeige());
         displayPanel.setSecondaryText(rechner.getVerlauf());
         globalActionBarPanel.setAngleModeText(rechner.getWinkelModus().name());
+        updateStatus();
     }
 
     private void refreshWithExtraInfo(String info)
@@ -189,6 +198,29 @@ public class TaschenrechnerUI extends JFrame
         String verlauf = rechner.getVerlauf();
         displayPanel.setSecondaryText(info + (verlauf.isEmpty() ? "" : " | " + verlauf));
         globalActionBarPanel.setAngleModeText(rechner.getWinkelModus().name());
+        updateStatus();
+    }
+
+    private void updateStatus()
+    {
+        String speicherText = rechner.hatSpeicherWert() ? "M belegt" : "Speicher leer";
+        displayPanel.setStatusText(
+                "Modus: " + aktuellerModus.getLabel()
+                        + " | Winkel: " + rechner.getWinkelModus().name()
+                        + " | " + speicherText
+        );
+    }
+
+    private void pasteDisplayText(String text)
+    {
+        if (aktuellerModus != RechnerModus.STANDARD && aktuellerModus != RechnerModus.WISSENSCHAFTLICH)
+        {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
+        rechner.setzeAusdruckAusZwischenablage(text);
+        refresh();
     }
 
     private void setTheme(ThemeType themeType)
@@ -292,16 +324,19 @@ public class TaschenrechnerUI extends JFrame
 
     private void evaluate()
     {
-        String res = rechner.berechne();
-        displayPanel.setMainText(res);
+        BerechnungsErgebnis ergebnis = rechner.berechneDetailliert();
+        displayPanel.setMainText(ergebnis.getAnzeigeText());
 
-        String verlauf = rechner.getVerlauf();
-        displayPanel.setSecondaryText(verlauf);
-
-        if (!"Fehler".equals(res))
+        if (ergebnis.isErfolgreich())
         {
-            addHistoryEntry(verlauf);
+            displayPanel.setSecondaryText(ergebnis.getVerlaufText());
+            addHistoryEntry(ergebnis.getVerlaufText());
+            updateStatus();
+            return;
         }
+
+        displayPanel.setSecondaryText(ergebnis.getFehlerMeldung());
+        updateStatus();
     }
 
     private void addHistoryEntry(String entry)

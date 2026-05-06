@@ -217,6 +217,26 @@ public class AusdruckEditor
         zustand.setGleichGedrueckt(false);
     }
 
+    public void setzeAusdruckAusZwischenablage(String text)
+    {
+        if (text == null) return;
+
+        String normalisiert = text.trim()
+                .replaceAll("\\s+", "")
+                .replace('×', '*')
+                .replace('÷', '/')
+                .replace('−', '-')
+                .replace('–', '-')
+                .replace('—', '-');
+
+        if (normalisiert.isBlank()) return;
+
+        ausdruck.setLength(0);
+        ausdruck.append(normalisiert);
+        verlauf.setLength(0);
+        zustand.setGleichGedrueckt(false);
+    }
+
     public String konstanteEinsetzen(double wert)
     {
         resetNachGleichWennNoetig();

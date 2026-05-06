@@ -28,4 +28,9 @@ public class SpeicherState
     {
         wert -= betrag;
     }
+
+    public boolean hatWert()
+    {
+        return wert != 0.0;
+    }
 }

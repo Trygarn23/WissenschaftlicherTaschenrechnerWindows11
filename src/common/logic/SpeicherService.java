@@ -44,4 +44,9 @@ public class SpeicherService
         speicherState.subtrahiere(berechnungsService.aktuellerWertOder0());
         return zahlenFormatierer.formatiereZahl(speicherState.getWert());
     }
+
+    public boolean hatSpeicherWert()
+    {
+        return speicherState.hatWert();
+    }
 }

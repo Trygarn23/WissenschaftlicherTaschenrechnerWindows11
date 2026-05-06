@@ -1,5 +1,7 @@
 package modes.standard.ui;
 
+import ui.tooltips.ButtonTooltips;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -30,6 +32,7 @@ public class StandardPanel extends JPanel
     {
         JButton button = new JButton(text);
         button.setFocusable(false);
+        ButtonTooltips.apply(button, text);
         return button;
     }
 }

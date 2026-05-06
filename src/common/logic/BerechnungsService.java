@@ -2,12 +2,12 @@ package common.logic;
 
 import common.formatting.ZahlenFormatter;
 import common.parser.AusdruckParser;
+import common.parser.AusdruckParserException;
+import common.parser.ParserFehler;
 import common.state.RechnerZustand;
 
 public class BerechnungsService
 {
-    private static final String FEHLER_TEXT = "Fehler";
-
     private final RechnerZustand zustand;
     private final ZahlenFormatter zahlenFormatierer;
     private final StringBuilder ausdruck;
@@ -23,14 +23,21 @@ public class BerechnungsService
 
     public String berechne()
     {
+        return berechneDetailliert().getAnzeigeText();
+    }
+
+    public BerechnungsErgebnis berechneDetailliert()
+    {
         try
         {
             String original = ausdruck.toString();
             double ergebnis = AusdruckParser.auswerten(original, zustand.getLetzteAntwort(), zustand.getWinkelModus());
 
-            if (!Double.isFinite(ergebnis)) return fehler();
+            if (!Double.isFinite(ergebnis)) return fehler(BerechnungsFehler.UNGUELTIGES_ERGEBNIS);
 
             zustand.setLetzteAntwort(ergebnis);
+
+            String formatiertergebnis = zahlenFormatierer.formatiereZahl(ergebnis);
 
             ausdruck.setLength(0);
             ausdruck.append(zahlenFormatierer.interneDarstellung(ergebnis));
@@ -38,13 +45,17 @@ public class BerechnungsService
             zustand.setGleichGedrueckt(true);
 
             verlauf.setLength(0);
-            verlauf.append(original).append(" = ").append(zahlenFormatierer.formatiereZahl(ergebnis));
+            verlauf.append(original).append(" = ").append(formatiertergebnis);
 
-            return zahlenFormatierer.formatiereZahl(ergebnis);
+            return BerechnungsErgebnis.erfolg(formatiertergebnis, verlauf.toString());
+        }
+        catch (AusdruckParserException e)
+        {
+            return fehler(mappeParserFehler(e.getFehler()));
         }
         catch (Exception e)
         {
-            return fehler();
+            return fehler(BerechnungsFehler.SYNTAX);
         }
     }
 
@@ -72,11 +83,24 @@ public class BerechnungsService
         return "+-*/^%".indexOf(zeichen) >= 0 || zeichen == '(';
     }
 
-    private String fehler()
+    private BerechnungsErgebnis fehler(BerechnungsFehler fehler)
     {
         ausdruck.setLength(0);
         verlauf.setLength(0);
         zustand.setGleichGedrueckt(true);
-        return FEHLER_TEXT;
+        return BerechnungsErgebnis.fehler(fehler);
+    }
+
+    private BerechnungsFehler mappeParserFehler(ParserFehler fehler)
+    {
+        return switch (fehler)
+        {
+            case SYNTAX -> BerechnungsFehler.SYNTAX;
+            case DIVISION_DURCH_NULL -> BerechnungsFehler.DIVISION_DURCH_NULL;
+            case UNGUELTIGER_FUNKTIONSBEREICH -> BerechnungsFehler.UNGUELTIGER_FUNKTIONSBEREICH;
+            case UNBEKANNTE_FUNKTION -> BerechnungsFehler.UNBEKANNTE_FUNKTION;
+            case KLAMMERN_UNAUSGEGLICHEN -> BerechnungsFehler.KLAMMERN_UNAUSGEGLICHEN;
+            case UNGUELTIGES_ERGEBNIS -> BerechnungsFehler.UNGUELTIGES_ERGEBNIS;
+        };
     }
 }

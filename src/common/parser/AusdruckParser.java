@@ -36,7 +36,7 @@ public final class AusdruckParser
 
     public static double auswerten(String expr, double ans, WinkelModus winkelModus)
     {
-        if (expr == null) throw new IllegalArgumentException("expr is null");
+        if (expr == null) throw parserFehler(ParserFehler.SYNTAX, "expr is null");
 
         String normalized = normalize(expr);
         normalized = ensureTrailingZero(normalized);
@@ -103,7 +103,9 @@ public final class AusdruckParser
 
             if (isIdentifierChar(c))
             {
-                flush(number, tokens);
+                String flushedNumber = flush(number, tokens);
+                if (flushedNumber != null) prev = flushedNumber;
+
                 if (isValue(prev)) tokens.add(MUL);
 
                 ident.append(c);
@@ -127,7 +129,9 @@ public final class AusdruckParser
 
             if (Character.isDigit(c) || c == ',' || c == '.' || unaryNumber)
             {
-                flush(ident, tokens);
+                String flushedIdent = flush(ident, tokens);
+                if (flushedIdent != null) prev = flushedIdent;
+
                 if (number.isEmpty() && isValue(prev)) tokens.add(MUL);
 
                 number.append(c);
@@ -135,8 +139,11 @@ public final class AusdruckParser
                 continue;
             }
 
-            flush(number, tokens);
-            flush(ident, tokens);
+            String flushedNumber = flush(number, tokens);
+            if (flushedNumber != null) prev = flushedNumber;
+
+            String flushedIdent = flush(ident, tokens);
+            if (flushedIdent != null) prev = flushedIdent;
 
             String t = String.valueOf(c);
 
@@ -156,7 +163,7 @@ public final class AusdruckParser
                 prev = t;
             } else
             {
-                throw new IllegalArgumentException("Unknown token: " + t);
+                throw parserFehler(ParserFehler.SYNTAX, "Unknown token: " + t);
             }
         }
 
@@ -205,7 +212,7 @@ public final class AusdruckParser
                     out.add(stack.pop());
                 }
 
-                if (stack.isEmpty()) throw new IllegalArgumentException("Unbalanced parentheses");
+                if (stack.isEmpty()) throw parserFehler(ParserFehler.KLAMMERN_UNAUSGEGLICHEN, "Unbalanced parentheses");
                 stack.pop();
 
                 if (!stack.isEmpty() && isFunction(stack.peek()))
@@ -214,14 +221,14 @@ public final class AusdruckParser
                 }
             } else
             {
-                throw new IllegalArgumentException("Unknown token: " + t);
+                throw parserFehler(ParserFehler.SYNTAX, "Unknown token: " + t);
             }
         }
 
         while (!stack.isEmpty())
         {
             String t = stack.pop();
-            if (OPEN.equals(t)) throw new IllegalArgumentException("Unbalanced parentheses");
+            if (OPEN.equals(t)) throw parserFehler(ParserFehler.KLAMMERN_UNAUSGEGLICHEN, "Unbalanced parentheses");
             out.add(t);
         }
 
@@ -244,24 +251,32 @@ public final class AusdruckParser
                     case "pi" -> Math.PI;
                     case "e" -> Math.E;
                     case "ans" -> ans;
-                    default -> throw new IllegalArgumentException("Unknown identifier: " + t);
+                    default -> throw parserFehler(ParserFehler.UNBEKANNTE_FUNKTION, "Unknown identifier: " + t);
                 });
             } else if (UNARY_MINUS.equals(t))
             {
-                stack.push(-stack.pop());
+                stack.push(-popOperand(stack));
             } else if (isOperator(t))
             {
-                double b = stack.pop();
-                double a = stack.pop();
+                double b = popOperand(stack);
+                double a = popOperand(stack);
                 stack.push(switch (t)
                 {
                     case "+" -> a + b;
                     case "-" -> a - b;
                     case "*" -> a * b;
-                    case "/" -> a / b;
-                    case "%" -> a % b;
+                    case "/" ->
+                    {
+                        if (b == 0.0) throw parserFehler(ParserFehler.DIVISION_DURCH_NULL, "Division by zero");
+                        yield a / b;
+                    }
+                    case "%" ->
+                    {
+                        if (b == 0.0) throw parserFehler(ParserFehler.DIVISION_DURCH_NULL, "Modulo by zero");
+                        yield a % b;
+                    }
                     case "^" -> Math.pow(a, b);
-                    default -> throw new IllegalArgumentException("Unknown operator: " + t);
+                    default -> throw parserFehler(ParserFehler.SYNTAX, "Unknown operator: " + t);
                 });
             }
             else if (isFunction(t))
@@ -274,7 +289,7 @@ public final class AusdruckParser
                 }
                 else
                 {
-                    double x = stack.pop();
+                    double x = popOperand(stack);
 
                     double trigArg = x;
                     if (mode == WinkelModus.DEG && ("sin".equals(t) || "cos".equals(t) || "tan".equals(t)))
@@ -290,7 +305,7 @@ public final class AusdruckParser
                         {
                             if (Math.abs(Math.cos(trigArg)) < 1e-12)
                             {
-                                throw new IllegalArgumentException("tan undefined");
+                                throw parserFehler(ParserFehler.UNGUELTIGER_FUNKTIONSBEREICH, "tan undefined");
                             }
                             yield Math.tan(trigArg);
                         }
@@ -315,9 +330,21 @@ public final class AusdruckParser
                         case "cosh" -> Math.cosh(x);
                         case "tanh" -> Math.tanh(x);
 
-                        case "ln" -> Math.log(x);
-                        case "log" -> Math.log10(x);
-                        case "sqrt" -> Math.sqrt(x);
+                        case "ln" ->
+                        {
+                            if (x <= 0.0) throw parserFehler(ParserFehler.UNGUELTIGER_FUNKTIONSBEREICH, "ln domain");
+                            yield Math.log(x);
+                        }
+                        case "log" ->
+                        {
+                            if (x <= 0.0) throw parserFehler(ParserFehler.UNGUELTIGER_FUNKTIONSBEREICH, "log domain");
+                            yield Math.log10(x);
+                        }
+                        case "sqrt" ->
+                        {
+                            if (x < 0.0) throw parserFehler(ParserFehler.UNGUELTIGER_FUNKTIONSBEREICH, "sqrt domain");
+                            yield Math.sqrt(x);
+                        }
                         case "abs" -> Math.abs(x);
                         case "exp" -> Math.exp(x);
 
@@ -325,24 +352,35 @@ public final class AusdruckParser
                         case "ceil" -> Math.ceil(x);
                         case "round" -> (double) Math.round(x);
 
-                        default -> throw new IllegalArgumentException("Unknown function: " + t);
+                        default -> throw parserFehler(ParserFehler.UNBEKANNTE_FUNKTION, "Unknown function: " + t);
                     };
                 }
 
                 if (!Double.isFinite(r))
                 {
-                    throw new IllegalArgumentException("Invalid function result: " + t);
+                    throw parserFehler(ParserFehler.UNGUELTIGER_FUNKTIONSBEREICH, "Invalid function result: " + t);
                 }
 
                 stack.push(r);
             }else
             {
-                throw new IllegalArgumentException("Unknown token: " + t);
+                throw parserFehler(ParserFehler.SYNTAX, "Unknown token: " + t);
             }
         }
 
-        if (stack.size() != 1) throw new IllegalArgumentException("Invalid expression");
+        if (stack.size() != 1) throw parserFehler(ParserFehler.SYNTAX, "Invalid expression");
         return stack.pop();
+    }
+
+    private static double popOperand(Deque<Double> stack)
+    {
+        if (stack.isEmpty()) throw parserFehler(ParserFehler.SYNTAX, "Missing operand");
+        return stack.pop();
+    }
+
+    private static AusdruckParserException parserFehler(ParserFehler fehler, String message)
+    {
+        return new AusdruckParserException(fehler, message);
     }
 
     private static boolean isValue(String t)
@@ -355,10 +393,13 @@ public final class AusdruckParser
         return s != null && s.matches("-?[0-9]+([.,][0-9]+)?");
     }
 
-    private static void flush(StringBuilder sb, List<String> out)
+    private static String flush(StringBuilder sb, List<String> out)
     {
-        if (sb.isEmpty()) return;
-        out.add(sb.toString());
+        if (sb.isEmpty()) return null;
+
+        String token = sb.toString();
+        out.add(token);
         sb.setLength(0);
+        return token;
     }
 }

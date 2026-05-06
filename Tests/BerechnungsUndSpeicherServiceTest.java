@@ -1,5 +1,7 @@
 import common.formatting.ZahlenFormatter;
 import common.logic.AusdruckEditor;
+import common.logic.BerechnungsErgebnis;
+import common.logic.BerechnungsFehler;
 import common.logic.BerechnungsService;
 import common.logic.SpeicherService;
 import common.state.RechnerZustand;
@@ -73,6 +75,22 @@ public class BerechnungsUndSpeicherServiceTest
         assertEquals("", zustand.getAusdruckText());
         assertEquals("", zustand.getVerlaufText());
         assertTrue(zustand.isGleichGedrueckt());
+    }
+
+    @Test
+    void berechneDetailliert_ShouldExposeErrorType_WhenDivisionByZeroIsUsed()
+    {
+        // Arrange
+        zustand.setAusdruckText("1/0");
+
+        // Act
+        BerechnungsErgebnis result = berechnungsService.berechneDetailliert();
+
+        // Assert
+        assertFalse(result.isErfolgreich());
+        assertEquals("Fehler", result.getAnzeigeText());
+        assertEquals(BerechnungsFehler.DIVISION_DURCH_NULL, result.getFehler());
+        assertEquals("Division durch 0 ist nicht definiert.", result.getFehlerMeldung());
     }
 
     @Test

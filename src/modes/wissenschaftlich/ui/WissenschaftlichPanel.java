@@ -1,6 +1,7 @@
 package modes.wissenschaftlich.ui;
 
 import ui.theme.AppTheme;
+import ui.tooltips.ButtonTooltips;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -93,6 +94,7 @@ public class WissenschaftlichPanel extends JPanel
     {
         JButton button = new JButton(text);
         button.setFocusable(false);
+        ButtonTooltips.apply(button, text);
         return button;
     }
 
@@ -100,6 +102,7 @@ public class WissenschaftlichPanel extends JPanel
     {
         JButton triggerButton = new JButton("f(x) ▼");
         triggerButton.setFocusable(false);
+        ButtonTooltips.apply(triggerButton, "f(x)");
 
         functionPopupMenu = new JPopupMenu();
 
@@ -119,6 +122,7 @@ public class WissenschaftlichPanel extends JPanel
             fnButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             fnButton.setBorderPainted(false);
             fnButton.setOpaque(true);
+            ButtonTooltips.apply(fnButton, functionName);
 
             fnButton.addActionListener(e -> {
                 functionPopupMenu.setVisible(false);

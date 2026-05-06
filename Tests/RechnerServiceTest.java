@@ -226,6 +226,35 @@ public class RechnerServiceTest
     }
 
     @Test
+    void hatSpeicherWert_ShouldReflectMemoryState_WhenMemoryChanges()
+    {
+        // Arrange
+        rechner.eingabeZahl("5");
+
+        // Act & Assert
+        assertFalse(rechner.hatSpeicherWert());
+        rechner.speicherAddieren();
+        assertTrue(rechner.hatSpeicherWert());
+        rechner.speicherLoeschen();
+        assertFalse(rechner.hatSpeicherWert());
+    }
+
+    @Test
+    void setzeAusdruckAusZwischenablage_ShouldReplaceCurrentExpression_WhenTextIsPasted()
+    {
+        // Arrange
+        rechner.eingabeZahl("9");
+
+        // Act
+        rechner.setzeAusdruckAusZwischenablage(" 2 × (3 + 4) ");
+        String result = rechner.berechne();
+
+        // Assert
+        assertEquals("14", result);
+        assertEquals("14", rechner.formatiereLiveAnzeige());
+    }
+
+    @Test
     void winkelModusUmschalten_ShouldToggleBetweenDegAndRad()
     {
         // Arrange
