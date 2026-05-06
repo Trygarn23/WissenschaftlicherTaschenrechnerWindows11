@@ -130,6 +130,22 @@ public class TaschenrechnerParserTest
     }
 
     @Test
+    void auswerten_ShouldSupportScientificNotation_WhenExponentIsUsed()
+    {
+        // Arrange
+        String commaExpression = "1,2e-5";
+        String dotExpression = "1.2E3";
+
+        // Act
+        double commaActual = AusdruckParser.auswerten(commaExpression, 0.0, WinkelModus.DEG);
+        double dotActual = AusdruckParser.auswerten(dotExpression, 0.0, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(0.000012, commaActual, EPSILON);
+        assertEquals(1200.0, dotActual, EPSILON);
+    }
+
+    @Test
     void auswerten_ShouldAddTrailingZero_WhenExpressionEndsWithSeparator()
     {
         // Arrange

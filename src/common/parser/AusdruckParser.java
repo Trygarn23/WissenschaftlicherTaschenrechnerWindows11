@@ -135,6 +135,11 @@ public final class AusdruckParser
                 if (number.isEmpty() && isValue(prev)) tokens.add(MUL);
 
                 number.append(c);
+                while (i + 1 < expr.length() && istTeilVonZahl(expr, i + 1, number))
+                {
+                    number.append(expr.charAt(++i));
+                }
+
                 prev = null;
                 continue;
             }
@@ -390,7 +395,34 @@ public final class AusdruckParser
 
     private static boolean isNumber(String s)
     {
-        return s != null && s.matches("-?[0-9]+([.,][0-9]+)?");
+        return s != null && s.matches("-?(?:[0-9]+(?:[.,][0-9]+)?|[.,][0-9]+)(?:[eE][+-]?[0-9]+)?");
+    }
+
+    private static boolean istTeilVonZahl(String expr, int index, StringBuilder number)
+    {
+        char c = expr.charAt(index);
+
+        if (Character.isDigit(c) || c == ',' || c == '.')
+        {
+            return true;
+        }
+
+        String bisher = number.toString();
+
+        if ((c == 'e' || c == 'E') && !bisher.contains("e") && !bisher.contains("E"))
+        {
+            int exponentStart = index + 1;
+            if (exponentStart < expr.length() && (expr.charAt(exponentStart) == '+' || expr.charAt(exponentStart) == '-'))
+            {
+                exponentStart++;
+            }
+
+            return exponentStart < expr.length() && Character.isDigit(expr.charAt(exponentStart));
+        }
+
+        return (c == '+' || c == '-')
+                && !bisher.isEmpty()
+                && (bisher.endsWith("e") || bisher.endsWith("E"));
     }
 
     private static String flush(StringBuilder sb, List<String> out)

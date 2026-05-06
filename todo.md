@@ -7,7 +7,34 @@
 - [x] Statusanzeige für Winkelmodus, Speicherstatus und Modus ergänzen.
 - [x] Resize-Verhalten verbessern.
 - [x] Display überarbeiten.
+- [ ] Tooltips textlich vereinheitlichen und auf gleiche Sprache / gleiche Schreibweise prüfen.
+- [ ] Tooltips für Sonderfunktionen fachlich genauer formulieren, z. B. `ans`, `mod`, `10ˣ`, `n!`, `rand`.
+- [ ] Tooltips für Programmierermodus ergänzen oder prüfen: Signed/Unsigned, `>>>`, `<<`, `>>`, AND, OR, XOR, NOT.
+- [ ] Tooltip-Tests erweitern: Jeder sichtbare Rechnerbutton soll einen Tooltip haben.
+- [ ] Tastenkürzel-Dokumentation zentralisieren, damit Tooltip-Text und `KeyboardShortcutBinder` nicht auseinanderlaufen.
+- [ ] Copy/Paste-Verhalten für ungültige Eingaben testen.
+- [ ] Copy/Paste-Verhalten bei leerem Clipboard absichern.
+- [ ] Copy/Paste-Verhalten bei Text mit Leerzeichen, Tausenderpunkten und Komma testen.
+- [ ] Copy/Paste-Verhalten bei wissenschaftlicher Schreibweise testen, z. B. `1,2e-5`.
+- [ ] Display-Schriftgröße bei sehr langen Ausdrücken dynamisch weiter verbessern.
+- [ ] Display bei sehr kleinen Fenstergrößen prüfen.
+- [ ] Display bei hoher DPI / Windows-Skalierung prüfen.
+- [ ] Statusanzeige bei Moduswechsel sofort aktualisieren.
+- [ ] Statusanzeige bei Speicheränderung sofort aktualisieren.
+- [ ] Statusanzeige bei Winkelmoduswechsel sofort aktualisieren.
+- [ ] History/Suche bei ausgeblendeten Modi nicht per Tastatur fokussierbar machen.
+- [ ] `ESC`-Verhalten prüfen: Soll es Suche defokussieren, Eingabe löschen oder Fenster schließen?
+- [ ] Einheitliche Benennung im UI prüfen: `CLR`, `C`, `CE`, `←`, `Backspace`.
+- [ ] Kleine UI-Politur: konsistente Innenabstände zwischen Display, Modebar, Buttons und History.
+- [ ] Kleine UI-Politur: Button-Hover-Zustände in allen Themes prüfen.
+- [ ] Kleine UI-Politur: aktive Mode-Bar-Auswahl in allen Themes prüfen.
+- [ ] Kleine UI-Politur: Fokusrahmen / Tastaturfokus sichtbar aber nicht störend gestalten.
+- [ ] Fenstergröße nach Neustart optional speichern.
+- [ ] Letzten aktiven Modus optional speichern.
+- [ ] Letzten Winkelmodus optional speichern.
+
 ---
+
 ## Standardmodus
 
 - [x] `StandardPanel` als reine UI-Klasse behalten.
@@ -15,15 +42,34 @@
 - [x] Standardmodus auf `common.logic.RechnerService` umstellen.
 - [x] Prüfen, ob `StandardActionFactory` nach dem Action-Refactoring sinnvoll ist. Ergebnis: aktuell nicht nötig.
 - [x] Standard nicht mehr indirekt über `WissenschaftlichRechnerService` betreiben.
+- [ ] Standardmodus-Regressionstest für alle Standardbuttons ergänzen.
+- [ ] Prozentverhalten fachlich festlegen und dokumentieren: `50 %` als `0,5` oder klassischer Rechnerkontext?
+- [ ] Prozentverhalten in Kombination mit Operatoren testen, z. B. `200 + 10%`.
+- [ ] Verhalten von `CE` vs. `C` im Standardmodus dokumentieren.
+- [ ] Verhalten von `←` nach Ergebnis prüfen.
+- [ ] Verhalten von neuer Zahl nach `=` testen.
+- [ ] Verhalten von Operator nach `=` testen.
+- [ ] Mehrfachoperatoren absichern, z. B. `2++3`, `2×÷3`.
+- [ ] Kommaeingabe mehrfach verhindern und testen.
+- [ ] Klammerlogik im Standardmodus testen.
+- [ ] `±` mit leerem Ausdruck, Zahl, negativer Zahl und nach Operator testen.
+- [ ] `1/x` bei 0 testen und sinnvolle Fehlermeldung anzeigen.
+- [ ] `√x` bei negativer Zahl testen und sinnvolle Fehlermeldung anzeigen.
+- [ ] `x²` bei sehr großen Zahlen testen.
+- [ ] Standardmodus-Buttonlayout bei kleiner Fenstergröße prüfen.
+- [ ] Standardmodus-Buttonlayout bei sehr breitem Fenster prüfen.
+- [ ] Standardmodus prüfen: Alle Buttons sind über Maus und Tastatur erreichbar.
+- [ ] Optional: Standardmodus eigene ActionFactory erneut prüfen, falls `ShellActionRegistry` zu groß wird.
 
 ---
+
 ## Wissenschaftlich
-- [ ] Wissenschaftliche Notation für große Zahlen ergänzen.
-- [ ] Wissenschaftliche Notation für kleine Zahlen ergänzen.
+- [x] Wissenschaftliche Notation für große Zahlen ergänzen.
+- [x] Wissenschaftliche Notation für kleine Zahlen ergänzen.
 - [ ] Einstellbare Präzision hinzufügen.
-- [ ] Live-Formatierung für längere Ausdrücke verbessern.
+- [x] Live-Formatierung für längere Ausdrücke verbessern.
 - [x] Bessere Fehlermeldungen statt nur Fehler einführen.
-- [ ] Wissenschaftliche Schreibweise wie `1,2e-5` unterstützen.
+- [x] Wissenschaftliche Schreibweise wie `1,2e-5` unterstützen.
 - [ ] Domain-Prüfungen für `ln`, `sqrt`, `asin`, `acos` verbessern.
 - [ ] Funktionsregistrierung zentralisieren.
 - [x] `WissenschaftlichOperationen` einführen.
@@ -33,6 +79,37 @@
 - [x] `fakultaet()` nach `WissenschaftlichOperationen` verschieben oder später als Parser-Funktion ergänzen.
 - [x] Wissenschaftliches `f(x)`-Popup ans Theme-System anbinden.
 - [x] Wissenschaftliche Funktionsbuttons nicht mehr direkt in `TaschenrechnerUI` verdrahten.
+- [ ] Präzision als Einstellung im UI anbieten.
+- [ ] Präzision persistent speichern.
+- [ ] Präzision für normale, wissenschaftliche und sehr kleine Werte einheitlich anwenden.
+- [ ] Rundungsstrategie dokumentieren.
+- [ ] Domain-Prüfung für `ln(x)` bei `x <= 0` ergänzen.
+- [ ] Domain-Prüfung für `log(x)` bei `x <= 0` ergänzen.
+- [ ] Domain-Prüfung für `sqrt(x)` bei `x < 0` ergänzen.
+- [ ] Domain-Prüfung für `asin(x)` bei `x < -1 || x > 1` ergänzen.
+- [ ] Domain-Prüfung für `acos(x)` bei `x < -1 || x > 1` ergänzen.
+- [ ] Domain-Prüfung für `tan(90°)` bzw. Polstellen verbessern.
+- [ ] Domain-Fehlermeldungen nutzerfreundlich formulieren.
+- [ ] Fehlermeldungen testbar über `BerechnungsFehler` / `ParserFehler` halten.
+- [ ] `FunktionsRegistry` für Parserfunktionen planen.
+- [ ] `OperatorRegistry` für Operatorprioritäten planen.
+- [ ] Prüfen, ob `fakultaet()` langfristig in den Parser gehört.
+- [ ] Fakultät für große Werte begrenzen und Fehlermeldung klar anzeigen.
+- [ ] Fakultät nur für ganze nichtnegative Zahlen erlauben.
+- [ ] `rand()` Verhalten testen: Bereich `[0, 1)`.
+- [ ] `π` und `e` als Unicode-Eingabe testen.
+- [ ] `pi` und `π` konsistent behandeln.
+- [ ] `ans` in wissenschaftlichen Funktionen testen, z. B. `sin(ans)`.
+- [ ] DEG/RAD-Verhalten für `sin`, `cos`, `tan` testen.
+- [ ] DEG/RAD-Verhalten für `asin`, `acos`, `atan` testen.
+- [ ] `sinh`, `cosh`, `tanh` unabhängig vom Winkelmodus testen.
+- [ ] `10ˣ` mit leerem Ausdruck, Zahl und Klammer testen.
+- [ ] `exp`, `ln`, `log` mit Ausdruck und letzter Zahl testen.
+- [ ] Wissenschaftliches `f(x)`-Popup per Tastatur erreichbar machen.
+- [ ] Wissenschaftliches `f(x)`-Popup optisch in allen Themes prüfen.
+- [ ] Wissenschaftliches Panel bei kleiner Fenstergröße prüfen.
+- [ ] Wissenschaftliche Button-Texte und Parser-Funktionsnamen dokumentieren.
+
 ---
 
 ## Programmierer
@@ -48,7 +125,7 @@
 - [x] `unsigned` im UI sichtbar machen.
 - [x] `ProgrammiererLogik.maskiere()` abhängig von `unsigned` machen.
 - [x] `shiftRight()` in arithmetischen und logischen Right Shift trennen.
-- [ ] Buttons je nach Basis deaktivieren.
+- [x] Buttons je nach Basis deaktivieren.
 - [x] A-F-Buttons bei BIN/OCT/DEC deaktivieren.
 - [x] Ungültige Ziffern nicht nur logisch ignorieren, sondern UI-seitig deaktivieren.
 - [x] Logischen Right Shift ergänzen.
@@ -59,6 +136,53 @@
 - [ ] `ProgrammiererPanel` erst nach Funktionsabschluss in kleinere Panels splitten.
 - [ ] `ProgrammiererHostPanel` nur behalten, wenn dort zusätzliche Host-Funktion entsteht.
 - [x] History/Suche im Programmiermodus ausblenden.
+- [ ] To-do `Operatoren für PRG-Modus im Parser ergänzen` prüfen: vermutlich ersetzen durch eigenen PRG-Parser nur bei Bedarf.
+- [ ] PRG-Modus bewusst vom normalen `AusdruckParser` getrennt halten.
+- [ ] Signed/Unsigned-Verhalten dokumentieren.
+- [ ] BYTE signed testen: `FF` ergibt `-1`.
+- [ ] BYTE unsigned testen: `FF` ergibt `255`.
+- [ ] WORD signed testen: `FFFF` ergibt `-1`.
+- [ ] DWORD signed testen: `FFFFFFFF` ergibt `-1`.
+- [ ] QWORD unsigned bei großen Werten testen.
+- [ ] Arithmetischen Right Shift bei negativen Werten testen.
+- [ ] Logischen Right Shift bei gesetztem Vorzeichenbit testen.
+- [ ] Shift Left mit Maskierung pro Wortbreite testen.
+- [ ] NOT mit BYTE, WORD, DWORD, QWORD testen.
+- [ ] AND/OR/XOR über unterschiedliche Basen testen.
+- [ ] Basiswechsel nach Operation testen.
+- [ ] Wortbreitenwechsel nach Operation testen.
+- [ ] Signed/Unsigned-Wechsel nach Operation testen.
+- [ ] Backspace nach Basiswechsel testen.
+- [ ] Backspace nach Ergebnis testen.
+- [ ] `CLR` setzt pending operation zurück.
+- [ ] `=` ohne pending operation macht nichts und bleibt stabil.
+- [ ] Mehrfachoperationen testen, z. B. `A AND F OR 1`.
+- [ ] Anzeige von führenden Nullen prüfen: bewusst entfernen oder optional anzeigen.
+- [ ] Optional: BIN-Anzeige auf Wortbreite auffüllen, z. B. BYTE immer 8 Bit.
+- [ ] Optional: HEX-Anzeige auf Wortbreite auffüllen, z. B. BYTE immer 2 Stellen.
+- [ ] Optional: Gruppierung für HEX ergänzen, z. B. `FFFF FFFF`.
+- [ ] Optional: Gruppierung für OCT prüfen.
+- [ ] Optional: Trennzeichen in BIN-Anzeige themegerecht darstellen.
+- [ ] Disabled Buttons optisch in allen Themes prüfen.
+- [ ] `SIGNED/UNSIGNED`-Button optisch deutlicher machen.
+- [ ] `SIGNED/UNSIGNED`-Button Tooltip ergänzen.
+- [ ] `>>>`, `>>`, `<<` Tooltips ergänzen.
+- [ ] PRG-Statusanzeige ergänzen: Basis, Wortbreite, Signed/Unsigned.
+- [ ] PRG-Modus mit Tastatursteuerung prüfen.
+- [ ] PRG-Tastatur: A-F nur in HEX akzeptieren.
+- [ ] PRG-Tastatur: 2-9 je nach Basis blockieren.
+- [ ] PRG-Tastatur: `&`, `|`, `^`, `~` optional als Shortcuts planen.
+- [ ] PRG-Tastatur: Shift-Shortcuts planen.
+- [ ] `ProgrammiererFormatterTest` ergänzen.
+- [ ] `ProgrammiererPanel` UI-nahe Tests für Button-Aktivierung prüfen.
+- [ ] `ProgrammiererPanel` in `ProgrammiererDisplayPanel`, `ProgrammiererTastenPanel`, `ProgrammiererOptionsPanel` splitten.
+- [ ] `ProgrammiererButtonStyler` prüfen, falls Styling weiter wächst.
+- [ ] `ProgrammiererHostPanel` entweder mit echter Host-Funktion füllen oder entfernen.
+- [ ] PRG-Modus Layout bei kleiner Fenstergröße prüfen.
+- [ ] PRG-Modus Layout bei breitem Fenster prüfen.
+- [ ] PRG-Modus ohne History/Suche auf freie Fläche prüfen.
+- [ ] PRG-Modus Theme-Anbindung in allen Themes prüfen.
+
 ---
 
 ## Graph
@@ -73,6 +197,31 @@
 - [ ] Zoom in und Zoom out ergänzen.
 - [ ] Wertetabelle für `f(x)` anzeigen.
 - [ ] Nullstellen grob markieren.
+- [ ] Parser-Variable `x` ohne Konflikt mit Multiplikationszeichen `×` planen.
+- [ ] AusdruckParser um Variablenwerte erweitern, ohne Standardberechnung zu brechen.
+- [ ] Neue Parser-API planen, z. B. `auswerten(expr, ans, winkelModus, variablen)`.
+- [ ] Graph-Funktionen mit DEG/RAD-Verhalten definieren.
+- [ ] Graph-Funktionen mit `ans` definieren oder bewusst verbieten.
+- [ ] Graph-State planen: aktueller Ausdruck, x-Min, x-Max, y-Min, y-Max, Zoom, Schrittweite.
+- [ ] Graph-State nicht in `RechnerZustand` mischen.
+- [ ] `FunktionsDefinition` planen: Name, Ausdruck, Farbe, sichtbar.
+- [ ] Mehrere Funktionen im Graphmodus optional planen.
+- [ ] Zeichenfläche mit Anti-Aliasing implementieren.
+- [ ] Achsenbeschriftung implementieren.
+- [ ] Rasterlinien implementieren.
+- [ ] Ursprung und Skalierung visuell stabil halten.
+- [ ] Zoom per Buttons implementieren.
+- [ ] Zoom per Mausrad optional planen.
+- [ ] Pan/Verschieben per Drag optional planen.
+- [ ] Wertetabelle mit einstellbarer Schrittweite planen.
+- [ ] Nullstellen nur als Näherung markieren und nicht als exakte Lösung verkaufen.
+- [ ] Polstellen / Definitionslücken erkennen oder zumindest nicht verbinden.
+- [ ] Sehr große Werte im Graphen begrenzen.
+- [ ] Parserfehler im Graphmodus nutzerfreundlich anzeigen.
+- [ ] Graphmodus nicht starten, bevor Parser-Tests für Variablen vorhanden sind.
+- [ ] Graphmodus-Tests für Funktionsauswertung mit `x` ergänzen.
+- [ ] Screenshot-/manuelle UI-Testfälle für Graph vorbereiten.
+
 ---
 
 ## Komplex
@@ -90,6 +239,25 @@
 - [ ] Konjugation ergänzen.
 - [ ] Polarform und kartesische Form umrechnen.
 - [ ] Formatter für komplexe Zahlen ergänzen.
+- [ ] `KomplexeZahl` immutable machen.
+- [ ] `KomplexeZahl` mit `real` und `imaginaer` als double starten.
+- [ ] `KomplexeZahl` Tests für Grundrechenarten ergänzen.
+- [ ] Division durch `0 + 0i` sauber als Fehler behandeln.
+- [ ] Betrag über `Math.hypot(real, imag)` berechnen.
+- [ ] Phase über `Math.atan2(imaginaer, real)` berechnen.
+- [ ] Polarform mit DEG/RAD-Verhalten planen.
+- [ ] Formatter-Optionen planen: `a + bi`, `a - bi`, Polarform.
+- [ ] Parser-Syntax festlegen: `3+4i`, `(3,4)`, `3∠45°` oder zunächst nur Eingabefelder.
+- [ ] Komplexmodus zunächst ohne normalen `AusdruckParser` bauen.
+- [ ] `KomplexParser` erst nach festgelegter Syntax bauen.
+- [ ] Komplexmodus nicht mit Standard-Rechnerzustand vermischen.
+- [ ] Eigenen `KomplexState` planen.
+- [ ] Komplexmodus-UI mit Real-/Imaginär-Eingabe planen.
+- [ ] Umschaltung kartesisch/polar planen.
+- [ ] Kopieren des Ergebnisses als Text unterstützen.
+- [ ] Tests für Rundung und Formatierung ergänzen.
+- [ ] Tests für Sonderfälle ergänzen: rein reell, rein imaginär, null.
+
 ---
 
 ## Verlauf / History
@@ -98,13 +266,42 @@
 - [ ] Favoriten im Verlauf ermöglichen.
 - [ ] Verlauf exportieren.
 - [ ] Verlauf erst nach Einführung einer strukturierten `VerlaufEintrag`-Klasse erweitern.
+- [ ] `VerlaufEintrag` als Modell einführen.
+- [ ] `VerlaufEintrag` Felder planen: Ausdruck, Ergebnis, Modus, Zeitstempel, Favorit.
+- [ ] Bestehende String-History migrieren oder kompatibel einlesen.
+- [ ] Repository-Format festlegen: Text, CSV, JSON oder eigenes Format.
+- [ ] `DateiVerlaufRepository` auf strukturierte Einträge vorbereiten.
+- [ ] `VerlaufService` von `List<String>` auf `List<VerlaufEintrag>` umstellen.
+- [ ] `HistoryPanel` auf strukturierte Anzeige vorbereiten.
+- [ ] History-Suche über Ausdruck und Ergebnis ermöglichen.
+- [ ] History-Suche über Modus ermöglichen.
+- [ ] History-Suche über Datum optional planen.
+- [ ] Favoriten im UI anzeigen.
+- [ ] Favoriten persistent speichern.
+- [ ] Verlaufseinträge löschen: einzeln.
+- [ ] Verlaufseinträge löschen: alle.
+- [ ] Verlaufseinträge löschen: nur aktueller Modus.
+- [ ] Verlauf nach Modus filtern.
+- [ ] Verlauf nach Favoriten filtern.
+- [ ] Verlauf exportieren als `.txt`.
+- [ ] Verlauf exportieren als `.csv`.
+- [ ] Verlauf exportieren als `.json` optional planen.
+- [ ] Verlauf importieren optional planen.
+- [ ] Doppelklick-Verhalten bei strukturierten Einträgen neu implementieren.
+- [ ] History bei Standard/Wissenschaftlich sichtbar lassen.
+- [ ] History bei Programmierer/Graph/Komplex bewusst ausblenden oder modusspezifisch machen.
+- [ ] Tests für Verlaufsladen alter Dateien ergänzen.
+- [ ] Tests für Verlaufsspeichern strukturierter Einträge ergänzen.
+- [ ] Tests für Favoriten ergänzen.
+- [ ] Tests für Export ergänzen.
+
 ---
 
 ## Refactoring
 - [x] Parser-Tests vorhanden.
 - [x] Logik-Tests vorhanden.
-- [x] Parser-Tests prüfen und fehlende Edgecases ergänzen.
-- [x] Logik-Tests prüfen und fehlende Edgecases ergänzen.
+- [x] Parser-Tests prüfen und fehlende Edge cases ergänzen.
+- [x] Logik-Tests prüfen und fehlende Edge cases ergänzen.
 - [x] Theme-System in echte Themes umbauen.
 - [x] Dark Theme verbessern.
 - [x] Light Theme verbessern.
@@ -116,10 +313,50 @@
 - [x] Aktives Theme persistent speichern.
 - [x] Themes für Programmiermodus übernehmen.
 - [ ] Layouts überarbeiten für:
-    - [ ] Standard.
-    - [ ] Wissenschaftlich.
-    - [ ] Programmierer.
+  - [ ] Standard.
+  - [ ] Wissenschaftlich.
+  - [ ] Programmierer.
+- [ ] `WissenschaftlichRechnerService` langfristig entfernen oder als Deprecated-Adapter markieren.
+- [ ] Prüfen, ob Tests noch `WissenschaftlichRechnerService` benötigen.
+- [ ] `ShellActionRegistry` weiter beobachten: Wird sie zu groß?
+- [ ] Optional `StandardActionFactory` nur einführen, falls Standardaktionen wachsen.
+- [ ] Optional `WissenschaftlichActionFactory` prüfen, falls wissenschaftliche Actions wachsen.
+- [ ] `KeyboardShortcutBinder` mit Tooltips synchron halten.
+- [ ] `ButtonTooltips` und `ShellActionRegistry` auf gemeinsame Action-Namen prüfen.
+- [ ] Action-IDs von Button-Texten entkoppeln, falls mehrere Sprachen/Themes kommen.
+- [ ] Package-Namen prüfen: überall lowercase, z. B. `ui.theme`.
+- [ ] `.gitattributes` ergänzen, um LF/CRLF-Warnungen zu vermeiden.
+- [ ] `.gitignore` prüfen: `out/`, `.idea/workspace.xml`, Build-Artefakte nicht committen.
+- [ ] ZIPs ohne `.git` und ohne `out/` erstellen.
+- [ ] Tests aus `Tests/` langfristig in Standardstruktur überführen, z. B. `src/test/java`.
+- [ ] Build-System prüfen: Maven oder Gradle optional einführen.
+- [ ] JUnit-Version und Testausführung dokumentieren.
+- [ ] README aktualisieren: Projektstruktur, Modi, Tastenkürzel, Build/Test-Anleitung.
+- [ ] README Screenshots ergänzen.
+- [ ] README Roadmap aus To-do-Liste ableiten.
+- [ ] JavaDoc für zentrale Services ergänzen.
+- [ ] Kommentare bei komplexer Parserlogik ergänzen.
+- [ ] Parser weiter modularisieren: Tokenizer.
+- [ ] Parser weiter modularisieren: PostfixKonverter.
+- [ ] Parser weiter modularisieren: PostfixAuswerter.
+- [ ] Parser weiter modularisieren: OperatorRegistry.
+- [ ] Parser weiter modularisieren: FunktionsRegistry.
+- [ ] `RechnerZustand` stärker kapseln und direkte `StringBuilder`-Zugriffe reduzieren.
+- [ ] `BerechnungsService` stärker über Ergebnisobjekte statt Strings testen.
+- [ ] Fehlerbehandlung vereinheitlichen.
+- [ ] `BerechnungsFehler` und `ParserFehler` vollständig dokumentieren.
+- [ ] Theme-Duplikation reduzieren, z. B. über `ThemePalette` oder Basisklasse.
+- [ ] Benutzerdefinierte Themes erst nach Theme-Palette planen.
+- [ ] Layouts auf gemeinsame Hilfsmethoden prüfen.
+- [ ] Große UI-Klassen prüfen: `TaschenrechnerUI`, `ProgrammiererPanel`, `HistoryPanel`.
+- [ ] `HistoryPanel` bei strukturiertem Verlauf aufteilen.
+- [ ] `ProgrammiererPanel` nach Funktionalitätsabschluss aufteilen.
+- [ ] UI-Tests für Button-Tooltips und Button-Actions ergänzen.
+- [ ] Regressionstest-Suite vor großen Feature-Branches ausführen.
+- [ ] Manuelle Testcheckliste erstellen.
+
 ---
+
 ## Spätere Features
 - [ ] Session speichern/laden erst nach sauberem `RechnerZustand`.
 - [ ] Einheitenumrechnung als eigenes Feature planen, nicht in den bestehenden Rechnerkern drücken.
@@ -131,7 +368,44 @@
 - [ ] Matrixmodus erst planen, wenn `common.logic`, `common.parser` und `common.state` stabil sind.
 - [ ] Statistikmodus hinzufügen.
 - [ ] Matrixmodus hinzufügen.
+- [ ] Einstellungen-Dialog planen.
+- [ ] Einstellungen persistent speichern.
+- [ ] Einstellungen für Präzision ergänzen.
+- [ ] Einstellungen für Theme ergänzen.
+- [ ] Einstellungen für Startmodus ergänzen.
+- [ ] Einstellungen für Winkelmodus ergänzen.
+- [ ] Einstellungen für History-Verhalten ergänzen.
+- [ ] Einstellungen für Zahlenformat ergänzen.
+- [ ] Session speichern: Modus, Ausdruck, Verlauf, Winkelmodus, Speicher, Theme.
+- [ ] Session laden mit Kompatibilitätsprüfung.
+- [ ] Session-Datei robust gegen Fehler lesen.
+- [ ] Konstantenbibliothek mit Kategorien planen: Mathematik, Physik, Informatik.
+- [ ] Konstantenbibliothek ans `f(x)`-Popup oder eigenes Popup anbinden.
+- [ ] Konstanten suchbar machen.
+- [ ] Einheitenumrechnung als eigener Modus oder Sidepanel planen.
+- [ ] Einheitenkategorien planen: Länge, Fläche, Volumen, Masse, Temperatur, Geschwindigkeit, Zeit.
+- [ ] Temperaturumrechnung getrennt behandeln, da nicht linear über Faktor.
+- [ ] Benutzerdefinierte Funktionen mit Namen und Ausdruck speichern.
+- [ ] Benutzerdefinierte Funktionen validieren.
+- [ ] Benutzerdefinierte Funktionen im Parser registrieren.
+- [ ] Schritt-für-Schritt-Auswertung nur nach Parser-Modularisierung bauen.
+- [ ] Schritt-für-Schritt-Auswertung für einfache Operatoren starten.
+- [ ] Schritt-für-Schritt-Auswertung für Funktionen später ergänzen.
+- [ ] Statistikmodus planen: Liste von Werten, Summe, Mittelwert, Median, Varianz, Standardabweichung.
+- [ ] Statistikmodus mit eigenem State bauen.
+- [ ] Matrixmodus planen: Matrixmodell, Addition, Multiplikation, Determinante.
+- [ ] Matrixmodus nicht in normalen Parser drücken.
+- [ ] Export/Screenshot des Rechners optional planen.
+- [ ] Lokalisierung Deutsch/Englisch optional planen.
+- [ ] Dark/Light-Systemtheme automatisch übernehmen optional planen.
+- [ ] Auto-Update oder Release-Paket optional planen.
+- [ ] `.jar`-Build oder Installer optional planen.
+- [ ] GitHub Releases vorbereiten.
+- [ ] Changelog führen.
+- [ ] Version im UI anzeigen.
+
 ---
+
 ## Legende
 - [x] fertig
 - [ ] offen

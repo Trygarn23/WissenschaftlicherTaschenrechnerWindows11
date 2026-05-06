@@ -93,6 +93,25 @@ public class RechnerServiceTest
     }
 
     @Test
+    void berechne_ShouldDisplayScientificNotation_WhenResultIsVeryLargeOrVerySmall()
+    {
+        // Arrange
+        RechnerService large = new RechnerService();
+        RechnerService small = new RechnerService();
+
+        large.setzeAusdruckAusZwischenablage("1200000000000");
+        small.setzeAusdruckAusZwischenablage("1,2e-10");
+
+        // Act
+        String largeResult = large.berechne();
+        String smallResult = small.berechne();
+
+        // Assert
+        assertEquals("1,2e12", largeResult);
+        assertEquals("1,2e-10", smallResult);
+    }
+
+    @Test
     void eingabeZahl_ShouldStartNewExpression_WhenDigitIsTypedAfterEquals()
     {
         // Arrange
