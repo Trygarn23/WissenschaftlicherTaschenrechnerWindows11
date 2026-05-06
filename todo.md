@@ -7,22 +7,22 @@
 - [x] Statusanzeige für Winkelmodus, Speicherstatus und Modus ergänzen.
 - [x] Resize-Verhalten verbessern.
 - [x] Display überarbeiten.
-- [ ] Tooltips textlich vereinheitlichen und auf gleiche Sprache / gleiche Schreibweise prüfen.
-- [ ] Tooltips für Sonderfunktionen fachlich genauer formulieren, z. B. `ans`, `mod`, `10ˣ`, `n!`, `rand`.
-- [ ] Tooltips für Programmierermodus ergänzen oder prüfen: Signed/Unsigned, `>>>`, `<<`, `>>`, AND, OR, XOR, NOT.
-- [ ] Tooltip-Tests erweitern: Jeder sichtbare Rechnerbutton soll einen Tooltip haben.
-- [ ] Tastenkürzel-Dokumentation zentralisieren, damit Tooltip-Text und `KeyboardShortcutBinder` nicht auseinanderlaufen.
-- [ ] Copy/Paste-Verhalten für ungültige Eingaben testen.
-- [ ] Copy/Paste-Verhalten bei leerem Clipboard absichern.
-- [ ] Copy/Paste-Verhalten bei Text mit Leerzeichen, Tausenderpunkten und Komma testen.
-- [ ] Copy/Paste-Verhalten bei wissenschaftlicher Schreibweise testen, z. B. `1,2e-5`.
-- [ ] Display-Schriftgröße bei sehr langen Ausdrücken dynamisch weiter verbessern.
+- [x] Tooltips textlich vereinheitlichen und auf gleiche Sprache / gleiche Schreibweise prüfen.
+- [x] Tooltips für Sonderfunktionen fachlich genauer formulieren, z. B. `ans`, `mod`, `10ˣ`, `n!`, `rand`.
+- [x] Tooltips für Programmierermodus ergänzen oder prüfen: Signed/Unsigned, `>>>`, `<<`, `>>`, AND, OR, XOR, NOT.
+- [x] Tooltip-Tests erweitern: Jeder sichtbare Rechnerbutton soll einen Tooltip haben.
+- [x] Tastenkürzel-Dokumentation zentralisieren, damit Tooltip-Text und `KeyboardShortcutBinder` nicht auseinanderlaufen.
+- [x] Copy/Paste-Verhalten für ungültige Eingaben testen.
+- [x] Copy/Paste-Verhalten bei leerem Clipboard absichern.
+- [x] Copy/Paste-Verhalten bei Text mit Leerzeichen, Tausenderpunkten und Komma testen.
+- [x] Copy/Paste-Verhalten bei wissenschaftlicher Schreibweise testen, z. B. `1,2e-5`.
+- [x] Display-Schriftgröße bei sehr langen Ausdrücken dynamisch weiter verbessern.
 - [ ] Display bei sehr kleinen Fenstergrößen prüfen.
 - [ ] Display bei hoher DPI / Windows-Skalierung prüfen.
-- [ ] Statusanzeige bei Moduswechsel sofort aktualisieren.
-- [ ] Statusanzeige bei Speicheränderung sofort aktualisieren.
-- [ ] Statusanzeige bei Winkelmoduswechsel sofort aktualisieren.
-- [ ] History/Suche bei ausgeblendeten Modi nicht per Tastatur fokussierbar machen.
+- [x] Statusanzeige bei Moduswechsel sofort aktualisieren.
+- [x] Statusanzeige bei Speicheränderung sofort aktualisieren.
+- [x] Statusanzeige bei Winkelmoduswechsel sofort aktualisieren.
+- [x] History/Suche bei ausgeblendeten Modi nicht per Tastatur fokussierbar machen.
 - [ ] `ESC`-Verhalten prüfen: Soll es Suche defokussieren, Eingabe löschen oder Fenster schließen?
 - [ ] Einheitliche Benennung im UI prüfen: `CLR`, `C`, `CE`, `←`, `Backspace`.
 - [ ] Kleine UI-Politur: konsistente Innenabstände zwischen Display, Modebar, Buttons und History.
@@ -51,7 +51,6 @@
 - [ ] Verhalten von Operator nach `=` testen.
 - [ ] Mehrfachoperatoren absichern, z. B. `2++3`, `2×÷3`.
 - [ ] Kommaeingabe mehrfach verhindern und testen.
-- [ ] Klammerlogik im Standardmodus testen.
 - [ ] `±` mit leerem Ausdruck, Zahl, negativer Zahl und nach Operator testen.
 - [ ] `1/x` bei 0 testen und sinnvolle Fehlermeldung anzeigen.
 - [ ] `√x` bei negativer Zahl testen und sinnvolle Fehlermeldung anzeigen.
@@ -130,54 +129,53 @@
 - [x] Ungültige Ziffern nicht nur logisch ignorieren, sondern UI-seitig deaktivieren.
 - [x] Logischen Right Shift ergänzen.
 - [x] PRG-Tests ergänzen.
-- [ ] Operatoren für PRG-Modus im Parser ergänzen.
 - [x] Formatter für BIN OCT HEX ergänzen.
 - [x] `formatBinary()` aus `ProgrammiererPanel` in `ProgrammiererFormatter` verschieben.
 - [ ] `ProgrammiererPanel` erst nach Funktionsabschluss in kleinere Panels splitten.
-- [ ] `ProgrammiererHostPanel` nur behalten, wenn dort zusätzliche Host-Funktion entsteht.
+- [x] `ProgrammiererHostPanel` nur behalten, wenn dort zusätzliche Host-Funktion entsteht.
 - [x] History/Suche im Programmiermodus ausblenden.
-- [ ] To-do `Operatoren für PRG-Modus im Parser ergänzen` prüfen: vermutlich ersetzen durch eigenen PRG-Parser nur bei Bedarf.
-- [ ] PRG-Modus bewusst vom normalen `AusdruckParser` getrennt halten.
+- [x] To-do `Operatoren für PRG-Modus im Parser ergänzen` prüfen: vermutlich ersetzen durch eigenen PRG-Parser nur bei Bedarf.
+- [x] PRG-Modus bewusst vom normalen `AusdruckParser` getrennt halten.
 - [ ] Signed/Unsigned-Verhalten dokumentieren.
-- [ ] BYTE signed testen: `FF` ergibt `-1`.
-- [ ] BYTE unsigned testen: `FF` ergibt `255`.
-- [ ] WORD signed testen: `FFFF` ergibt `-1`.
-- [ ] DWORD signed testen: `FFFFFFFF` ergibt `-1`.
-- [ ] QWORD unsigned bei großen Werten testen.
-- [ ] Arithmetischen Right Shift bei negativen Werten testen.
-- [ ] Logischen Right Shift bei gesetztem Vorzeichenbit testen.
-- [ ] Shift Left mit Maskierung pro Wortbreite testen.
-- [ ] NOT mit BYTE, WORD, DWORD, QWORD testen.
-- [ ] AND/OR/XOR über unterschiedliche Basen testen.
-- [ ] Basiswechsel nach Operation testen.
-- [ ] Wortbreitenwechsel nach Operation testen.
-- [ ] Signed/Unsigned-Wechsel nach Operation testen.
-- [ ] Backspace nach Basiswechsel testen.
-- [ ] Backspace nach Ergebnis testen.
-- [ ] `CLR` setzt pending operation zurück.
-- [ ] `=` ohne pending operation macht nichts und bleibt stabil.
-- [ ] Mehrfachoperationen testen, z. B. `A AND F OR 1`.
-- [ ] Anzeige von führenden Nullen prüfen: bewusst entfernen oder optional anzeigen.
-- [ ] Optional: BIN-Anzeige auf Wortbreite auffüllen, z. B. BYTE immer 8 Bit.
-- [ ] Optional: HEX-Anzeige auf Wortbreite auffüllen, z. B. BYTE immer 2 Stellen.
-- [ ] Optional: Gruppierung für HEX ergänzen, z. B. `FFFF FFFF`.
-- [ ] Optional: Gruppierung für OCT prüfen.
+- [x] BYTE signed testen: `FF` ergibt `-1`.
+- [x] BYTE unsigned testen: `FF` ergibt `255`.
+- [x] WORD signed testen: `FFFF` ergibt `-1`.
+- [x] DWORD signed testen: `FFFFFFFF` ergibt `-1`.
+- [x] QWORD unsigned bei großen Werten testen.
+- [x] Arithmetischen Right Shift bei negativen Werten testen.
+- [x] Logischen Right Shift bei gesetztem Vorzeichenbit testen.
+- [x] Shift Left mit Maskierung pro Wortbreite testen.
+- [x] NOT mit BYTE, WORD, DWORD, QWORD testen.
+- [x] AND/OR/XOR über unterschiedliche Basen testen.
+- [x] Basiswechsel nach Operation testen.
+- [x] Wortbreitenwechsel nach Operation testen.
+- [x] Signed/Unsigned-Wechsel nach Operation testen.
+- [x] Backspace nach Basiswechsel testen.
+- [x] Backspace nach Ergebnis testen.
+- [x] `CLR` setzt pending operation zurück.
+- [x] `=` ohne pending operation macht nichts und bleibt stabil.
+- [x] Mehrfachoperationen testen, z. B. `A AND F OR 1`.
+- [x] Anzeige von führenden Nullen prüfen: bewusst entfernen oder optional anzeigen.
+- [x] Optional: BIN-Anzeige auf Wortbreite auffüllen, z. B. BYTE immer 8 Bit.
+- [x] Optional: HEX-Anzeige auf Wortbreite auffüllen, z. B. BYTE immer 2 Stellen.
+- [x] Optional: Gruppierung für HEX ergänzen, z. B. `FFFF FFFF`.
+- [x] Optional: Gruppierung für OCT prüfen.
 - [ ] Optional: Trennzeichen in BIN-Anzeige themegerecht darstellen.
 - [ ] Disabled Buttons optisch in allen Themes prüfen.
-- [ ] `SIGNED/UNSIGNED`-Button optisch deutlicher machen.
-- [ ] `SIGNED/UNSIGNED`-Button Tooltip ergänzen.
-- [ ] `>>>`, `>>`, `<<` Tooltips ergänzen.
-- [ ] PRG-Statusanzeige ergänzen: Basis, Wortbreite, Signed/Unsigned.
+- [x] `SIGNED/UNSIGNED`-Button optisch deutlicher machen.
+- [x] `SIGNED/UNSIGNED`-Button Tooltip ergänzen.
+- [x] `>>>`, `>>`, `<<` Tooltips ergänzen.
+- [x] PRG-Statusanzeige ergänzen: Basis, Wortbreite, Signed/Unsigned.
 - [ ] PRG-Modus mit Tastatursteuerung prüfen.
 - [ ] PRG-Tastatur: A-F nur in HEX akzeptieren.
 - [ ] PRG-Tastatur: 2-9 je nach Basis blockieren.
 - [ ] PRG-Tastatur: `&`, `|`, `^`, `~` optional als Shortcuts planen.
 - [ ] PRG-Tastatur: Shift-Shortcuts planen.
-- [ ] `ProgrammiererFormatterTest` ergänzen.
-- [ ] `ProgrammiererPanel` UI-nahe Tests für Button-Aktivierung prüfen.
+- [x] `ProgrammiererFormatterTest` ergänzen.
+- [x] `ProgrammiererPanel` UI-nahe Tests für Button-Aktivierung prüfen.
 - [ ] `ProgrammiererPanel` in `ProgrammiererDisplayPanel`, `ProgrammiererTastenPanel`, `ProgrammiererOptionsPanel` splitten.
 - [ ] `ProgrammiererButtonStyler` prüfen, falls Styling weiter wächst.
-- [ ] `ProgrammiererHostPanel` entweder mit echter Host-Funktion füllen oder entfernen.
+- [x] `ProgrammiererHostPanel` entweder mit echter Host-Funktion füllen oder entfernen.
 - [ ] PRG-Modus Layout bei kleiner Fenstergröße prüfen.
 - [ ] PRG-Modus Layout bei breitem Fenster prüfen.
 - [ ] PRG-Modus ohne History/Suche auf freie Fläche prüfen.

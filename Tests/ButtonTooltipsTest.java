@@ -1,4 +1,5 @@
 import modes.standard.ui.StandardPanel;
+import modes.programmierer.ui.ProgrammiererPanel;
 import modes.wissenschaftlich.ui.WissenschaftlichPanel;
 import org.junit.jupiter.api.Test;
 import ui.tooltips.ButtonTooltips;
@@ -42,6 +43,19 @@ public class ButtonTooltipsTest
         assertAllButtonsHaveTooltips(panel);
         assertEquals("Sinusfunktion", findButton(panel, "sin").getToolTipText());
         assertEquals("Öffnet weitere trigonometrische Funktionen", findButton(panel, "f(x) ▼").getToolTipText());
+    }
+
+    @Test
+    void programmiererPanel_ShouldAssignTooltipsToAllButtons()
+    {
+        // Arrange
+        ProgrammiererPanel panel = new ProgrammiererPanel();
+
+        // Act & Assert
+        assertAllButtonsHaveTooltips(panel);
+        assertEquals("Verschiebt die Bits logisch nach rechts", findButton(panel, ">>>").getToolTipText());
+        assertEquals("Schaltet zwischen vorzeichenbehafteter und vorzeichenloser Darstellung um",
+                findButton(panel, "SIGNED").getToolTipText());
     }
 
     private void assertAllButtonsHaveTooltips(Container container)

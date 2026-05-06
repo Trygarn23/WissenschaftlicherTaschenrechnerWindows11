@@ -16,11 +16,15 @@ import java.util.function.Consumer;
 
 public class DisplayPanel extends JPanel
 {
+    private static final int MAIN_TEXT_COMPACT_LIMIT = 18;
+    private static final int MAIN_TEXT_TINY_LIMIT = 32;
+
     private final JTextPane recDisplay = new JTextPane();
     private final JTextPane mainDisplay = new JTextPane();
     private final JLabel statusLabel = new JLabel("Modus: Standard | Winkel: DEG | Speicher: leer");
 
     private Consumer<String> pasteListener;
+    private AppTheme currentTheme;
 
     public DisplayPanel()
     {
@@ -109,6 +113,7 @@ public class DisplayPanel extends JPanel
     public void setMainText(String text)
     {
         mainDisplay.setText(text);
+        updateMainDisplayFont();
     }
 
     public void setSecondaryText(String text)
@@ -143,6 +148,8 @@ public class DisplayPanel extends JPanel
 
     public void applyTheme(AppTheme theme)
     {
+        this.currentTheme = theme;
+
         Component displayArea = getComponent(0);
         displayArea.setBackground(theme.displayBackground());
 
@@ -152,10 +159,39 @@ public class DisplayPanel extends JPanel
 
         mainDisplay.setBackground(theme.displayBackground());
         mainDisplay.setForeground(theme.displayForeground());
-        mainDisplay.setFont(theme.displayFont());
 
         statusLabel.setForeground(theme.secondaryDisplayForeground());
         statusLabel.setFont(theme.secondaryDisplayFont().deriveFont(Font.PLAIN, 13f));
+        updateMainDisplayFont();
+    }
+
+    public int getMainFontSize()
+    {
+        return mainDisplay.getFont().getSize();
+    }
+
+    private void updateMainDisplayFont()
+    {
+        if (currentTheme == null)
+        {
+            return;
+        }
+
+        Font displayFont = currentTheme.displayFont();
+        int length = mainDisplay.getText() == null ? 0 : mainDisplay.getText().length();
+
+        if (length > MAIN_TEXT_TINY_LIMIT)
+        {
+            mainDisplay.setFont(displayFont.deriveFont(Math.max(22f, displayFont.getSize2D() - 20f)));
+        }
+        else if (length > MAIN_TEXT_COMPACT_LIMIT)
+        {
+            mainDisplay.setFont(displayFont.deriveFont(Math.max(28f, displayFont.getSize2D() - 12f)));
+        }
+        else
+        {
+            mainDisplay.setFont(displayFont);
+        }
     }
 
     private void copyDisplayText()

@@ -1,5 +1,7 @@
 package ui.tooltips;
 
+import ui.shortcuts.KeyboardShortcutText;
+
 import javax.swing.JButton;
 import java.util.Map;
 
@@ -23,8 +25,8 @@ public final class ButtonTooltips
             Map.entry("(", "Öffnet eine Klammer"),
             Map.entry(")", "Schließt eine Klammer"),
             Map.entry("xʸ", "Fügt eine Potenz ein"),
-            Map.entry("mod", "Modulo: Rest einer Division"),
-            Map.entry("Ans", "Fügt das letzte Ergebnis ein"),
+            Map.entry("mod", "Berechnet den Rest einer Division"),
+            Map.entry("Ans", "Fügt das letzte berechnete Ergebnis ein"),
             Map.entry("MC", "Löscht den Speicher"),
             Map.entry("MR", "Ruft den Speicherwert ab"),
             Map.entry("M+", "Addiert den aktuellen Wert zum Speicher"),
@@ -42,34 +44,59 @@ public final class ButtonTooltips
             Map.entry("tanh", "Hyperbolischer Tangens"),
             Map.entry("ln", "Natürlicher Logarithmus"),
             Map.entry("log", "Logarithmus zur Basis 10"),
-            Map.entry("10ˣ", "Zehn hoch letzter Term"),
+            Map.entry("10ˣ", "Berechnet 10 hoch dem letzten Term"),
             Map.entry("|x|", "Betrag des letzten Terms"),
             Map.entry("floor", "Rundet ab"),
             Map.entry("ceil", "Rundet auf"),
             Map.entry("round", "Rundet kaufmännisch"),
-            Map.entry("rand", "Fügt eine Zufallszahl zwischen 0 und 1 ein"),
-            Map.entry("f(x)", "Öffnet weitere trigonometrische Funktionen")
+            Map.entry("rand", "Fügt eine Zufallszahl im Bereich 0 <= x < 1 ein"),
+            Map.entry("f(x)", "Öffnet weitere trigonometrische Funktionen"),
+            Map.entry("BIN", "Wechselt zur Binärdarstellung"),
+            Map.entry("OCT", "Wechselt zur Oktaldarstellung"),
+            Map.entry("DEC", "Wechselt zur Dezimaldarstellung"),
+            Map.entry("HEX", "Wechselt zur Hexadezimaldarstellung"),
+            Map.entry("BYTE", "Setzt die Wortbreite auf 8 Bit"),
+            Map.entry("WORD", "Setzt die Wortbreite auf 16 Bit"),
+            Map.entry("DWORD", "Setzt die Wortbreite auf 32 Bit"),
+            Map.entry("QWORD", "Setzt die Wortbreite auf 64 Bit"),
+            Map.entry("A", "Gibt die Hexadezimalziffer A ein"),
+            Map.entry("B", "Gibt die Hexadezimalziffer B ein"),
+            Map.entry("PRG:C", "Gibt die Hexadezimalziffer C ein"),
+            Map.entry("D", "Gibt die Hexadezimalziffer D ein"),
+            Map.entry("E", "Gibt die Hexadezimalziffer E ein"),
+            Map.entry("F", "Gibt die Hexadezimalziffer F ein"),
+            Map.entry("NOT", "Invertiert alle Bits innerhalb der aktuellen Wortbreite"),
+            Map.entry("AND", "Verknüpft zwei Werte bitweise mit AND"),
+            Map.entry("OR", "Verknüpft zwei Werte bitweise mit OR"),
+            Map.entry("XOR", "Verknüpft zwei Werte bitweise mit XOR"),
+            Map.entry("<<", "Verschiebt die Bits um eine Stelle nach links"),
+            Map.entry(">>", "Verschiebt die Bits arithmetisch nach rechts"),
+            Map.entry(">>>", "Verschiebt die Bits logisch nach rechts"),
+            Map.entry("CLR", "Löscht Wert und ausstehende Programmierer-Operation"),
+            Map.entry("SIGNED", "Schaltet zwischen vorzeichenbehafteter und vorzeichenloser Darstellung um"),
+            Map.entry("UNSIGNED", "Schaltet zwischen vorzeichenloser und vorzeichenbehafteter Darstellung um")
     );
 
     private static final Map<String, String> SHORTCUTS = Map.ofEntries(
-            Map.entry("0", "0 oder Num 0"),
-            Map.entry("1", "1 oder Num 1"),
-            Map.entry("2", "2 oder Num 2"),
-            Map.entry("3", "3 oder Num 3"),
-            Map.entry("4", "4 oder Num 4"),
-            Map.entry("5", "5 oder Num 5"),
-            Map.entry("6", "6 oder Num 6"),
-            Map.entry("7", "7 oder Num 7"),
-            Map.entry("8", "8 oder Num 8"),
-            Map.entry("9", "9 oder Num 9"),
-            Map.entry(",", ", oder ."),
-            Map.entry("+", "+ oder Num +"),
-            Map.entry("-", "- oder Num -"),
-            Map.entry("×", "* oder Num *"),
-            Map.entry("÷", "/ oder Num /"),
-            Map.entry("mod", "% oder P"),
-            Map.entry("=", "Enter"),
-            Map.entry("←", "Backspace")
+            Map.entry("0", KeyboardShortcutText.digit("0")),
+            Map.entry("1", KeyboardShortcutText.digit("1")),
+            Map.entry("2", KeyboardShortcutText.digit("2")),
+            Map.entry("3", KeyboardShortcutText.digit("3")),
+            Map.entry("4", KeyboardShortcutText.digit("4")),
+            Map.entry("5", KeyboardShortcutText.digit("5")),
+            Map.entry("6", KeyboardShortcutText.digit("6")),
+            Map.entry("7", KeyboardShortcutText.digit("7")),
+            Map.entry("8", KeyboardShortcutText.digit("8")),
+            Map.entry("9", KeyboardShortcutText.digit("9")),
+            Map.entry(",", KeyboardShortcutText.COMMA),
+            Map.entry("+", KeyboardShortcutText.PLUS),
+            Map.entry("-", KeyboardShortcutText.MINUS),
+            Map.entry("×", KeyboardShortcutText.MULTIPLY),
+            Map.entry("÷", KeyboardShortcutText.DIVIDE),
+            Map.entry("mod", KeyboardShortcutText.MODULO),
+            Map.entry("=", KeyboardShortcutText.ENTER),
+            Map.entry("←", KeyboardShortcutText.BACKSPACE),
+            Map.entry("CLR", KeyboardShortcutText.ESCAPE)
     );
 
     private ButtonTooltips()
@@ -88,21 +115,37 @@ public final class ButtonTooltips
             return null;
         }
 
-        String description = key.matches("\\d")
+        String normalizedKey = normalisiereKey(key);
+        String description = normalizedKey.matches("\\d")
                 ? "Gibt die Ziffer " + key + " ein"
-                : DESCRIPTIONS.get(key);
+                : DESCRIPTIONS.get(normalizedKey);
 
         if (description == null)
         {
             return null;
         }
 
-        String shortcut = SHORTCUTS.get(key);
+        String shortcut = SHORTCUTS.get(normalizedKey);
         if (shortcut == null)
         {
             return description;
         }
 
         return description + " (Taste: " + shortcut + ")";
+    }
+
+    private static String normalisiereKey(String key)
+    {
+        if ("C".equals(key))
+        {
+            return key;
+        }
+
+        if ("f(x) ▼".equals(key))
+        {
+            return "f(x)";
+        }
+
+        return key;
     }
 }

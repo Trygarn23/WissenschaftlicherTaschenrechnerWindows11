@@ -5,6 +5,7 @@ import modes.programmierer.logic.ProgrammiererLogik;
 import modes.programmierer.model.Basis;
 import modes.programmierer.model.Wortbreite;
 import ui.theme.AppTheme;
+import ui.tooltips.ButtonTooltips;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -42,6 +43,7 @@ public class ProgrammiererPanel extends JPanel
     private final JLabel decLabel = new JLabel("DEC: 0", SwingConstants.RIGHT);
     private final JLabel octLabel = new JLabel("OCT: 0", SwingConstants.RIGHT);
     private final JLabel binLabel = new JLabel("BIN: 0", SwingConstants.RIGHT);
+    private final JLabel statusLabel = new JLabel("Basis: DEC | Wortbreite: QWORD | SIGNED", SwingConstants.RIGHT);
 
     private final Map<Basis, JButton> basisButtons = new EnumMap<>(Basis.class);
     private final Map<Wortbreite, JButton> wortbreiteButtons = new EnumMap<>(Wortbreite.class);
@@ -83,6 +85,8 @@ public class ProgrammiererPanel extends JPanel
         styleSecondaryLabel(decLabel);
         styleSecondaryLabel(octLabel);
         styleSecondaryLabel(binLabel);
+        styleSecondaryLabel(statusLabel);
+        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
         conversions.add(hexLabel);
         conversions.add(decLabel);
@@ -91,6 +95,7 @@ public class ProgrammiererPanel extends JPanel
 
         displayPanel.add(aktuelleBasisLabel, BorderLayout.NORTH);
         displayPanel.add(conversions, BorderLayout.CENTER);
+        displayPanel.add(statusLabel, BorderLayout.SOUTH);
 
         wrap.add(displayPanel, BorderLayout.CENTER);
         return wrap;
@@ -140,6 +145,7 @@ public class ProgrammiererPanel extends JPanel
         for (String text : texte)
         {
             JButton btn = createStyledButton(text);
+            ButtonTooltips.apply(btn, tooltipKey(text));
             btn.addActionListener(e -> handleButton(text));
             panel.add(btn);
 
@@ -172,6 +178,7 @@ public class ProgrammiererPanel extends JPanel
     {
         JButton btn = new JButton(text);
         styleModeButton(btn);
+        ButtonTooltips.apply(btn, text);
 
         btn.addActionListener(e -> {
             logik.setBasis(basis);
@@ -186,6 +193,7 @@ public class ProgrammiererPanel extends JPanel
     {
         JButton btn = new JButton(text);
         styleModeButton(btn);
+        ButtonTooltips.apply(btn, text);
 
         btn.addActionListener(e -> {
             logik.setWortbreite(wortbreite);
@@ -348,10 +356,13 @@ public class ProgrammiererPanel extends JPanel
                         + (op.isEmpty() ? "" : "   [" + op + "]")
         );
 
-        hexLabel.setText("HEX: " + formatter.formatHex(logik.getAnzeige(Basis.HEX)));
+        hexLabel.setText("HEX: " + formatter.formatHex(logik.getAnzeige(Basis.HEX), logik.getWortbreite()));
         decLabel.setText("DEC: " + formatter.formatDec(logik.getAnzeige(Basis.DEC)));
         octLabel.setText("OCT: " + formatter.formatOct(logik.getAnzeige(Basis.OCT)));
-        binLabel.setText("BIN: " + formatter.formatBinary(logik.getAnzeige(Basis.BIN)));
+        binLabel.setText("BIN: " + formatter.formatBinary(logik.getAnzeige(Basis.BIN), logik.getWortbreite()));
+        statusLabel.setText("Basis: " + logik.getBasis().name()
+                + " | Wortbreite: " + logik.getWortbreite().name()
+                + " | " + (logik.isUnsigned() ? "UNSIGNED" : "SIGNED"));
 
         updateBasisButtons();
         updateWortbreiteButtons();
@@ -409,6 +420,14 @@ public class ProgrammiererPanel extends JPanel
         }
 
         unsignedButton.setText(logik.isUnsigned() ? "UNSIGNED" : "SIGNED");
+        ButtonTooltips.apply(unsignedButton, unsignedButton.getText());
+        unsignedButton.setBackground(logik.isUnsigned() ? MODE_ACTIVE_BG : getButtonBaseColor(unsignedButton.getText()));
+        unsignedButton.setForeground(Color.WHITE);
+    }
+
+    private String tooltipKey(String text)
+    {
+        return "C".equals(text) ? "PRG:C" : text;
     }
 
     private void setButtonEnabledState(JButton button, String text, boolean enabled)
@@ -464,6 +483,7 @@ public class ProgrammiererPanel extends JPanel
         decLabel.setForeground(theme.displayForeground());
         octLabel.setForeground(theme.displayForeground());
         binLabel.setForeground(theme.displayForeground());
+        statusLabel.setForeground(theme.secondaryDisplayForeground());
 
         for (JButton button : tastenButtons.values())
         {

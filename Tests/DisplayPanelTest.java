@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.Test;
 import ui.shell.DisplayPanel;
+import ui.theme.themes.DarkTheme;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,5 +35,20 @@ public class DisplayPanelTest
         // Assert
         assertTrue(tooltip.contains("Strg+C"));
         assertTrue(tooltip.contains("Strg+V"));
+    }
+
+    @Test
+    void displayPanel_ShouldReduceMainFontSize_WhenExpressionIsLong()
+    {
+        // Arrange
+        DisplayPanel panel = new DisplayPanel();
+        panel.applyTheme(new DarkTheme());
+        int normalSize = panel.getMainFontSize();
+
+        // Act
+        panel.setMainText("1234567890+1234567890+1234567890+1234567890");
+
+        // Assert
+        assertTrue(panel.getMainFontSize() < normalSize);
     }
 }

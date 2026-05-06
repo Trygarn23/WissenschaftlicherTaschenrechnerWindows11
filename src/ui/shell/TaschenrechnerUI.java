@@ -5,7 +5,6 @@ import common.history.VerlaufService;
 import common.state.RechnerModus;
 import modes.graph.ui.GraphPlaceholderPanel;
 import modes.komplex.ui.KomplexPlaceholderPanel;
-import modes.programmierer.ui.ProgrammiererHostPanel;
 import modes.programmierer.ui.ProgrammiererPanel;
 import modes.standard.ui.StandardPanel;
 import common.logic.BerechnungsErgebnis;
@@ -108,7 +107,7 @@ public class TaschenrechnerUI extends JFrame
         wissenschaftlichPanel.setFunctionSelectionListener(shellActionRegistry::handleScientificMenuAction);
 
         registerMode(RechnerModus.WISSENSCHAFTLICH, wissenschaftlichPanel);
-        registerMode(RechnerModus.PROGRAMMIERER, new ProgrammiererHostPanel());
+        registerMode(RechnerModus.PROGRAMMIERER, new ProgrammiererPanel());
         registerMode(RechnerModus.GRAPH, new GraphPlaceholderPanel());
         registerMode(RechnerModus.KOMPLEX, new KomplexPlaceholderPanel());
 
@@ -152,6 +151,10 @@ public class TaschenrechnerUI extends JFrame
 
         displayPanel.setVisible(sollGlobalesDisplayAnzeigen(modus));
         historyPanel.setVisible(sollHistoryAnzeigen(modus));
+        if (!sollHistoryAnzeigen(modus) && keyboardShortcutBinder != null)
+        {
+            keyboardShortcutBinder.defocusSearchIfNeeded();
+        }
 
         updateStatus();
         revalidate();

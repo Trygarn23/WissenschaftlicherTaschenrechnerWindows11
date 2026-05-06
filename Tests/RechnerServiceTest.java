@@ -274,6 +274,52 @@ public class RechnerServiceTest
     }
 
     @Test
+    void setzeAusdruckAusZwischenablage_ShouldIgnoreBlankText_WhenTextIsBlank()
+    {
+        // Arrange
+        rechner.eingabeZahl("9");
+
+        // Act
+        rechner.setzeAusdruckAusZwischenablage("   ");
+
+        // Assert
+        assertEquals("9", rechner.formatiereLiveAnzeige());
+    }
+
+    @Test
+    void setzeAusdruckAusZwischenablage_ShouldAcceptGermanFormattedNumber_WhenTextUsesThousandsAndComma()
+    {
+        // Act
+        rechner.setzeAusdruckAusZwischenablage(" 1.234,5 + 5 ");
+        String result = rechner.berechne();
+
+        // Assert
+        assertEquals("1.239,5", result);
+    }
+
+    @Test
+    void setzeAusdruckAusZwischenablage_ShouldAcceptScientificNotation_WhenTextUsesExponent()
+    {
+        // Act
+        rechner.setzeAusdruckAusZwischenablage("1,2e-5");
+        String result = rechner.berechne();
+
+        // Assert
+        assertEquals("0,000012", result);
+    }
+
+    @Test
+    void setzeAusdruckAusZwischenablage_ShouldReturnFehler_WhenTextIsInvalidExpression()
+    {
+        // Act
+        rechner.setzeAusdruckAusZwischenablage("abc");
+        String result = rechner.berechne();
+
+        // Assert
+        assertEquals("Fehler", result);
+    }
+
+    @Test
     void winkelModusUmschalten_ShouldToggleBetweenDegAndRad()
     {
         // Arrange

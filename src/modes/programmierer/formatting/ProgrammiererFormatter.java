@@ -1,5 +1,7 @@
 package modes.programmierer.formatting;
 
+import modes.programmierer.model.Wortbreite;
+
 public class ProgrammiererFormatter
 {
     public String emptyAsZero(String value)
@@ -10,27 +12,74 @@ public class ProgrammiererFormatter
     public String formatBinary(String raw)
     {
         String text = emptyAsZero(raw).replace(" ", "");
+        return gruppiereVonRechts(text, 4);
+    }
 
-        if (text.length() <= 4)
+    public String formatBinary(String raw, Wortbreite wortbreite)
+    {
+        String text = emptyAsZero(raw).replace(" ", "");
+        return gruppiereVonRechts(fuelleLinksAuf(text, wortbreite.getBits()), 4);
+    }
+
+    public String formatHex(String value)
+    {
+        return gruppiereVonRechts(emptyAsZero(value).toUpperCase(), 4);
+    }
+
+    public String formatHex(String value, Wortbreite wortbreite)
+    {
+        int stellen = wortbreite.getBits() / 4;
+        String text = emptyAsZero(value).toUpperCase();
+        return gruppiereVonRechts(fuelleLinksAuf(text, stellen), 4);
+    }
+
+    public String formatOct(String value)
+    {
+        return gruppiereVonRechts(emptyAsZero(value), 3);
+    }
+
+    public String formatDec(String value)
+    {
+        return emptyAsZero(value);
+    }
+
+    private String fuelleLinksAuf(String text, int zielLaenge)
+    {
+        if (text.length() >= zielLaenge)
         {
             return text;
         }
 
         StringBuilder sb = new StringBuilder();
-
-        int firstGroupLength = text.length() % 4;
-        if (firstGroupLength == 0)
+        while (sb.length() + text.length() < zielLaenge)
         {
-            firstGroupLength = 4;
+            sb.append('0');
+        }
+        sb.append(text);
+        return sb.toString();
+    }
+
+    private String gruppiereVonRechts(String text, int gruppenGroesse)
+    {
+        if (text.length() <= gruppenGroesse)
+        {
+            return text;
         }
 
+        int firstGroupLength = text.length() % gruppenGroesse;
+        if (firstGroupLength == 0)
+        {
+            firstGroupLength = gruppenGroesse;
+        }
+
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < text.length(); i++)
         {
             if (i > 0)
             {
                 boolean groupBreak =
                         i == firstGroupLength ||
-                                (i > firstGroupLength && (i - firstGroupLength) % 4 == 0);
+                                (i > firstGroupLength && (i - firstGroupLength) % gruppenGroesse == 0);
 
                 if (groupBreak)
                 {
@@ -42,20 +91,5 @@ public class ProgrammiererFormatter
         }
 
         return sb.toString();
-    }
-
-    public String formatHex(String value)
-    {
-        return emptyAsZero(value).toUpperCase();
-    }
-
-    public String formatOct(String value)
-    {
-        return emptyAsZero(value);
-    }
-
-    public String formatDec(String value)
-    {
-        return emptyAsZero(value);
     }
 }

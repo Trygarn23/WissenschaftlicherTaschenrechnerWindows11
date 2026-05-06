@@ -232,9 +232,44 @@ public class AusdruckEditor
         if (normalisiert.isBlank()) return;
 
         ausdruck.setLength(0);
-        ausdruck.append(normalisiert);
+        ausdruck.append(normalisiereTausenderpunkte(normalisiert));
         verlauf.setLength(0);
         zustand.setGleichGedrueckt(false);
+    }
+
+    private String normalisiereTausenderpunkte(String text)
+    {
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < text.length(); i++)
+        {
+            char zeichen = text.charAt(i);
+            if (Character.isDigit(zeichen) || zeichen == ',' || zeichen == '.')
+            {
+                int start = i;
+                while (i + 1 < text.length())
+                {
+                    char next = text.charAt(i + 1);
+                    if (Character.isDigit(next) || next == ',' || next == '.')
+                    {
+                        i++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                String zahl = text.substring(start, i + 1);
+                result.append(zahl.contains(",") ? zahl.replace(".", "") : zahl);
+            }
+            else
+            {
+                result.append(zeichen);
+            }
+        }
+
+        return result.toString();
     }
 
     public String konstanteEinsetzen(double wert)
