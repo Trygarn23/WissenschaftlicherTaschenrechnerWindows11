@@ -118,6 +118,11 @@ public class ProgrammiererLogik
             eingabe.setLength(0);
         }
 
+        if (eingabe.length() >= maximaleEingabeLaenge())
+        {
+            return;
+        }
+
         eingabe.append(zeichen.toUpperCase());
         aktualisiereWertAusEingabe();
     }
@@ -337,6 +342,35 @@ public class ProgrammiererLogik
             case DEC -> z.matches("[0-9]");
             case HEX -> z.matches("[0-9A-F]");
         };
+    }
+
+    private int maximaleEingabeLaenge()
+    {
+        int bits = state.getWortbreite().getBits();
+
+        return switch (state.getBasis())
+        {
+            case BIN -> bits;
+            case OCT -> (int) Math.ceil(bits / 3.0);
+            case DEC -> maximaleDezimalLaenge(bits);
+            case HEX -> bits / 4;
+        };
+    }
+
+    private int maximaleDezimalLaenge(int bits)
+    {
+        if (bits == 64)
+        {
+            return state.isUnsigned()
+                    ? Long.toUnsignedString(-1L).length()
+                    : Long.toString(Long.MAX_VALUE).length();
+        }
+
+        long max = state.isUnsigned()
+                ? (1L << bits) - 1
+                : (1L << (bits - 1)) - 1;
+
+        return Long.toString(max).length();
     }
 
     private long maskiere(long wert)

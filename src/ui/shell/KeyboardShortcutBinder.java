@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.function.BooleanSupplier;
 
 public class KeyboardShortcutBinder
 {
@@ -16,6 +17,7 @@ public class KeyboardShortcutBinder
     private final Runnable refresh;
     private final Runnable evaluate;
     private final Runnable closeAction;
+    private final BooleanSupplier calculatorShortcutsEnabled;
 
     public KeyboardShortcutBinder(
             JRootPane rootPane,
@@ -23,7 +25,8 @@ public class KeyboardShortcutBinder
             RechnerService rechner,
             Runnable refresh,
             Runnable evaluate,
-            Runnable closeAction)
+            Runnable closeAction,
+            BooleanSupplier calculatorShortcutsEnabled)
     {
         this.rootPane = rootPane;
         this.historyPanel = historyPanel;
@@ -31,6 +34,7 @@ public class KeyboardShortcutBinder
         this.refresh = refresh;
         this.evaluate = evaluate;
         this.closeAction = closeAction;
+        this.calculatorShortcutsEnabled = calculatorShortcutsEnabled;
     }
 
     public void setupKeyboard()
@@ -96,6 +100,11 @@ public class KeyboardShortcutBinder
             @Override
             public void actionPerformed(ActionEvent e)
             {
+                if (!calculatorShortcutsEnabled.getAsBoolean())
+                {
+                    return;
+                }
+
                 if (keyboardBlockedBySearch())
                 {
                     Toolkit.getDefaultToolkit().beep();

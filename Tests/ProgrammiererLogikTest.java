@@ -461,4 +461,37 @@ public class ProgrammiererLogikTest
         // Assert
         assertEquals("B", logik.getAnzeige(Basis.HEX));
     }
+
+    @Test
+    void digitEingeben_ShouldLimitInputLength_WhenByteHexIsFull()
+    {
+        // Arrange
+        logik.setWortbreite(Wortbreite.BYTE);
+        logik.setBasis(Basis.HEX);
+
+        // Act
+        logik.digitEingeben("A");
+        logik.digitEingeben("B");
+        logik.digitEingeben("C");
+
+        // Assert
+        assertEquals("AB", logik.getAktuelleEingabe());
+    }
+
+    @Test
+    void digitEingeben_ShouldLimitInputLength_WhenByteBinaryIsFull()
+    {
+        // Arrange
+        logik.setWortbreite(Wortbreite.BYTE);
+        logik.setBasis(Basis.BIN);
+
+        // Act
+        for (int i = 0; i < 12; i++)
+        {
+            logik.digitEingeben("1");
+        }
+
+        // Assert
+        assertEquals("11111111", logik.getAktuelleEingabe());
+    }
 }

@@ -50,7 +50,15 @@ public class TaschenrechnerUI extends JFrame
         initModeContent();
         wireShellEvents();
 
-        keyboardShortcutBinder = new KeyboardShortcutBinder(getRootPane(), historyPanel, rechner, this::refresh, this::evaluate, this::dispose);
+        keyboardShortcutBinder = new KeyboardShortcutBinder(
+                getRootPane(),
+                historyPanel,
+                rechner,
+                this::refresh,
+                this::evaluate,
+                this::dispose,
+                this::sindStandardShortcutsAktiv
+        );
         keyboardShortcutBinder.setupKeyboard();
         keyboardShortcutBinder.setupSearchFieldKeyForwarding();
 
@@ -173,6 +181,11 @@ public class TaschenrechnerUI extends JFrame
     private boolean sollGlobalesDisplayAnzeigen(RechnerModus modus)
     {
         return modus != RechnerModus.PROGRAMMIERER;
+    }
+
+    private boolean sindStandardShortcutsAktiv()
+    {
+        return aktuellerModus == RechnerModus.STANDARD || aktuellerModus == RechnerModus.WISSENSCHAFTLICH;
     }
 
     private void useHistoryEntryResult(String entry)

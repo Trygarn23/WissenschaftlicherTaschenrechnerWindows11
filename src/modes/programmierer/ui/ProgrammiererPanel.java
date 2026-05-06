@@ -12,6 +12,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,13 +26,6 @@ public class ProgrammiererPanel extends JPanel
     private static final Color DISPLAY_MAIN = Color.WHITE;
     private static final Color DISPLAY_SECONDARY = new Color(180, 180, 180);
     private static final Color DISPLAY_ACCENT = new Color(0, 145, 210);
-
-    private static final Color MODE_ACTIVE_BG = new Color(0, 145, 210);
-    private static final Color MODE_INACTIVE_BG = new Color(34, 39, 52);
-    private static final Color MODE_BORDER = new Color(58, 66, 84);
-
-    private static final Color DISABLED_BG = new Color(35, 35, 35);
-    private static final Color DISABLED_FG = new Color(105, 105, 105);
 
     private static final String BASE_COLOR_KEY = "baseColor";
     private static final String ACTIVE_KEY = "active";
@@ -60,6 +55,7 @@ public class ProgrammiererPanel extends JPanel
 
         add(buildDisplayPanel(), BorderLayout.NORTH);
         add(buildCenterPanel(), BorderLayout.CENTER);
+        setupKeyboard();
 
         refreshAnzeige();
     }
@@ -227,21 +223,21 @@ public class ProgrammiererPanel extends JPanel
             public void mousePressed(MouseEvent e)
             {
                 if (!btn.isEnabled()) return;
-                btn.setBackground(dunkelColor(baseColor, 25));
+                btn.setBackground(ProgrammiererButtonStyler.darken(baseColor, 25));
             }
 
             @Override
             public void mouseReleased(MouseEvent e)
             {
                 if (!btn.isEnabled()) return;
-                btn.setBackground(helleColor(baseColor, 20));
+                btn.setBackground(ProgrammiererButtonStyler.brighten(baseColor, 20));
             }
 
             @Override
             public void mouseEntered(MouseEvent e)
             {
                 if (!btn.isEnabled()) return;
-                btn.setBackground(helleColor(baseColor, 20));
+                btn.setBackground(ProgrammiererButtonStyler.brighten(baseColor, 20));
             }
 
             @Override
@@ -266,7 +262,7 @@ public class ProgrammiererPanel extends JPanel
         button.setForeground(Color.WHITE);
 
         button.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(MODE_BORDER, 1),
+                BorderFactory.createLineBorder(ProgrammiererButtonStyler.MODE_BORDER, 1),
                 BorderFactory.createEmptyBorder(12, 14, 12, 14)
         ));
 
@@ -279,7 +275,7 @@ public class ProgrammiererPanel extends JPanel
             {
                 if (!isActive(button))
                 {
-                    button.setBackground(helleColor(MODE_INACTIVE_BG, 12));
+                    button.setBackground(ProgrammiererButtonStyler.brighten(ProgrammiererButtonStyler.MODE_INACTIVE_BG, 12));
                 }
             }
 
@@ -288,7 +284,7 @@ public class ProgrammiererPanel extends JPanel
             {
                 if (!isActive(button))
                 {
-                    button.setBackground(MODE_INACTIVE_BG);
+                    button.setBackground(ProgrammiererButtonStyler.MODE_INACTIVE_BG);
                 }
             }
 
@@ -297,7 +293,7 @@ public class ProgrammiererPanel extends JPanel
             {
                 if (!isActive(button))
                 {
-                    button.setBackground(helleColor(MODE_INACTIVE_BG, 20));
+                    button.setBackground(ProgrammiererButtonStyler.brighten(ProgrammiererButtonStyler.MODE_INACTIVE_BG, 20));
                 }
             }
 
@@ -306,12 +302,12 @@ public class ProgrammiererPanel extends JPanel
             {
                 if (!isActive(button))
                 {
-                    button.setBackground(helleColor(MODE_INACTIVE_BG, 12));
+                    button.setBackground(ProgrammiererButtonStyler.brighten(ProgrammiererButtonStyler.MODE_INACTIVE_BG, 12));
                 }
             }
         });
 
-        button.setBackground(MODE_INACTIVE_BG);
+        button.setBackground(ProgrammiererButtonStyler.MODE_INACTIVE_BG);
     }
 
     private void styleSecondaryLabel(JLabel label)
@@ -344,6 +340,62 @@ public class ProgrammiererPanel extends JPanel
         }
 
         refreshAnzeige();
+    }
+
+    private void setupKeyboard()
+    {
+        InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = getActionMap();
+
+        for (int i = 0; i <= 9; i++)
+        {
+            String digit = String.valueOf(i);
+            bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_0 + i, 0), "digitTop" + i, digit);
+            bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0 + i, 0), "digitPad" + i, digit);
+        }
+
+        for (int i = 0; i < 6; i++)
+        {
+            String hex = String.valueOf((char) ('A' + i));
+            bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_A + i, 0), "hex" + hex, hex);
+        }
+
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "backspace", "←");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "clear", "CLR");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "equals", "=");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0), "plusPad", "+");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, 0), "plus", "+");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, 0), "minusPad", "-");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "minus", "-");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_1, InputEvent.SHIFT_DOWN_MASK), "notShortcut", "NOT");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_7, InputEvent.SHIFT_DOWN_MASK), "andShortcut", "AND");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, InputEvent.ALT_GRAPH_DOWN_MASK), "orShortcut", "OR");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_CIRCUMFLEX, 0), "xorShortcut", "XOR");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, 0), "shiftLeftShortcut", "<<");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, 0), "shiftRightShortcut", ">>");
+    }
+
+    private void bindKey(InputMap inputMap, ActionMap actionMap, KeyStroke keyStroke, String actionName, String buttonText)
+    {
+        if (keyStroke == null)
+        {
+            return;
+        }
+
+        inputMap.put(keyStroke, actionName);
+        actionMap.put(actionName, new AbstractAction()
+        {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e)
+            {
+                if (!isShowing())
+                {
+                    return;
+                }
+
+                handleButton(buttonText);
+            }
+        });
     }
 
     private void refreshAnzeige()
@@ -421,7 +473,7 @@ public class ProgrammiererPanel extends JPanel
 
         unsignedButton.setText(logik.isUnsigned() ? "UNSIGNED" : "SIGNED");
         ButtonTooltips.apply(unsignedButton, unsignedButton.getText());
-        unsignedButton.setBackground(logik.isUnsigned() ? MODE_ACTIVE_BG : getButtonBaseColor(unsignedButton.getText()));
+        unsignedButton.setBackground(logik.isUnsigned() ? ProgrammiererButtonStyler.MODE_ACTIVE_BG : getButtonBaseColor(unsignedButton.getText()));
         unsignedButton.setForeground(Color.WHITE);
     }
 
@@ -444,8 +496,8 @@ public class ProgrammiererPanel extends JPanel
         }
         else
         {
-            button.setBackground(DISABLED_BG);
-            button.setForeground(DISABLED_FG);
+            button.setBackground(ProgrammiererButtonStyler.DISABLED_BG);
+            button.setForeground(ProgrammiererButtonStyler.DISABLED_FG);
             button.setCursor(Cursor.getDefaultCursor());
         }
     }
@@ -464,7 +516,7 @@ public class ProgrammiererPanel extends JPanel
     private void setModeButtonActive(JButton button, boolean active)
     {
         button.putClientProperty(ACTIVE_KEY, active);
-        button.setBackground(active ? MODE_ACTIVE_BG : MODE_INACTIVE_BG);
+        button.setBackground(active ? ProgrammiererButtonStyler.MODE_ACTIVE_BG : ProgrammiererButtonStyler.MODE_INACTIVE_BG);
         button.setForeground(Color.WHITE);
     }
 
@@ -514,66 +566,11 @@ public class ProgrammiererPanel extends JPanel
 
     private Color getButtonBaseColor(String text)
     {
-        if (text.matches("\\d"))
-        {
-            return new Color(45, 45, 45);
-        }
-
-        if ("+-".contains(text))
-        {
-            return new Color(173, 41, 99);
-        }
-
-        if (text.equals("CLR") || text.equals("←"))
-        {
-            return new Color(100, 60, 60);
-        }
-
-        if (text.equals("NOT") || text.equals("AND") || text.equals("OR") || text.equals("XOR")
-                || text.equals("<<") || text.equals(">>") || text.equals(">>>"))
-        {
-            return new Color(173, 41, 99);
-        }
-
-        if (text.equals("="))
-        {
-            return new Color(70, 70, 70);
-        }
-
-        if (text.matches("[A-F]") || text.equals("±") || text.equals("SIGNED") || text.equals("UNSIGNED"))
-        {
-            return new Color(60, 60, 60);
-        }
-
-        return new Color(60, 60, 60);
+        return ProgrammiererButtonStyler.buttonBackground(text);
     }
 
     private Color getButtonTextColor(String text)
     {
-        if ("+-".contains(text) || text.equals("NOT") || text.equals("AND") || text.equals("OR")
-                || text.equals("XOR") || text.equals("<<") || text.equals(">>") || text.equals(">>>"))
-        {
-            return Color.BLACK;
-        }
-
-        return Color.WHITE;
-    }
-
-    private Color helleColor(Color c, int amount)
-    {
-        return new Color(
-                Math.min(255, c.getRed() + amount),
-                Math.min(255, c.getGreen() + amount),
-                Math.min(255, c.getBlue() + amount)
-        );
-    }
-
-    private Color dunkelColor(Color c, int amount)
-    {
-        return new Color(
-                Math.max(0, c.getRed() - amount),
-                Math.max(0, c.getGreen() - amount),
-                Math.max(0, c.getBlue() - amount)
-        );
+        return ProgrammiererButtonStyler.buttonForeground(text);
     }
 }

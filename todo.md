@@ -42,22 +42,19 @@
 - [x] Standardmodus auf `common.logic.RechnerService` umstellen.
 - [x] Prüfen, ob `StandardActionFactory` nach dem Action-Refactoring sinnvoll ist. Ergebnis: aktuell nicht nötig.
 - [x] Standard nicht mehr indirekt über `WissenschaftlichRechnerService` betreiben.
-- [ ] Standardmodus-Regressionstest für alle Standardbuttons ergänzen.
-- [ ] Prozentverhalten fachlich festlegen und dokumentieren: `50 %` als `0,5` oder klassischer Rechnerkontext?
-- [ ] Prozentverhalten in Kombination mit Operatoren testen, z. B. `200 + 10%`.
-- [ ] Verhalten von `CE` vs. `C` im Standardmodus dokumentieren.
-- [ ] Verhalten von `←` nach Ergebnis prüfen.
-- [ ] Verhalten von neuer Zahl nach `=` testen.
-- [ ] Verhalten von Operator nach `=` testen.
-- [ ] Mehrfachoperatoren absichern, z. B. `2++3`, `2×÷3`.
-- [ ] Kommaeingabe mehrfach verhindern und testen.
-- [ ] `±` mit leerem Ausdruck, Zahl, negativer Zahl und nach Operator testen.
-- [ ] `1/x` bei 0 testen und sinnvolle Fehlermeldung anzeigen.
-- [ ] `√x` bei negativer Zahl testen und sinnvolle Fehlermeldung anzeigen.
-- [ ] `x²` bei sehr großen Zahlen testen.
-- [ ] Standardmodus-Buttonlayout bei kleiner Fenstergröße prüfen.
-- [ ] Standardmodus-Buttonlayout bei sehr breitem Fenster prüfen.
-- [ ] Standardmodus prüfen: Alle Buttons sind über Maus und Tastatur erreichbar.
+- [ ] ! Standardmodus-Regressionstest für alle Standardbuttons ergänzen.
+- [ ] ! Verhalten von `←` nach Ergebnis prüfen.
+- [ ] ! Verhalten von neuer Zahl nach `=` testen.
+- [ ] ! Verhalten von Operator nach `=` testen.
+- [ ] ! Mehrfachoperatoren absichern, z. B. `2++3`, `2×÷3`.
+- [ ] ! Kommaeingabe mehrfach verhindern und testen.
+- [ ] ! `±` mit leerem Ausdruck, Zahl, negativer Zahl und nach Operator testen.
+- [ ] ! `1/x` bei 0 testen und sinnvolle Fehlermeldung anzeigen.
+- [ ] ! `√x` bei negativer Zahl testen und sinnvolle Fehlermeldung anzeigen.
+- [ ] ! `x²` bei sehr großen Zahlen testen.
+- [ ] ! Standardmodus-Buttonlayout bei kleiner Fenstergröße prüfen.
+- [ ] ! Standardmodus-Buttonlayout bei sehr breitem Fenster prüfen.
+- [ ] ! Standardmodus prüfen: Alle Buttons sind über Maus und Tastatur erreichbar.
 - [ ] Optional: Standardmodus eigene ActionFactory erneut prüfen, falls `ShellActionRegistry` zu groß wird.
 
 ---
@@ -81,7 +78,6 @@
 - [ ] Präzision als Einstellung im UI anbieten.
 - [ ] Präzision persistent speichern.
 - [ ] Präzision für normale, wissenschaftliche und sehr kleine Werte einheitlich anwenden.
-- [ ] Rundungsstrategie dokumentieren.
 - [ ] Domain-Prüfung für `ln(x)` bei `x <= 0` ergänzen.
 - [ ] Domain-Prüfung für `log(x)` bei `x <= 0` ergänzen.
 - [ ] Domain-Prüfung für `sqrt(x)` bei `x < 0` ergänzen.
@@ -107,7 +103,6 @@
 - [ ] Wissenschaftliches `f(x)`-Popup per Tastatur erreichbar machen.
 - [ ] Wissenschaftliches `f(x)`-Popup optisch in allen Themes prüfen.
 - [ ] Wissenschaftliches Panel bei kleiner Fenstergröße prüfen.
-- [ ] Wissenschaftliche Button-Texte und Parser-Funktionsnamen dokumentieren.
 
 ---
 
@@ -136,7 +131,6 @@
 - [x] History/Suche im Programmiermodus ausblenden.
 - [x] To-do `Operatoren für PRG-Modus im Parser ergänzen` prüfen: vermutlich ersetzen durch eigenen PRG-Parser nur bei Bedarf.
 - [x] PRG-Modus bewusst vom normalen `AusdruckParser` getrennt halten.
-- [ ] Signed/Unsigned-Verhalten dokumentieren.
 - [x] BYTE signed testen: `FF` ergibt `-1`.
 - [x] BYTE unsigned testen: `FF` ergibt `255`.
 - [x] WORD signed testen: `FFFF` ergibt `-1`.
@@ -166,16 +160,19 @@
 - [x] `SIGNED/UNSIGNED`-Button Tooltip ergänzen.
 - [x] `>>>`, `>>`, `<<` Tooltips ergänzen.
 - [x] PRG-Statusanzeige ergänzen: Basis, Wortbreite, Signed/Unsigned.
-- [ ] PRG-Modus mit Tastatursteuerung prüfen.
-- [ ] PRG-Tastatur: A-F nur in HEX akzeptieren.
-- [ ] PRG-Tastatur: 2-9 je nach Basis blockieren.
-- [ ] PRG-Tastatur: `&`, `|`, `^`, `~` optional als Shortcuts planen.
-- [ ] PRG-Tastatur: Shift-Shortcuts planen.
+- [x] PRG-Modus mit Tastatursteuerung prüfen.
+- [x] PRG-Tastatur: A-F nur in HEX akzeptieren.
+- [x] PRG-Tastatur: 2-9 je nach Basis blockieren.
+- [x] PRG-Tastatur: `&`, `|`, `^`, `~` optional als Shortcuts planen.
+- [x] PRG-Tastatur: Shift-Shortcuts planen.
+- [x] PRG-Tastatur darf globale Standard-/Wissenschaftlich-Shortcuts im PRG-Modus nicht auslösen.
+- [x] PRG-Eingabelänge je nach Basis und Wortbreite begrenzen.
 - [x] `ProgrammiererFormatterTest` ergänzen.
 - [x] `ProgrammiererPanel` UI-nahe Tests für Button-Aktivierung prüfen.
 - [ ] `ProgrammiererPanel` in `ProgrammiererDisplayPanel`, `ProgrammiererTastenPanel`, `ProgrammiererOptionsPanel` splitten.
-- [ ] `ProgrammiererButtonStyler` prüfen, falls Styling weiter wächst.
+- [x] `ProgrammiererButtonStyler` prüfen, falls Styling weiter wächst.
 - [x] `ProgrammiererHostPanel` entweder mit echter Host-Funktion füllen oder entfernen.
+- [x] Länge anpassen oder begrenzen, damit die Anzeige nicht fehlschlägt
 - [ ] PRG-Modus Layout bei kleiner Fenstergröße prüfen.
 - [ ] PRG-Modus Layout bei breitem Fenster prüfen.
 - [ ] PRG-Modus ohne History/Suche auf freie Fläche prüfen.
@@ -307,13 +304,13 @@
 - [x] Win11 Theme hinzufügen.
 - [x] Neon Theme hinzufügen.
 - [x] Matrix Theme hinzufügen.
-- [ ] Nutzer eigene Theme kreation überlassen
+- [ ] ! Nutzer eigene Theme kreation überlassen → Eigenes Menü, mit sowas wie einem Farbkreis
 - [x] Aktives Theme persistent speichern.
 - [x] Themes für Programmiermodus übernehmen.
 - [ ] Layouts überarbeiten für:
   - [ ] Standard.
   - [ ] Wissenschaftlich.
-  - [ ] Programmierer.
+  - [x] Programmierer.
 - [ ] `WissenschaftlichRechnerService` langfristig entfernen oder als Deprecated-Adapter markieren.
 - [ ] Prüfen, ob Tests noch `WissenschaftlichRechnerService` benötigen.
 - [ ] `ShellActionRegistry` weiter beobachten: Wird sie zu groß?
@@ -321,19 +318,10 @@
 - [ ] Optional `WissenschaftlichActionFactory` prüfen, falls wissenschaftliche Actions wachsen.
 - [ ] `KeyboardShortcutBinder` mit Tooltips synchron halten.
 - [ ] `ButtonTooltips` und `ShellActionRegistry` auf gemeinsame Action-Namen prüfen.
-- [ ] Action-IDs von Button-Texten entkoppeln, falls mehrere Sprachen/Themes kommen.
 - [ ] Package-Namen prüfen: überall lowercase, z. B. `ui.theme`.
-- [ ] `.gitattributes` ergänzen, um LF/CRLF-Warnungen zu vermeiden.
-- [ ] `.gitignore` prüfen: `out/`, `.idea/workspace.xml`, Build-Artefakte nicht committen.
-- [ ] ZIPs ohne `.git` und ohne `out/` erstellen.
 - [ ] Tests aus `Tests/` langfristig in Standardstruktur überführen, z. B. `src/test/java`.
-- [ ] Build-System prüfen: Maven oder Gradle optional einführen.
-- [ ] JUnit-Version und Testausführung dokumentieren.
 - [ ] README aktualisieren: Projektstruktur, Modi, Tastenkürzel, Build/Test-Anleitung.
 - [ ] README Screenshots ergänzen.
-- [ ] README Roadmap aus To-do-Liste ableiten.
-- [ ] JavaDoc für zentrale Services ergänzen.
-- [ ] Kommentare bei komplexer Parserlogik ergänzen.
 - [ ] Parser weiter modularisieren: Tokenizer.
 - [ ] Parser weiter modularisieren: PostfixKonverter.
 - [ ] Parser weiter modularisieren: PostfixAuswerter.
@@ -342,16 +330,13 @@
 - [ ] `RechnerZustand` stärker kapseln und direkte `StringBuilder`-Zugriffe reduzieren.
 - [ ] `BerechnungsService` stärker über Ergebnisobjekte statt Strings testen.
 - [ ] Fehlerbehandlung vereinheitlichen.
-- [ ] `BerechnungsFehler` und `ParserFehler` vollständig dokumentieren.
 - [ ] Theme-Duplikation reduzieren, z. B. über `ThemePalette` oder Basisklasse.
 - [ ] Benutzerdefinierte Themes erst nach Theme-Palette planen.
 - [ ] Layouts auf gemeinsame Hilfsmethoden prüfen.
 - [ ] Große UI-Klassen prüfen: `TaschenrechnerUI`, `ProgrammiererPanel`, `HistoryPanel`.
 - [ ] `HistoryPanel` bei strukturiertem Verlauf aufteilen.
 - [ ] `ProgrammiererPanel` nach Funktionalitätsabschluss aufteilen.
-- [ ] UI-Tests für Button-Tooltips und Button-Actions ergänzen.
 - [ ] Regressionstest-Suite vor großen Feature-Branches ausführen.
-- [ ] Manuelle Testcheckliste erstellen.
 
 ---
 
@@ -366,16 +351,16 @@
 - [ ] Matrixmodus erst planen, wenn `common.logic`, `common.parser` und `common.state` stabil sind.
 - [ ] Statistikmodus hinzufügen.
 - [ ] Matrixmodus hinzufügen.
-- [ ] Einstellungen-Dialog planen.
-- [ ] Einstellungen persistent speichern.
-- [ ] Einstellungen für Präzision ergänzen.
-- [ ] Einstellungen für Theme ergänzen.
-- [ ] Einstellungen für Startmodus ergänzen.
-- [ ] Einstellungen für Winkelmodus ergänzen.
-- [ ] Einstellungen für History-Verhalten ergänzen.
-- [ ] Einstellungen für Zahlenformat ergänzen.
-- [ ] Session speichern: Modus, Ausdruck, Verlauf, Winkelmodus, Speicher, Theme.
-- [ ] Session laden mit Kompatibilitätsprüfung.
+- [ ] ! Einstellungen-Dialog planen.
+- [ ] ! Einstellungen persistent speichern.
+- [ ] ! Einstellungen für Präzision ergänzen.
+- [ ] ! Einstellungen für Theme ergänzen.
+- [ ] ! Einstellungen für Startmodus ergänzen.
+- [ ] ! Einstellungen für Winkelmodus ergänzen.
+- [ ] ! Einstellungen für History-Verhalten ergänzen.
+- [ ] ! Einstellungen für Zahlenformat ergänzen.
+- [ ] ! Session speichern: Modus, Ausdruck, Verlauf, Winkelmodus, Speicher, Theme.
+- [ ] ! Session laden mit Kompatibilitätsprüfung.
 - [ ] Session-Datei robust gegen Fehler lesen.
 - [ ] Konstantenbibliothek mit Kategorien planen: Mathematik, Physik, Informatik.
 - [ ] Konstantenbibliothek ans `f(x)`-Popup oder eigenes Popup anbinden.
@@ -400,7 +385,7 @@
 - [ ] `.jar`-Build oder Installer optional planen.
 - [ ] GitHub Releases vorbereiten.
 - [ ] Changelog führen.
-- [ ] Version im UI anzeigen.
+- [ ] ! Version im UI anzeigen.
 
 ---
 

@@ -2,9 +2,13 @@ import modes.programmierer.ui.ProgrammiererPanel;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.KeyStroke;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,6 +43,40 @@ public class ProgrammiererPanelTest
 
         // Assert
         assertNotNull(findLabelContaining(panel, "Basis: HEX | Wortbreite: BYTE | UNSIGNED"));
+    }
+
+    @Test
+    void panel_ShouldRegisterKeyboardActionsForDigitsAndHexLetters()
+    {
+        // Arrange
+        ProgrammiererPanel panel = new ProgrammiererPanel();
+
+        // Act
+        Object digitAction = panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .get(KeyStroke.getKeyStroke(KeyEvent.VK_2, 0));
+        Object hexAction = panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .get(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0));
+
+        // Assert
+        assertNotNull(digitAction);
+        assertNotNull(hexAction);
+        assertNotNull(panel.getActionMap().get(digitAction));
+        assertNotNull(panel.getActionMap().get(hexAction));
+    }
+
+    @Test
+    void panelKeyboardAction_ShouldIgnoreInput_WhenPanelIsNotShowing()
+    {
+        // Arrange
+        ProgrammiererPanel panel = new ProgrammiererPanel();
+        Object digitAction = panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .get(KeyStroke.getKeyStroke(KeyEvent.VK_2, 0));
+
+        // Act
+        panel.getActionMap().get(digitAction).actionPerformed(new ActionEvent(panel, ActionEvent.ACTION_PERFORMED, ""));
+
+        // Assert
+        assertNotNull(findLabelContaining(panel, "DEC: 0"));
     }
 
     private JButton findButton(Container container, String text)
