@@ -4,7 +4,7 @@ import common.history.DateiVerlaufRepository;
 import common.history.VerlaufService;
 import common.state.RechnerModus;
 import modes.graph.ui.GraphPanel;
-import modes.komplex.ui.KomplexPlaceholderPanel;
+import modes.komplex.ui.KomplexPanel;
 import modes.programmierer.ui.ProgrammiererPanel;
 import modes.standard.ui.StandardPanel;
 import common.logic.BerechnungsErgebnis;
@@ -134,7 +134,7 @@ public class TaschenrechnerUI extends JFrame
         registerMode(RechnerModus.WISSENSCHAFTLICH, wissenschaftlichPanel);
         registerMode(RechnerModus.PROGRAMMIERER, new ProgrammiererPanel());
         registerMode(RechnerModus.GRAPH, new GraphPanel());
-        registerMode(RechnerModus.KOMPLEX, new KomplexPlaceholderPanel());
+        registerMode(RechnerModus.KOMPLEX, new KomplexPanel());
 
         setAktuellerModus(aktuellerModus);
     }
@@ -335,6 +335,12 @@ public class TaschenrechnerUI extends JFrame
         {
             graphPanel.setWinkelModus(rechner.getWinkelModus());
             graphPanel.applyTheme(theme());
+            return;
+        }
+
+        if (component instanceof KomplexPanel komplexPanel)
+        {
+            komplexPanel.applyTheme(theme());
             return;
         }
 

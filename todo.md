@@ -228,38 +228,38 @@
 ---
 
 ## Komplex
-- [x] `KomplexPlaceholderPanel` vorerst behalten.
+- [x] `KomplexPlaceholderPanel` durch echtes `KomplexPanel` ersetzen.
 - [x] Kein leeres `logic`/`model`-Package erzwingen.
-- [ ] Später `KomplexeZahl` als erstes echtes Modell einführen.
-- [ ] Danach `KomplexParser`, `KomplexFormatter` und `KomplexRechnerService` planen.
-- [ ] Komplex-Modus UI bauen.
-- [ ] Klasse `KomplexeZahl` erstellen.
-- [ ] Addition für komplexe Zahlen implementieren.
-- [ ] Subtraktion für komplexe Zahlen implementieren.
-- [ ] Multiplikation für komplexe Zahlen implementieren.
-- [ ] Division für komplexe Zahlen implementieren.
-- [ ] Betrag und Phase berechnen.
-- [ ] Konjugation ergänzen.
-- [ ] Polarform und kartesische Form umrechnen.
-- [ ] Formatter für komplexe Zahlen ergänzen.
-- [ ] `KomplexeZahl` immutable machen.
-- [ ] `KomplexeZahl` mit `real` und `imaginaer` als double starten.
-- [ ] `KomplexeZahl` Tests für Grundrechenarten ergänzen.
-- [ ] Division durch `0 + 0i` sauber als Fehler behandeln.
-- [ ] Betrag über `Math.hypot(real, imag)` berechnen.
-- [ ] Phase über `Math.atan2(imaginaer, real)` berechnen.
-- [ ] Polarform mit DEG/RAD-Verhalten planen.
-- [ ] Formatter-Optionen planen: `a + bi`, `a - bi`, Polarform.
-- [ ] Parser-Syntax festlegen: `3+4i`, `(3,4)`, `3∠45°` oder zunächst nur Eingabefelder.
-- [ ] Komplexmodus zunächst ohne normalen `AusdruckParser` bauen.
-- [ ] `KomplexParser` erst nach festgelegter Syntax bauen.
-- [ ] Komplexmodus nicht mit Standard-Rechnerzustand vermischen.
-- [ ] Eigenen `KomplexState` planen.
-- [ ] Komplexmodus-UI mit Real-/Imaginär-Eingabe planen.
-- [ ] Umschaltung kartesisch/polar planen.
-- [ ] Kopieren des Ergebnisses als Text unterstützen.
-- [ ] Tests für Rundung und Formatierung ergänzen.
-- [ ] Tests für Sonderfälle ergänzen: rein reell, rein imaginär, null.
+- [x] Später `KomplexeZahl` als erstes echtes Modell einführen.
+- [x] Danach `KomplexParser`, `KomplexFormatter` und `KomplexRechnerService` planen.
+- [x] Komplex-Modus UI bauen.
+- [x] Klasse `KomplexeZahl` erstellen.
+- [x] Addition für komplexe Zahlen implementieren.
+- [x] Subtraktion für komplexe Zahlen implementieren.
+- [x] Multiplikation für komplexe Zahlen implementieren.
+- [x] Division für komplexe Zahlen implementieren.
+- [x] Betrag und Phase berechnen.
+- [x] Konjugation ergänzen.
+- [x] Polarform und kartesische Form umrechnen.
+- [x] Formatter für komplexe Zahlen ergänzen.
+- [x] `KomplexeZahl` immutable machen.
+- [x] `KomplexeZahl` mit `real` und `imaginaer` als double starten.
+- [x] `KomplexeZahl` Tests für Grundrechenarten ergänzen.
+- [x] Division durch `0 + 0i` sauber als Fehler behandeln.
+- [x] Betrag über `Math.hypot(real, imag)` berechnen.
+- [x] Phase über `Math.atan2(imaginaer, real)` berechnen.
+- [x] Polarform mit DEG/RAD-Verhalten planen.
+- [x] Formatter-Optionen planen: `a + bi`, `a - bi`, Polarform.
+- [x] Parser-Syntax festlegen: zunächst Eingabefelder, Parser später optional.
+- [x] Komplexmodus zunächst ohne normalen `AusdruckParser` bauen.
+- [x] `KomplexParser` erst nach festgelegter Syntax bauen.
+- [x] Komplexmodus nicht mit Standard-Rechnerzustand vermischen.
+- [x] Eigenen `KomplexState` planen.
+- [x] Komplexmodus-UI mit Real-/Imaginär-Eingabe planen.
+- [x] Umschaltung kartesisch/polar planen.
+- [x] Kopieren des Ergebnisses als Text unterstützen.
+- [x] Tests für Rundung und Formatierung ergänzen.
+- [x] Tests für Sonderfälle ergänzen: rein reell, rein imaginär, null.
 
 ---
 
