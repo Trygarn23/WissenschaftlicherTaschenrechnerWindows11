@@ -3,7 +3,7 @@ package ui.shell;
 import common.history.DateiVerlaufRepository;
 import common.history.VerlaufService;
 import common.state.RechnerModus;
-import modes.graph.ui.GraphPlaceholderPanel;
+import modes.graph.ui.GraphPanel;
 import modes.komplex.ui.KomplexPlaceholderPanel;
 import modes.programmierer.ui.ProgrammiererPanel;
 import modes.standard.ui.StandardPanel;
@@ -133,7 +133,7 @@ public class TaschenrechnerUI extends JFrame
 
         registerMode(RechnerModus.WISSENSCHAFTLICH, wissenschaftlichPanel);
         registerMode(RechnerModus.PROGRAMMIERER, new ProgrammiererPanel());
-        registerMode(RechnerModus.GRAPH, new GraphPlaceholderPanel());
+        registerMode(RechnerModus.GRAPH, new GraphPanel());
         registerMode(RechnerModus.KOMPLEX, new KomplexPlaceholderPanel());
 
         setAktuellerModus(aktuellerModus);
@@ -159,6 +159,7 @@ public class TaschenrechnerUI extends JFrame
             rechner.winkelModusUmschalten();
             appSettings.setWinkelModus(rechner.getWinkelModus());
             settingsPersistence.speichere(appSettings);
+            aktualisiereGraphWinkelmodus();
             globalActionBarPanel.setAngleModeText(rechner.getWinkelModus().name());
             refreshWithExtraInfo(rechner.getWinkelModus().name());
         });
@@ -202,7 +203,7 @@ public class TaschenrechnerUI extends JFrame
 
     private boolean sollGlobalesDisplayAnzeigen(RechnerModus modus)
     {
-        return modus != RechnerModus.PROGRAMMIERER;
+        return modus != RechnerModus.PROGRAMMIERER && modus != RechnerModus.GRAPH;
     }
 
     private boolean sindStandardShortcutsAktiv()
@@ -288,6 +289,16 @@ public class TaschenrechnerUI extends JFrame
         rechner.setWinkelModus(appSettings.getWinkelModus());
         rechner.setNachkommastellen(appSettings.getNachkommastellen());
         rechner.setZahlenFormatModus(appSettings.getZahlenFormatModus());
+        aktualisiereGraphWinkelmodus();
+    }
+
+    private void aktualisiereGraphWinkelmodus()
+    {
+        JPanel graphPanel = modePanels.get(RechnerModus.GRAPH);
+        if (graphPanel instanceof GraphPanel panel)
+        {
+            panel.setWinkelModus(rechner.getWinkelModus());
+        }
     }
 
     private void applyCurrentTheme()
@@ -317,6 +328,13 @@ public class TaschenrechnerUI extends JFrame
         if (component instanceof ProgrammiererPanel programmiererPanel)
         {
             programmiererPanel.applyTheme(theme());
+            return;
+        }
+
+        if (component instanceof GraphPanel graphPanel)
+        {
+            graphPanel.setWinkelModus(rechner.getWinkelModus());
+            graphPanel.applyTheme(theme());
             return;
         }
 

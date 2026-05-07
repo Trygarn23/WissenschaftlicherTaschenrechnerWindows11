@@ -36,6 +36,11 @@ public final class AusdruckParser
 
     public static double auswerten(String expr, double ans, WinkelModus winkelModus)
     {
+        return auswerten(expr, ans, winkelModus, Map.of());
+    }
+
+    public static double auswerten(String expr, double ans, WinkelModus winkelModus, Map<String, Double> variablen)
+    {
         if (expr == null) throw parserFehler(ParserFehler.SYNTAX, "expr is null");
 
         String normalized = normalize(expr);
@@ -43,7 +48,7 @@ public final class AusdruckParser
 
         List<String> tokens = tokenize(normalized);
         List<String> postfix = toPostfix(tokens);
-        return evalPostfix(postfix, ans, winkelModus);
+        return evalPostfix(postfix, ans, winkelModus, variablen == null ? Map.of() : variablen);
     }
 
     private static String normalize(String expr)
@@ -240,7 +245,7 @@ public final class AusdruckParser
         return out;
     }
 
-    private static double evalPostfix(List<String> postfix, double ans, WinkelModus mode)
+    private static double evalPostfix(List<String> postfix, double ans, WinkelModus mode, Map<String, Double> variablen)
     {
         Deque<Double> stack = new ArrayDeque<>();
 
@@ -256,7 +261,14 @@ public final class AusdruckParser
                     case "pi" -> Math.PI;
                     case "e" -> Math.E;
                     case "ans" -> ans;
-                    default -> throw parserFehler(ParserFehler.UNBEKANNTE_FUNKTION, "Unknown identifier: " + t);
+                    default ->
+                    {
+                        if (variablen.containsKey(t))
+                        {
+                            yield variablen.get(t);
+                        }
+                        throw parserFehler(ParserFehler.UNBEKANNTE_FUNKTION, "Unknown identifier: " + t);
+                    }
                 });
             } else if (UNARY_MINUS.equals(t))
             {

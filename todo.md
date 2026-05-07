@@ -175,40 +175,40 @@
 ---
 
 ## Graph
-- [x] `GraphPlaceholderPanel` vorerst behalten.
+- [x] `GraphPlaceholderPanel` durch echtes `GraphPanel` ersetzen.
 - [x] Kein leeres `logic`/`model`-Package erzwingen.
-- [ ] Parser erst um Variablenunterstützung für `x` erweitern, wenn `common.parser` stabil ist.
-- [ ] Parser um Variablenunterstützung für `x` erweitern.
-- [ ] Danach `GraphState`, `GraphPanel`, `FunktionsDefinition` und `Wertetabelle` planen.
-- [ ] Graph-Modus UI bauen.
-- [ ] Zeichenfläche für Funktionsgraphen implementieren.
-- [ ] Achsen und Skalierung zeichnen.
-- [ ] Zoom in und Zoom out ergänzen.
-- [ ] Wertetabelle für `f(x)` anzeigen.
+- [x] Parser erst um Variablenunterstützung für `x` erweitern, wenn `common.parser` stabil ist.
+- [x] Parser um Variablenunterstützung für `x` erweitern.
+- [x] Danach `GraphState`, `GraphPanel`, `FunktionsDefinition` und `Wertetabelle` planen.
+- [x] Graph-Modus UI bauen.
+- [x] Zeichenfläche für Funktionsgraphen implementieren.
+- [x] Achsen und Skalierung zeichnen.
+- [x] Zoom in und Zoom out ergänzen.
+- [x] Wertetabelle für `f(x)` anzeigen.
 - [ ] Nullstellen grob markieren.
-- [ ] Parser-Variable `x` ohne Konflikt mit Multiplikationszeichen `×` planen.
-- [ ] AusdruckParser um Variablenwerte erweitern, ohne Standardberechnung zu brechen.
-- [ ] Neue Parser-API planen, z. B. `auswerten(expr, ans, winkelModus, variablen)`.
-- [ ] Graph-Funktionen mit DEG/RAD-Verhalten definieren.
-- [ ] Graph-Funktionen mit `ans` definieren oder bewusst verbieten.
-- [ ] Graph-State planen: aktueller Ausdruck, x-Min, x-Max, y-Min, y-Max, Zoom, Schrittweite.
-- [ ] Graph-State nicht in `RechnerZustand` mischen.
-- [ ] `FunktionsDefinition` planen: Name, Ausdruck, Farbe, sichtbar.
+- [x] Parser-Variable `x` ohne Konflikt mit Multiplikationszeichen `×` planen.
+- [x] AusdruckParser um Variablenwerte erweitern, ohne Standardberechnung zu brechen.
+- [x] Neue Parser-API planen, z. B. `auswerten(expr, ans, winkelModus, variablen)`.
+- [x] Graph-Funktionen mit DEG/RAD-Verhalten definieren.
+- [x] Graph-Funktionen mit `ans` definieren oder bewusst verbieten.
+- [x] Graph-State planen: aktueller Ausdruck, x-Min, x-Max, y-Min, y-Max, Zoom, Schrittweite.
+- [x] Graph-State nicht in `RechnerZustand` mischen.
+- [x] `FunktionsDefinition` planen: Name, Ausdruck, Farbe, sichtbar.
 - [ ] Mehrere Funktionen im Graphmodus optional planen.
-- [ ] Zeichenfläche mit Anti-Aliasing implementieren.
-- [ ] Achsenbeschriftung implementieren.
-- [ ] Rasterlinien implementieren.
-- [ ] Ursprung und Skalierung visuell stabil halten.
-- [ ] Zoom per Buttons implementieren.
+- [x] Zeichenfläche mit Anti-Aliasing implementieren.
+- [x] Achsenbeschriftung implementieren.
+- [x] Rasterlinien implementieren.
+- [x] Ursprung und Skalierung visuell stabil halten.
+- [x] Zoom per Buttons implementieren.
 - [ ] Zoom per Mausrad optional planen.
 - [ ] Pan/Verschieben per Drag optional planen.
 - [ ] Wertetabelle mit einstellbarer Schrittweite planen.
 - [ ] Nullstellen nur als Näherung markieren und nicht als exakte Lösung verkaufen.
-- [ ] Polstellen / Definitionslücken erkennen oder zumindest nicht verbinden.
-- [ ] Sehr große Werte im Graphen begrenzen.
-- [ ] Parserfehler im Graphmodus nutzerfreundlich anzeigen.
-- [ ] Graphmodus nicht starten, bevor Parser-Tests für Variablen vorhanden sind.
-- [ ] Graphmodus-Tests für Funktionsauswertung mit `x` ergänzen.
+- [x] Polstellen / Definitionslücken erkennen oder zumindest nicht verbinden.
+- [x] Sehr große Werte im Graphen begrenzen.
+- [x] Parserfehler im Graphmodus nutzerfreundlich anzeigen.
+- [x] Graphmodus nicht starten, bevor Parser-Tests für Variablen vorhanden sind.
+- [x] Graphmodus-Tests für Funktionsauswertung mit `x` ergänzen.
 - [ ] Screenshot-/manuelle UI-Testfälle für Graph vorbereiten.
 
 ---
