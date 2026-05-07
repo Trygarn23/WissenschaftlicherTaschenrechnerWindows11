@@ -79,6 +79,11 @@ public class GraphState
         setBereich(xCenter - xSpan / 2.0, xCenter + xSpan / 2.0, yCenter - ySpan / 2.0, yCenter + ySpan / 2.0);
     }
 
+    public void verschiebe(double deltaX, double deltaY)
+    {
+        setBereich(xMin + deltaX, xMax + deltaX, yMin + deltaY, yMax + deltaY);
+    }
+
     public void resetAnsicht()
     {
         setBereich(-10.0, 10.0, -10.0, 10.0);

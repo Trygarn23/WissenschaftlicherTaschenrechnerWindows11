@@ -185,6 +185,14 @@
 - [x] Achsen und Skalierung zeichnen.
 - [x] Zoom in und Zoom out ergänzen.
 - [x] Wertetabelle für `f(x)` anzeigen.
+- [x] Kurvendiskussion unten links im Graphmodus anzeigen.
+- [x] Ableitung `f'(x)` numerisch bilden.
+- [x] Zweite Ableitung `f''(x)` numerisch bilden.
+- [x] Nullstellen über Kurvendiskussion berechnen.
+- [x] Extremstellen über `f'(x) = 0` berechnen.
+- [x] Wendestellen über `f''(x) = 0` berechnen.
+- [x] Schnittpunkt mit der Y-Achse berechnen.
+- [x] Kurvendiskussion klar als numerische Näherung kennzeichnen.
 - [ ] Nullstellen grob markieren.
 - [x] Parser-Variable `x` ohne Konflikt mit Multiplikationszeichen `×` planen.
 - [x] AusdruckParser um Variablenwerte erweitern, ohne Standardberechnung zu brechen.
@@ -200,8 +208,9 @@
 - [x] Rasterlinien implementieren.
 - [x] Ursprung und Skalierung visuell stabil halten.
 - [x] Zoom per Buttons implementieren.
-- [ ] Zoom per Mausrad optional planen.
-- [ ] Pan/Verschieben per Drag optional planen.
+- [x] Zoom per Mausrad optional planen.
+- [x] Pan/Verschieben per Drag optional planen.
+- [x] Graph per Doppelklick auf die Standardansicht zurücksetzen.
 - [ ] Wertetabelle mit einstellbarer Schrittweite planen.
 - [ ] Nullstellen nur als Näherung markieren und nicht als exakte Lösung verkaufen.
 - [x] Polstellen / Definitionslücken erkennen oder zumindest nicht verbinden.

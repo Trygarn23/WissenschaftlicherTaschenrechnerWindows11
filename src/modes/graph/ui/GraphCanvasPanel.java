@@ -13,6 +13,11 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Path2D;
 
 public class GraphCanvasPanel extends JPanel
@@ -21,12 +26,16 @@ public class GraphCanvasPanel extends JPanel
     private GraphState state;
     private AppTheme theme;
     private WinkelModus winkelModus = WinkelModus.DEG;
+    private Point letzterDragPunkt;
+    private Runnable viewportChangedListener = () -> {};
 
     public GraphCanvasPanel(GraphState state, GraphEvaluator evaluator)
     {
         this.state = state;
         this.evaluator = evaluator;
         setOpaque(true);
+        setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        setupMouseInteraction();
     }
 
     public void setState(GraphState state)
@@ -46,6 +55,11 @@ public class GraphCanvasPanel extends JPanel
         this.theme = theme;
         setBackground(theme.displayBackground());
         repaint();
+    }
+
+    public void setViewportChangedListener(Runnable viewportChangedListener)
+    {
+        this.viewportChangedListener = viewportChangedListener == null ? () -> {} : viewportChangedListener;
     }
 
     @Override
@@ -199,6 +213,73 @@ public class GraphCanvasPanel extends JPanel
     private double screenToWorldX(int x)
     {
         return state.getXMin() + (x / Math.max(1.0, getWidth() - 1.0)) * (state.getXMax() - state.getXMin());
+    }
+
+    private double screenToWorldY(int y)
+    {
+        return state.getYMax() - (y / Math.max(1.0, getHeight() - 1.0)) * (state.getYMax() - state.getYMin());
+    }
+
+    private void setupMouseInteraction()
+    {
+        MouseAdapter mouseAdapter = new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(MouseEvent e)
+            {
+                letzterDragPunkt = e.getPoint();
+                setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e)
+            {
+                letzterDragPunkt = null;
+                setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e)
+            {
+                if (letzterDragPunkt == null)
+                {
+                    return;
+                }
+
+                double vorherX = screenToWorldX(letzterDragPunkt.x);
+                double vorherY = screenToWorldY(letzterDragPunkt.y);
+                double jetztX = screenToWorldX(e.getX());
+                double jetztY = screenToWorldY(e.getY());
+
+                state.verschiebe(vorherX - jetztX, vorherY - jetztY);
+                letzterDragPunkt = e.getPoint();
+                viewportChangedListener.run();
+                repaint();
+            }
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e)
+            {
+                state.zoom(e.getPreciseWheelRotation() < 0 ? 0.85 : 1.15);
+                viewportChangedListener.run();
+                repaint();
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e)
+            {
+                if (e.getClickCount() == 2)
+                {
+                    state.resetAnsicht();
+                    viewportChangedListener.run();
+                    repaint();
+                }
+            }
+        };
+
+        addMouseListener(mouseAdapter);
+        addMouseMotionListener(mouseAdapter);
+        addMouseWheelListener(mouseAdapter);
     }
 
     private double ermittleSchrittweite(double span)

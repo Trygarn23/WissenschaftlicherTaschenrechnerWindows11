@@ -39,4 +39,20 @@ public class GraphStateTest
         assertEquals(-10.0, state.getXMin());
         assertEquals(10.0, state.getXMax());
     }
+
+    @Test
+    void verschiebe_ShouldMoveViewportWithoutChangingSpan()
+    {
+        // Arrange
+        GraphState state = new GraphState();
+
+        // Act
+        state.verschiebe(3.0, -2.0);
+
+        // Assert
+        assertEquals(-7.0, state.getXMin());
+        assertEquals(13.0, state.getXMax());
+        assertEquals(-12.0, state.getYMin());
+        assertEquals(8.0, state.getYMax());
+    }
 }
