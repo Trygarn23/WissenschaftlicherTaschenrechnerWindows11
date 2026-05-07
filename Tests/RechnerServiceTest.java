@@ -128,6 +128,65 @@ public class RechnerServiceTest
     }
 
     @Test
+    void operatorSetzen_ShouldContinueWithResult_WhenOperatorIsTypedAfterEquals()
+    {
+        // Arrange
+        rechner.eingabeZahl("2");
+        rechner.operatorSetzen("+");
+        rechner.eingabeZahl("3");
+        rechner.berechne();
+
+        // Act
+        rechner.operatorSetzen("×");
+        rechner.eingabeZahl("4");
+        String result = rechner.berechne();
+
+        // Assert
+        assertEquals("20", result);
+    }
+
+    @Test
+    void loeschen_ShouldClearResultDigit_WhenBackspaceIsUsedAfterEquals()
+    {
+        // Arrange
+        rechner.eingabeZahl("2");
+        rechner.operatorSetzen("+");
+        rechner.eingabeZahl("3");
+        rechner.berechne();
+
+        // Act
+        String actual = rechner.loeschen();
+
+        // Assert
+        assertEquals("0", actual);
+        assertEquals("0", rechner.formatiereLiveAnzeige());
+    }
+
+    @Test
+    void operatorSetzen_ShouldIgnoreRepeatedNonMinusOperators()
+    {
+        // Arrange
+        rechner.eingabeZahl("2");
+
+        // Act
+        rechner.operatorSetzen("+");
+        rechner.operatorSetzen("+");
+        rechner.eingabeZahl("3");
+        String plusResult = rechner.berechne();
+
+        RechnerService multiplyDivide = new RechnerService();
+        multiplyDivide.eingabeZahl("2");
+        multiplyDivide.operatorSetzen("×");
+        multiplyDivide.operatorSetzen("÷");
+        multiplyDivide.eingabeZahl("3");
+        String multiplyResult = multiplyDivide.berechne();
+
+        // Assert
+        assertEquals("5", plusResult);
+        assertEquals("6", multiplyResult);
+    }
+
+    @Test
     void ans_ShouldInsertPreviousAnswer_WhenUsedAfterCalculation()
     {
         // Arrange
@@ -157,6 +216,33 @@ public class RechnerServiceTest
         // Assert
         assertEquals("-", expression);
         assertEquals("-5", rechner.formatiereLiveAnzeige());
+    }
+
+    @Test
+    void wechselVorzeichen_ShouldToggleLastNumberInCommonContexts()
+    {
+        // Arrange
+        RechnerService positiveNumber = new RechnerService();
+        RechnerService negativeNumber = new RechnerService();
+        RechnerService afterOperator = new RechnerService();
+
+        // Act
+        positiveNumber.eingabeZahl("5");
+        positiveNumber.wechselVorzeichen();
+
+        negativeNumber.wechselVorzeichen();
+        negativeNumber.eingabeZahl("5");
+        negativeNumber.wechselVorzeichen();
+
+        afterOperator.eingabeZahl("2");
+        afterOperator.operatorSetzen("+");
+        afterOperator.wechselVorzeichen();
+        afterOperator.eingabeZahl("3");
+
+        // Assert
+        assertEquals("-5", positiveNumber.formatiereLiveAnzeige());
+        assertEquals("5", negativeNumber.formatiereLiveAnzeige());
+        assertEquals("2+-3", afterOperator.formatiereLiveAnzeige());
     }
 
     @Test
@@ -198,6 +284,49 @@ public class RechnerServiceTest
         assertEquals("8", powerResult);
         assertEquals("0,5", percentExpression);
         assertEquals("0,5", percent.formatiereLiveAnzeige());
+    }
+
+    @Test
+    void reziprok_ShouldReturnFehler_WhenInputIsZero()
+    {
+        // Arrange
+        rechner.eingabeZahl("0");
+        rechner.reziprok();
+
+        // Act
+        String result = rechner.berechne();
+
+        // Assert
+        assertEquals("Fehler", result);
+    }
+
+    @Test
+    void wurzel_ShouldReturnFehler_WhenInputIsNegative()
+    {
+        // Arrange
+        rechner.wechselVorzeichen();
+        rechner.eingabeZahl("9");
+        rechner.wurzel();
+
+        // Act
+        String result = rechner.berechne();
+
+        // Assert
+        assertEquals("Fehler", result);
+    }
+
+    @Test
+    void quadriere_ShouldReturnFehler_WhenResultIsTooLarge()
+    {
+        // Arrange
+        rechner.setzeAusdruckAusZwischenablage("1" + "0".repeat(200));
+        rechner.quadriere();
+
+        // Act
+        String result = rechner.berechne();
+
+        // Assert
+        assertEquals("Fehler", result);
     }
 
     @Test

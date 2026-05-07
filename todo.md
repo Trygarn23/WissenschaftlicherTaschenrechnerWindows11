@@ -29,9 +29,9 @@
 - [ ] Kleine UI-Politur: Button-Hover-Zustände in allen Themes prüfen.
 - [ ] Kleine UI-Politur: aktive Mode-Bar-Auswahl in allen Themes prüfen.
 - [ ] Kleine UI-Politur: Fokusrahmen / Tastaturfokus sichtbar aber nicht störend gestalten.
-- [ ] Fenstergröße nach Neustart optional speichern.
-- [ ] Letzten aktiven Modus optional speichern.
-- [ ] Letzten Winkelmodus optional speichern.
+- [x] Fenstergröße nach Neustart optional speichern.
+- [x] Letzten aktiven Modus optional speichern.
+- [x] Letzten Winkelmodus optional speichern.
 
 ---
 
@@ -42,32 +42,32 @@
 - [x] Standardmodus auf `common.logic.RechnerService` umstellen.
 - [x] Prüfen, ob `StandardActionFactory` nach dem Action-Refactoring sinnvoll ist. Ergebnis: aktuell nicht nötig.
 - [x] Standard nicht mehr indirekt über `WissenschaftlichRechnerService` betreiben.
-- [ ] ! Standardmodus-Regressionstest für alle Standardbuttons ergänzen.
-- [ ] ! Verhalten von `←` nach Ergebnis prüfen.
-- [ ] ! Verhalten von neuer Zahl nach `=` testen.
-- [ ] ! Verhalten von Operator nach `=` testen.
-- [ ] ! Mehrfachoperatoren absichern, z. B. `2++3`, `2×÷3`.
-- [ ] ! Kommaeingabe mehrfach verhindern und testen.
-- [ ] ! `±` mit leerem Ausdruck, Zahl, negativer Zahl und nach Operator testen.
-- [ ] ! `1/x` bei 0 testen und sinnvolle Fehlermeldung anzeigen.
-- [ ] ! `√x` bei negativer Zahl testen und sinnvolle Fehlermeldung anzeigen.
-- [ ] ! `x²` bei sehr großen Zahlen testen.
-- [ ] ! Standardmodus-Buttonlayout bei kleiner Fenstergröße prüfen.
-- [ ] ! Standardmodus-Buttonlayout bei sehr breitem Fenster prüfen.
-- [ ] ! Standardmodus prüfen: Alle Buttons sind über Maus und Tastatur erreichbar.
-- [ ] Optional: Standardmodus eigene ActionFactory erneut prüfen, falls `ShellActionRegistry` zu groß wird.
+- [x] Standardmodus-Regressionstest für alle Standardbuttons ergänzen.
+- [x] Verhalten von `←` nach Ergebnis prüfen.
+- [x] Verhalten von neuer Zahl nach `=` testen.
+- [x] Verhalten von Operator nach `=` testen.
+- [x] Mehrfachoperatoren absichern, z. B. `2++3`, `2×÷3`.
+- [x] Kommaeingabe mehrfach verhindern und testen.
+- [x] `±` mit leerem Ausdruck, Zahl, negativer Zahl und nach Operator testen.
+- [x] `1/x` bei 0 testen und sinnvolle Fehlermeldung anzeigen.
+- [x] `√x` bei negativer Zahl testen und sinnvolle Fehlermeldung anzeigen.
+- [x] `x²` bei sehr großen Zahlen testen.
+- [x] Standardmodus-Buttonlayout bei kleiner Fenstergröße prüfen.
+- [x] Standardmodus-Buttonlayout bei sehr breitem Fenster prüfen.
+- [x] Standardmodus prüfen: Alle Buttons sind über Maus und Tastatur erreichbar.
+- [x] Optional: Standardmodus eigene ActionFactory erneut prüfen, falls `ShellActionRegistry` zu groß wird. Ergebnis: noch nicht nötig, Standardaktionen bleiben überschaubar.
 
 ---
 
 ## Wissenschaftlich
 - [x] Wissenschaftliche Notation für große Zahlen ergänzen.
 - [x] Wissenschaftliche Notation für kleine Zahlen ergänzen.
-- [ ] Einstellbare Präzision hinzufügen.
+- [x] Einstellbare Präzision hinzufügen.
 - [x] Live-Formatierung für längere Ausdrücke verbessern.
 - [x] Bessere Fehlermeldungen statt nur Fehler einführen.
 - [x] Wissenschaftliche Schreibweise wie `1,2e-5` unterstützen.
-- [ ] Domain-Prüfungen für `ln`, `sqrt`, `asin`, `acos` verbessern.
-- [ ] Funktionsregistrierung zentralisieren.
+- [x] Domain-Prüfungen für `ln`, `sqrt`, `asin`, `acos` verbessern.
+- [x] Funktionsregistrierung zentralisieren. Ergebnis: vor Graph bewusst nicht weiter abstrahieren; Registry ist in `docs/parser-roadmap.md` geplant.
 - [x] `WissenschaftlichOperationen` einführen.
 - [x] `sin`, `cos`, `tan`, `asin`, `acos`, `atan` nach `WissenschaftlichOperationen` verschieben.
 - [x] `sinh`, `cosh`, `tanh` nach `WissenschaftlichOperationen` verschieben.
@@ -75,32 +75,32 @@
 - [x] `fakultaet()` nach `WissenschaftlichOperationen` verschieben oder später als Parser-Funktion ergänzen.
 - [x] Wissenschaftliches `f(x)`-Popup ans Theme-System anbinden.
 - [x] Wissenschaftliche Funktionsbuttons nicht mehr direkt in `TaschenrechnerUI` verdrahten.
-- [ ] Präzision als Einstellung im UI anbieten.
-- [ ] Präzision persistent speichern.
-- [ ] Präzision für normale, wissenschaftliche und sehr kleine Werte einheitlich anwenden.
-- [ ] Domain-Prüfung für `ln(x)` bei `x <= 0` ergänzen.
-- [ ] Domain-Prüfung für `log(x)` bei `x <= 0` ergänzen.
-- [ ] Domain-Prüfung für `sqrt(x)` bei `x < 0` ergänzen.
-- [ ] Domain-Prüfung für `asin(x)` bei `x < -1 || x > 1` ergänzen.
-- [ ] Domain-Prüfung für `acos(x)` bei `x < -1 || x > 1` ergänzen.
-- [ ] Domain-Prüfung für `tan(90°)` bzw. Polstellen verbessern.
-- [ ] Domain-Fehlermeldungen nutzerfreundlich formulieren.
-- [ ] Fehlermeldungen testbar über `BerechnungsFehler` / `ParserFehler` halten.
-- [ ] `FunktionsRegistry` für Parserfunktionen planen.
-- [ ] `OperatorRegistry` für Operatorprioritäten planen.
-- [ ] Prüfen, ob `fakultaet()` langfristig in den Parser gehört.
-- [ ] Fakultät für große Werte begrenzen und Fehlermeldung klar anzeigen.
-- [ ] Fakultät nur für ganze nichtnegative Zahlen erlauben.
-- [ ] `rand()` Verhalten testen: Bereich `[0, 1)`.
-- [ ] `π` und `e` als Unicode-Eingabe testen.
-- [ ] `pi` und `π` konsistent behandeln.
-- [ ] `ans` in wissenschaftlichen Funktionen testen, z. B. `sin(ans)`.
-- [ ] DEG/RAD-Verhalten für `sin`, `cos`, `tan` testen.
-- [ ] DEG/RAD-Verhalten für `asin`, `acos`, `atan` testen.
-- [ ] `sinh`, `cosh`, `tanh` unabhängig vom Winkelmodus testen.
-- [ ] `10ˣ` mit leerem Ausdruck, Zahl und Klammer testen.
-- [ ] `exp`, `ln`, `log` mit Ausdruck und letzter Zahl testen.
-- [ ] Wissenschaftliches `f(x)`-Popup per Tastatur erreichbar machen.
+- [x] Präzision als Einstellung im UI anbieten.
+- [x] Präzision persistent speichern.
+- [x] Präzision für normale, wissenschaftliche und sehr kleine Werte einheitlich anwenden.
+- [x] Domain-Prüfung für `ln(x)` bei `x <= 0` ergänzen.
+- [x] Domain-Prüfung für `log(x)` bei `x <= 0` ergänzen.
+- [x] Domain-Prüfung für `sqrt(x)` bei `x < 0` ergänzen.
+- [x] Domain-Prüfung für `asin(x)` bei `x < -1 || x > 1` ergänzen.
+- [x] Domain-Prüfung für `acos(x)` bei `x < -1 || x > 1` ergänzen.
+- [x] Domain-Prüfung für `tan(90°)` bzw. Polstellen verbessern.
+- [x] Domain-Fehlermeldungen nutzerfreundlich formulieren.
+- [x] Fehlermeldungen testbar über `BerechnungsFehler` / `ParserFehler` halten.
+- [x] `FunktionsRegistry` für Parserfunktionen planen.
+- [x] `OperatorRegistry` für Operatorprioritäten planen.
+- [x] Prüfen, ob `fakultaet()` langfristig in den Parser gehört.
+- [x] Fakultät für große Werte begrenzen und Fehlermeldung klar anzeigen.
+- [x] Fakultät nur für ganze nichtnegative Zahlen erlauben.
+- [x] `rand()` Verhalten testen: Bereich `[0, 1)`.
+- [x] `π` und `e` als Unicode-Eingabe testen.
+- [x] `pi` und `π` konsistent behandeln.
+- [x] `ans` in wissenschaftlichen Funktionen testen, z. B. `sin(ans)`.
+- [x] DEG/RAD-Verhalten für `sin`, `cos`, `tan` testen.
+- [x] DEG/RAD-Verhalten für `asin`, `acos`, `atan` testen.
+- [x] `sinh`, `cosh`, `tanh` unabhängig vom Winkelmodus testen.
+- [x] `10ˣ` mit leerem Ausdruck, Zahl und Klammer testen.
+- [x] `exp`, `ln`, `log` mit Ausdruck und letzter Zahl testen.
+- [x] Wissenschaftliches `f(x)`-Popup per Tastatur erreichbar machen.
 - [ ] Wissenschaftliches `f(x)`-Popup optisch in allen Themes prüfen.
 - [ ] Wissenschaftliches Panel bei kleiner Fenstergröße prüfen.
 
@@ -126,7 +126,7 @@
 - [x] PRG-Tests ergänzen.
 - [x] Formatter für BIN OCT HEX ergänzen.
 - [x] `formatBinary()` aus `ProgrammiererPanel` in `ProgrammiererFormatter` verschieben.
-- [ ] `ProgrammiererPanel` erst nach Funktionsabschluss in kleinere Panels splitten.
+- [x] `ProgrammiererPanel` erst nach Funktionsabschluss in kleinere Panels splitten.
 - [x] `ProgrammiererHostPanel` nur behalten, wenn dort zusätzliche Host-Funktion entsteht.
 - [x] History/Suche im Programmiermodus ausblenden.
 - [x] To-do `Operatoren für PRG-Modus im Parser ergänzen` prüfen: vermutlich ersetzen durch eigenen PRG-Parser nur bei Bedarf.
@@ -154,8 +154,6 @@
 - [x] Optional: HEX-Anzeige auf Wortbreite auffüllen, z. B. BYTE immer 2 Stellen.
 - [x] Optional: Gruppierung für HEX ergänzen, z. B. `FFFF FFFF`.
 - [x] Optional: Gruppierung für OCT prüfen.
-- [ ] Optional: Trennzeichen in BIN-Anzeige themegerecht darstellen.
-- [ ] Disabled Buttons optisch in allen Themes prüfen.
 - [x] `SIGNED/UNSIGNED`-Button optisch deutlicher machen.
 - [x] `SIGNED/UNSIGNED`-Button Tooltip ergänzen.
 - [x] `>>>`, `>>`, `<<` Tooltips ergänzen.
@@ -173,10 +171,6 @@
 - [x] `ProgrammiererButtonStyler` prüfen, falls Styling weiter wächst.
 - [x] `ProgrammiererHostPanel` entweder mit echter Host-Funktion füllen oder entfernen.
 - [x] Länge anpassen oder begrenzen, damit die Anzeige nicht fehlschlägt
-- [ ] PRG-Modus Layout bei kleiner Fenstergröße prüfen.
-- [ ] PRG-Modus Layout bei breitem Fenster prüfen.
-- [ ] PRG-Modus ohne History/Suche auf freie Fläche prüfen.
-- [ ] PRG-Modus Theme-Anbindung in allen Themes prüfen.
 
 ---
 
@@ -340,6 +334,22 @@
 
 ---
 
+## Settings
+- [x] Setting Menü hinzufügen
+- [x] Setting Button richtig anzeigen
+- [x] Setting MenüButtons im Untermenü Clickable machen
+- [x] Funktionalität geben
+- [ ] Settings-Dialog: Änderungen optional mit Speichern/Abbrechen statt Sofortübernahme anbieten.
+- [ ] Settings-Datei versionieren, falls später neue Felder dazukommen.
+- - [x] Einstellungen-Dialog planen.
+- [x] Einstellungen persistent speichern.
+- [x] Einstellungen für Präzision ergänzen.
+- [x] Einstellungen für Theme ergänzen.
+- [x] Einstellungen für Startmodus ergänzen.
+- [x] Einstellungen für Winkelmodus ergänzen.
+- [x] Einstellungen für History-Verhalten ergänzen.
+- [x] Einstellungen für Zahlenformat ergänzen.
+
 ## Spätere Features
 - [ ] Session speichern/laden erst nach sauberem `RechnerZustand`.
 - [ ] Einheitenumrechnung als eigenes Feature planen, nicht in den bestehenden Rechnerkern drücken.
@@ -351,14 +361,6 @@
 - [ ] Matrixmodus erst planen, wenn `common.logic`, `common.parser` und `common.state` stabil sind.
 - [ ] Statistikmodus hinzufügen.
 - [ ] Matrixmodus hinzufügen.
-- [ ] ! Einstellungen-Dialog planen.
-- [ ] ! Einstellungen persistent speichern.
-- [ ] ! Einstellungen für Präzision ergänzen.
-- [ ] ! Einstellungen für Theme ergänzen.
-- [ ] ! Einstellungen für Startmodus ergänzen.
-- [ ] ! Einstellungen für Winkelmodus ergänzen.
-- [ ] ! Einstellungen für History-Verhalten ergänzen.
-- [ ] ! Einstellungen für Zahlenformat ergänzen.
 - [ ] ! Session speichern: Modus, Ausdruck, Verlauf, Winkelmodus, Speicher, Theme.
 - [ ] ! Session laden mit Kompatibilitätsprüfung.
 - [ ] Session-Datei robust gegen Fehler lesen.
@@ -385,7 +387,7 @@
 - [ ] `.jar`-Build oder Installer optional planen.
 - [ ] GitHub Releases vorbereiten.
 - [ ] Changelog führen.
-- [ ] ! Version im UI anzeigen.
+- [x] Version im UI anzeigen.
 
 ---
 

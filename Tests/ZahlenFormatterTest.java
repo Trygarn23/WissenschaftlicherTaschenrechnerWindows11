@@ -1,3 +1,4 @@
+import common.formatting.ZahlenFormatModus;
 import common.formatting.ZahlenFormatter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,5 +53,31 @@ public class ZahlenFormatterTest
 
         // Assert
         assertEquals("1,2e-5+1.000", actual);
+    }
+
+    @Test
+    void formatiereZahl_ShouldRespectPrecisionSetting()
+    {
+        // Arrange
+        formatter.setNachkommastellen(2);
+
+        // Act
+        String actual = formatter.formatiereZahl(1.23456);
+
+        // Assert
+        assertEquals("1,23", actual);
+    }
+
+    @Test
+    void formatiereZahl_ShouldRespectScientificFormatSetting()
+    {
+        // Arrange
+        formatter.setFormatModus(ZahlenFormatModus.WISSENSCHAFTLICH);
+
+        // Act
+        String actual = formatter.formatiereZahl(1234.0);
+
+        // Assert
+        assertEquals("1,234e3", actual);
     }
 }

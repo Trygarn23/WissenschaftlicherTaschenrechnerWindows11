@@ -211,6 +211,20 @@ public class TaschenrechnerParserTest
     }
 
     @Test
+    void auswerten_ShouldEvaluateInverseTrigonometryInRadians_WhenWinkelModusIsRad()
+    {
+        // Act
+        double asinActual = AusdruckParser.auswerten("asin(1)", 0.0, WinkelModus.RAD);
+        double acosActual = AusdruckParser.auswerten("acos(0)", 0.0, WinkelModus.RAD);
+        double atanActual = AusdruckParser.auswerten("atan(1)", 0.0, WinkelModus.RAD);
+
+        // Assert
+        assertEquals(Math.PI / 2.0, asinActual, 1e-9);
+        assertEquals(Math.PI / 2.0, acosActual, 1e-9);
+        assertEquals(Math.PI / 4.0, atanActual, 1e-9);
+    }
+
+    @Test
     void auswerten_ShouldEvaluateCommonFunctions_WhenFunctionsAreValid()
     {
         // Arrange
@@ -229,6 +243,21 @@ public class TaschenrechnerParserTest
         assertEquals(3.0, sqrtActual, EPSILON);
         assertEquals(5.0, absActual, EPSILON);
         assertEquals(Math.exp(2.0), expActual, EPSILON);
+    }
+
+    @Test
+    void auswerten_ShouldEvaluateHyperbolicFunctionsIndependentFromAngleMode()
+    {
+        // Arrange
+        String expression = "sinh(1)+cosh(1)+tanh(1)";
+
+        // Act
+        double degActual = AusdruckParser.auswerten(expression, 0.0, WinkelModus.DEG);
+        double radActual = AusdruckParser.auswerten(expression, 0.0, WinkelModus.RAD);
+
+        // Assert
+        assertEquals(radActual, degActual, EPSILON);
+        assertEquals(Math.sinh(1.0) + Math.cosh(1.0) + Math.tanh(1.0), degActual, EPSILON);
     }
 
     @Test
@@ -295,18 +324,18 @@ public class TaschenrechnerParserTest
         // Arrange
         String sqrtNegative = "sqrt(-1)";
         String lnZero = "ln(0)";
+        String logNegative = "log(-1)";
         String asinOutOfDomain = "asin(2)";
+        String acosOutOfDomain = "acos(-2)";
         String tanUndefined = "tan(90)";
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class,
-                () -> AusdruckParser.auswerten(sqrtNegative, 0.0, WinkelModus.DEG));
-        assertThrows(IllegalArgumentException.class,
-                () -> AusdruckParser.auswerten(lnZero, 0.0, WinkelModus.DEG));
-        assertThrows(IllegalArgumentException.class,
-                () -> AusdruckParser.auswerten(asinOutOfDomain, 0.0, WinkelModus.DEG));
-        assertThrows(IllegalArgumentException.class,
-                () -> AusdruckParser.auswerten(tanUndefined, 0.0, WinkelModus.DEG));
+        assertFunctionDomainError(sqrtNegative);
+        assertFunctionDomainError(lnZero);
+        assertFunctionDomainError(logNegative);
+        assertFunctionDomainError(asinOutOfDomain);
+        assertFunctionDomainError(acosOutOfDomain);
+        assertFunctionDomainError(tanUndefined);
     }
 
     @Test
@@ -321,5 +350,12 @@ public class TaschenrechnerParserTest
 
         // Assert
         assertEquals(ParserFehler.DIVISION_DURCH_NULL, exception.getFehler());
+    }
+
+    private void assertFunctionDomainError(String expression)
+    {
+        AusdruckParserException exception = assertThrows(AusdruckParserException.class,
+                () -> AusdruckParser.auswerten(expression, 0.0, WinkelModus.DEG));
+        assertEquals(ParserFehler.UNGUELTIGER_FUNKTIONSBEREICH, exception.getFehler());
     }
 }

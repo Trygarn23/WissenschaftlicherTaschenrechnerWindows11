@@ -21,6 +21,8 @@ import ui.settings.SettingsPersistence;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -80,9 +82,17 @@ public class TaschenrechnerUI extends JFrame
     {
         setTitle("Taschenrechner");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1180, 860);
+        setSize(appSettings.getFensterBreite(), appSettings.getFensterHoehe());
         setLocationRelativeTo(null);
         setMinimumSize(new Dimension(980, 700));
+        addWindowListener(new WindowAdapter()
+        {
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                speichereFenstergroesse();
+            }
+        });
     }
 
     private AppTheme theme()
@@ -147,6 +157,8 @@ public class TaschenrechnerUI extends JFrame
 
         globalActionBarPanel.setAngleModeListener(e -> {
             rechner.winkelModusUmschalten();
+            appSettings.setWinkelModus(rechner.getWinkelModus());
+            settingsPersistence.speichere(appSettings);
             globalActionBarPanel.setAngleModeText(rechner.getWinkelModus().name());
             refreshWithExtraInfo(rechner.getWinkelModus().name());
         });
@@ -161,6 +173,8 @@ public class TaschenrechnerUI extends JFrame
     private void setAktuellerModus(RechnerModus modus)
     {
         aktuellerModus = modus;
+        appSettings.setStartModus(modus);
+        settingsPersistence.speichere(appSettings);
 
         modeBarPanel.setSelectedMode(modus, themeManager.getCurrentTheme());
         modeContentHostPanel.showMode(modus);
@@ -339,7 +353,7 @@ public class TaschenrechnerUI extends JFrame
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setOpaque(true);
-        btn.setFocusable(false);
+        btn.setFocusable(Boolean.TRUE.equals(btn.getClientProperty("keyboardFocusable")));
 
         Color bg;
         Color fg;
@@ -405,5 +419,12 @@ public class TaschenrechnerUI extends JFrame
         {
             verlaufService.speichereEintraege(historyPanel.getAllEntries());
         }
+    }
+
+    private void speichereFenstergroesse()
+    {
+        appSettings.setFensterBreite(getWidth());
+        appSettings.setFensterHoehe(getHeight());
+        settingsPersistence.speichere(appSettings);
     }
 }

@@ -6,6 +6,7 @@ import ui.tooltips.ButtonTooltips;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -101,7 +102,10 @@ public class WissenschaftlichPanel extends JPanel
     private JButton createFunctionMenuButton()
     {
         JButton triggerButton = new JButton("f(x) ▼");
-        triggerButton.setFocusable(false);
+        triggerButton.setFocusable(true);
+        triggerButton.setMnemonic(KeyEvent.VK_F);
+        triggerButton.putClientProperty("keyboardFocusable", Boolean.TRUE);
+        triggerButton.getAccessibleContext().setAccessibleName("Funktionsmenü");
         ButtonTooltips.apply(triggerButton, "f(x)");
 
         functionPopupMenu = new JPopupMenu();

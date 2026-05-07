@@ -1,10 +1,13 @@
 import common.logic.RechnerService;
+import modes.standard.ui.StandardPanel;
 import modes.wissenschaftlich.logic.WissenschaftlichOperationen;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ui.shell.ShellActionRegistry;
 
 import javax.swing.*;
+import java.awt.Component;
+import java.awt.Container;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -104,5 +107,34 @@ public class ShellActionRegistryTest
         // Assert
         assertEquals("M = 10", extraInfo.get());
         assertEquals("10", rechner.formatiereLiveAnzeige());
+    }
+
+    @Test
+    void attachCalculatorButtonActions_ShouldAttachActionToEveryStandardButton()
+    {
+        // Arrange
+        StandardPanel panel = new StandardPanel();
+
+        // Act
+        registry.attachCalculatorButtonActions(panel);
+
+        // Assert
+        assertAllStandardButtonsHaveActions(panel);
+    }
+
+    private void assertAllStandardButtonsHaveActions(Container container)
+    {
+        for (Component component : container.getComponents())
+        {
+            if (component instanceof JButton button)
+            {
+                assertTrue(button.getActionListeners().length > 0, "Missing action for button: " + button.getText());
+            }
+
+            if (component instanceof Container child)
+            {
+                assertAllStandardButtonsHaveActions(child);
+            }
+        }
     }
 }

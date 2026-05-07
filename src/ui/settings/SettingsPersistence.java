@@ -55,6 +55,8 @@ public class SettingsPersistence
         settings.setHistoryEnabled(Boolean.parseBoolean(properties.getProperty("historyEnabled", Boolean.toString(settings.isHistoryEnabled()))));
         settings.setNachkommastellen(readInt(properties, "nachkommastellen", settings.getNachkommastellen()));
         settings.setZahlenFormatModus(readEnum(properties, "zahlenFormat", ZahlenFormatModus.class, settings.getZahlenFormatModus()));
+        settings.setFensterBreite(readInt(properties, "fensterBreite", settings.getFensterBreite()));
+        settings.setFensterHoehe(readInt(properties, "fensterHoehe", settings.getFensterHoehe()));
         return settings;
     }
 
@@ -67,6 +69,8 @@ public class SettingsPersistence
         properties.setProperty("historyEnabled", Boolean.toString(settings.isHistoryEnabled()));
         properties.setProperty("nachkommastellen", Integer.toString(settings.getNachkommastellen()));
         properties.setProperty("zahlenFormat", settings.getZahlenFormatModus().name());
+        properties.setProperty("fensterBreite", Integer.toString(settings.getFensterBreite()));
+        properties.setProperty("fensterHoehe", Integer.toString(settings.getFensterHoehe()));
 
         try
         {

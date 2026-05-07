@@ -15,6 +15,8 @@ public final class AppSettings
     private boolean historyEnabled = true;
     private int nachkommastellen = 11;
     private ZahlenFormatModus zahlenFormatModus = ZahlenFormatModus.AUTO;
+    private int fensterBreite = 1180;
+    private int fensterHoehe = 860;
 
     public AppSettings copy()
     {
@@ -25,6 +27,8 @@ public final class AppSettings
         copy.historyEnabled = historyEnabled;
         copy.nachkommastellen = nachkommastellen;
         copy.zahlenFormatModus = zahlenFormatModus;
+        copy.fensterBreite = fensterBreite;
+        copy.fensterHoehe = fensterHoehe;
         return copy;
     }
 
@@ -86,5 +90,25 @@ public final class AppSettings
     public void setZahlenFormatModus(ZahlenFormatModus zahlenFormatModus)
     {
         this.zahlenFormatModus = zahlenFormatModus == null ? ZahlenFormatModus.AUTO : zahlenFormatModus;
+    }
+
+    public int getFensterBreite()
+    {
+        return fensterBreite;
+    }
+
+    public void setFensterBreite(int fensterBreite)
+    {
+        this.fensterBreite = Math.max(980, fensterBreite);
+    }
+
+    public int getFensterHoehe()
+    {
+        return fensterHoehe;
+    }
+
+    public void setFensterHoehe(int fensterHoehe)
+    {
+        this.fensterHoehe = Math.max(700, fensterHoehe);
     }
 }
