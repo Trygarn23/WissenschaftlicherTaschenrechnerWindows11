@@ -2,6 +2,7 @@ package modes.graph.ui;
 
 import common.state.WinkelModus;
 import modes.graph.logic.GraphEvaluator;
+import modes.graph.logic.GraphIntersectionService;
 import modes.graph.logic.KurvendiskussionService;
 import modes.graph.model.GraphPunkt;
 import modes.graph.model.GraphState;
@@ -10,11 +11,14 @@ import ui.theme.AppTheme;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -32,13 +36,16 @@ public class GraphPanel extends JPanel
     private final GraphState state = new GraphState();
     private final GraphEvaluator evaluator = new GraphEvaluator();
     private final KurvendiskussionService kurvendiskussionService = new KurvendiskussionService(evaluator);
+    private final GraphIntersectionService intersectionService = new GraphIntersectionService(evaluator);
     private final GraphCanvasPanel canvasPanel = new GraphCanvasPanel(state, evaluator);
 
-    private final JTextField expressionField = new JTextField(state.getHauptfunktion().getAusdruck());
     private final JLabel statusLabel = new JLabel("Bereit");
-    private final JLabel swatchLabel = new JLabel(" ");
     private final JTextArea analysisArea = new JTextArea();
+    private final JSpinner tableStepSpinner = new JSpinner(new SpinnerNumberModel(1.0, 0.25, 10.0, 0.25));
+    private final List<JLabel> xLabels = new ArrayList<>();
     private final List<JLabel> valueLabels = new ArrayList<>();
+    private final List<JTextField> expressionFields = new ArrayList<>();
+    private final List<JCheckBox> visibleChecks = new ArrayList<>();
 
     private AppTheme theme;
     private WinkelModus winkelModus = WinkelModus.DEG;
@@ -68,20 +75,24 @@ public class GraphPanel extends JPanel
         setBackground(theme.windowBackground());
         canvasPanel.applyTheme(theme);
 
-        expressionField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        expressionField.setBackground(theme.historySearchBackground());
-        expressionField.setForeground(theme.displayForeground());
-        expressionField.setCaretColor(theme.displayForeground());
-        expressionField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(theme.modeBorder(), 1),
-                new EmptyBorder(10, 12, 10, 12)
-        ));
+        for (JTextField expressionField : expressionFields)
+        {
+            expressionField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            expressionField.setBackground(theme.historySearchBackground());
+            expressionField.setForeground(theme.displayForeground());
+            expressionField.setCaretColor(theme.displayForeground());
+            expressionField.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(theme.modeBorder(), 1),
+                    new EmptyBorder(10, 12, 10, 12)
+            ));
+        }
 
         statusLabel.setForeground(theme.secondaryDisplayForeground());
         analysisArea.setFont(new Font("Consolas", Font.PLAIN, 12));
         analysisArea.setBackground(theme.historySearchBackground());
         analysisArea.setForeground(theme.displayForeground());
         analysisArea.setBorder(new EmptyBorder(8, 8, 8, 8));
+        tableStepSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         applyThemeToChildren(this);
 
         repaint();
@@ -96,21 +107,18 @@ public class GraphPanel extends JPanel
         JPanel form = new JPanel(new BorderLayout(0, 10));
         form.setOpaque(false);
 
-        JLabel title = new JLabel("f(x)");
+        JLabel title = new JLabel("Funktionen");
         title.setFont(new Font("Segoe UI", Font.BOLD, 22));
 
-        JPanel expressionRow = new JPanel(new BorderLayout(8, 0));
-        expressionRow.setOpaque(false);
-        swatchLabel.setOpaque(true);
-        swatchLabel.setPreferredSize(new Dimension(8, 42));
-        swatchLabel.setBackground(state.getHauptfunktion().getFarbe());
-        expressionRow.add(swatchLabel, BorderLayout.WEST);
-        expressionRow.add(expressionField, BorderLayout.CENTER);
-
-        expressionField.addActionListener(e -> plot());
+        JPanel expressionRows = new JPanel(new GridLayout(0, 1, 0, 8));
+        expressionRows.setOpaque(false);
+        for (int i = 0; i < state.getFunktionen().size(); i++)
+        {
+            expressionRows.add(buildFunctionRow(i));
+        }
 
         form.add(title, BorderLayout.NORTH);
-        form.add(expressionRow, BorderLayout.CENTER);
+        form.add(expressionRows, BorderLayout.CENTER);
         form.add(statusLabel, BorderLayout.SOUTH);
 
         JPanel controls = new JPanel(new GridLayout(0, 2, 8, 8));
@@ -153,18 +161,37 @@ public class GraphPanel extends JPanel
 
     private JPanel buildMiniTable()
     {
-        JPanel table = new JPanel(new GridLayout(0, 2, 8, 6));
+        JPanel wrapper = new JPanel(new BorderLayout(0, 6));
+        wrapper.setOpaque(false);
+
+        JPanel stepRow = new JPanel(new BorderLayout(8, 0));
+        stepRow.setOpaque(false);
+        stepRow.add(new JLabel("Tabellenschritt"), BorderLayout.WEST);
+        stepRow.add(tableStepSpinner, BorderLayout.EAST);
+        tableStepSpinner.addChangeListener(e -> updateMiniTable());
+
+        JPanel table = new JPanel(new GridLayout(0, 4, 8, 6));
         table.setOpaque(false);
         table.add(new JLabel("x"));
         table.add(new JLabel("f(x)"));
-        for (int x = -2; x <= 2; x++)
+        table.add(new JLabel("f'(x)"));
+        table.add(new JLabel("f''(x)"));
+        for (int row = -2; row <= 2; row++)
         {
-            table.add(new JLabel(Integer.toString(x)));
-            JLabel valueLabel = new JLabel(" ");
-            valueLabels.add(valueLabel);
-            table.add(valueLabel);
+            JLabel xLabel = new JLabel(" ");
+            xLabels.add(xLabel);
+            table.add(xLabel);
+            for (int i = 0; i < 3; i++)
+            {
+                JLabel valueLabel = new JLabel(" ");
+                valueLabels.add(valueLabel);
+                table.add(valueLabel);
+            }
         }
-        return table;
+
+        wrapper.add(stepRow, BorderLayout.NORTH);
+        wrapper.add(table, BorderLayout.CENTER);
+        return wrapper;
     }
 
     private JPanel buildAnalysisPanel()
@@ -199,9 +226,43 @@ public class GraphPanel extends JPanel
         return button;
     }
 
+    private JPanel buildFunctionRow(int index)
+    {
+        JPanel row = new JPanel(new BorderLayout(8, 0));
+        row.setOpaque(false);
+
+        JLabel swatch = new JLabel(state.getFunktion(index).getName());
+        swatch.setHorizontalAlignment(JLabel.CENTER);
+        swatch.setOpaque(true);
+        swatch.setPreferredSize(new Dimension(28, 42));
+        swatch.setBackground(state.getFunktion(index).getFarbe());
+        swatch.setForeground(Color.WHITE);
+        swatch.putClientProperty("graphSwatch", Boolean.TRUE);
+
+        JTextField field = new JTextField(state.getFunktion(index).getAusdruck());
+        field.addActionListener(e -> plot());
+        expressionFields.add(field);
+
+        JCheckBox visible = new JCheckBox();
+        visible.setSelected(state.getFunktion(index).isSichtbar());
+        visible.setOpaque(false);
+        visible.addActionListener(e -> {
+            state.getFunktion(index).setSichtbar(visible.isSelected());
+            plot();
+        });
+        visibleChecks.add(visible);
+
+        row.add(swatch, BorderLayout.WEST);
+        row.add(field, BorderLayout.CENTER);
+        row.add(visible, BorderLayout.EAST);
+        return row;
+    }
+
     private void plot()
     {
-        String ausdruck = expressionField.getText().trim();
+        syncFunctionsFromUi();
+
+        String ausdruck = state.getHauptfunktion().getAusdruck();
         if (ausdruck.isBlank())
         {
             setStatus("Bitte Funktion eingeben", false);
@@ -216,11 +277,19 @@ public class GraphPanel extends JPanel
             return;
         }
 
-        state.getHauptfunktion().setAusdruck(ausdruck);
         setStatus("Zeichne " + state.getHauptfunktion().getName() + "(x) = " + ausdruck, true);
         updateMiniTable();
         updateAnalysis();
         canvasPanel.repaint();
+    }
+
+    private void syncFunctionsFromUi()
+    {
+        for (int i = 0; i < expressionFields.size(); i++)
+        {
+            state.getFunktion(i).setAusdruck(expressionFields.get(i).getText().trim());
+            state.getFunktion(i).setSichtbar(visibleChecks.get(i).isSelected());
+        }
     }
 
     private void setStatus(String text, boolean ok)
@@ -236,10 +305,23 @@ public class GraphPanel extends JPanel
     {
         for (int i = 0; i < valueLabels.size(); i++)
         {
-            int x = i - 2;
+            int row = i / 3;
+            int column = i % 3;
+            double step = (Double) tableStepSpinner.getValue();
+            double x = (row - 2) * step;
+            if (column == 0)
+            {
+                xLabels.get(row).setText(format(x));
+            }
             try
             {
-                double y = evaluator.auswerten(state.getHauptfunktion().getAusdruck(), x, winkelModus);
+                double y = switch (column)
+                {
+                    case 0 -> evaluator.auswerten(state.getHauptfunktion().getAusdruck(), x, winkelModus);
+                    case 1 -> evaluator.ersteAbleitung(state.getHauptfunktion().getAusdruck(), x, winkelModus);
+                    case 2 -> evaluator.zweiteAbleitung(state.getHauptfunktion().getAusdruck(), x, winkelModus);
+                    default -> Double.NaN;
+                };
                 valueLabels.get(i).setText(Double.isFinite(y) ? format(y) : "undef.");
             }
             catch (RuntimeException e)
@@ -261,10 +343,12 @@ public class GraphPanel extends JPanel
             );
 
             analysisArea.setText(formatAnalysis(result));
+            canvasPanel.setKurvendiskussionResult(result);
             analysisArea.setCaretPosition(0);
         }
         catch (RuntimeException e)
         {
+            canvasPanel.setKurvendiskussionResult(null);
             analysisArea.setText("Kurvendiskussion nicht möglich.");
         }
     }
@@ -275,7 +359,24 @@ public class GraphPanel extends JPanel
                 + "Nullstellen: " + formatPoints(result.getNullstellen()) + "\n"
                 + "Extrema: " + formatPoints(result.getExtremstellen()) + "\n"
                 + "Wendestellen: " + formatPoints(result.getWendestellen()) + "\n"
+                + "Schnitt f/g: " + formatPoints(intersections()) + "\n"
                 + "Hinweis: numerische Näherung im sichtbaren x-Bereich.";
+    }
+
+    private List<GraphPunkt> intersections()
+    {
+        if (state.getFunktionen().size() < 2 || !state.getFunktion(0).isSichtbar() || !state.getFunktion(1).isSichtbar())
+        {
+            return List.of();
+        }
+
+        return intersectionService.findeSchnittpunkte(
+                state.getFunktion(0).getAusdruck(),
+                state.getFunktion(1).getAusdruck(),
+                state.getXMin(),
+                state.getXMax(),
+                winkelModus
+        );
     }
 
     private String formatPoints(List<GraphPunkt> punkte)
@@ -326,9 +427,12 @@ public class GraphPanel extends JPanel
             return;
         }
 
-        if (component instanceof JLabel label && component != swatchLabel)
+        if (component instanceof JLabel label)
         {
-            label.setForeground(theme.displayForeground());
+            if (!Boolean.TRUE.equals(label.getClientProperty("graphSwatch")))
+            {
+                label.setForeground(theme.displayForeground());
+            }
         }
         else if (component instanceof JButton button)
         {

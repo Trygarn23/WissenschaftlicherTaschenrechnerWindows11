@@ -3,7 +3,9 @@ package modes.graph.ui;
 import common.state.WinkelModus;
 import modes.graph.logic.GraphEvaluator;
 import modes.graph.model.FunktionsDefinition;
+import modes.graph.model.GraphPunkt;
 import modes.graph.model.GraphState;
+import modes.graph.model.KurvendiskussionResult;
 import ui.theme.AppTheme;
 
 import javax.swing.JPanel;
@@ -26,6 +28,7 @@ public class GraphCanvasPanel extends JPanel
     private GraphState state;
     private AppTheme theme;
     private WinkelModus winkelModus = WinkelModus.DEG;
+    private KurvendiskussionResult kurvendiskussionResult;
     private Point letzterDragPunkt;
     private Runnable viewportChangedListener = () -> {};
 
@@ -62,6 +65,12 @@ public class GraphCanvasPanel extends JPanel
         this.viewportChangedListener = viewportChangedListener == null ? () -> {} : viewportChangedListener;
     }
 
+    public void setKurvendiskussionResult(KurvendiskussionResult kurvendiskussionResult)
+    {
+        this.kurvendiskussionResult = kurvendiskussionResult;
+        repaint();
+    }
+
     @Override
     protected void paintComponent(Graphics graphics)
     {
@@ -82,6 +91,7 @@ public class GraphCanvasPanel extends JPanel
         zeichneRaster(g, grid, secondary);
         zeichneAchsen(g, foreground);
         zeichneFunktionen(g);
+        zeichneAnalysePunkte(g, background, foreground);
         zeichneBereich(g, secondary);
 
         g.dispose();
@@ -213,6 +223,63 @@ public class GraphCanvasPanel extends JPanel
     private double screenToWorldX(int x)
     {
         return state.getXMin() + (x / Math.max(1.0, getWidth() - 1.0)) * (state.getXMax() - state.getXMin());
+    }
+
+    private void zeichneAnalysePunkte(Graphics2D g, Color background, Color foreground)
+    {
+        if (kurvendiskussionResult == null)
+        {
+            return;
+        }
+
+        Color nullstelle = new Color(30, 190, 120);
+        Color extremum = new Color(255, 190, 60);
+        Color wendestelle = new Color(190, 120, 255);
+        Color yAchse = new Color(70, 190, 255);
+
+        zeichneMarker(g, kurvendiskussionResult.getYAchsenSchnittpunkt(), yAchse, background, "Y");
+
+        for (GraphPunkt punkt : kurvendiskussionResult.getNullstellen())
+        {
+            zeichneMarker(g, punkt, nullstelle, background, "N");
+        }
+
+        for (GraphPunkt punkt : kurvendiskussionResult.getExtremstellen())
+        {
+            zeichneMarker(g, punkt, extremum, background, "E");
+        }
+
+        for (GraphPunkt punkt : kurvendiskussionResult.getWendestellen())
+        {
+            zeichneMarker(g, punkt, wendestelle, background, "W");
+        }
+    }
+
+    private void zeichneMarker(Graphics2D g, GraphPunkt punkt, Color color, Color background, String label)
+    {
+        if (punkt == null || !istSichtbar(punkt))
+        {
+            return;
+        }
+
+        int x = worldToScreenX(punkt.getX());
+        int y = worldToScreenY(punkt.getY());
+
+        g.setColor(background);
+        g.fillOval(x - 7, y - 7, 14, 14);
+        g.setColor(color);
+        g.setStroke(new BasicStroke(2f));
+        g.drawOval(x - 7, y - 7, 14, 14);
+        g.fillOval(x - 3, y - 3, 6, 6);
+        g.drawString(label, x + 8, y - 8);
+    }
+
+    private boolean istSichtbar(GraphPunkt punkt)
+    {
+        return punkt.getX() >= state.getXMin()
+                && punkt.getX() <= state.getXMax()
+                && punkt.getY() >= state.getYMin()
+                && punkt.getY() <= state.getYMax();
     }
 
     private double screenToWorldY(int y)

@@ -20,6 +20,7 @@ public class GraphState
     public GraphState()
     {
         funktionen.add(new FunktionsDefinition("f", "sin(x)", new Color(24, 153, 219)));
+        funktionen.add(new FunktionsDefinition("g", "x^2-4", new Color(240, 92, 146)));
     }
 
     public List<FunktionsDefinition> getFunktionen()
@@ -30,6 +31,11 @@ public class GraphState
     public FunktionsDefinition getHauptfunktion()
     {
         return funktionen.get(0);
+    }
+
+    public FunktionsDefinition getFunktion(int index)
+    {
+        return funktionen.get(index);
     }
 
     public double getXMin()

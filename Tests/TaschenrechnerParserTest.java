@@ -146,6 +146,18 @@ public class TaschenrechnerParserTest
     }
 
     @Test
+    void auswerten_ShouldSupportFractionsWithParenthesizedNumeratorOrDenominator()
+    {
+        // Act
+        double parenthesizedBoth = AusdruckParser.auswerten("(2+4)/(1+2)", 0.0, WinkelModus.DEG);
+        double denominatorExpression = AusdruckParser.auswerten("6/(1+2)", 0.0, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(2.0, parenthesizedBoth, EPSILON);
+        assertEquals(2.0, denominatorExpression, EPSILON);
+    }
+
+    @Test
     void auswerten_ShouldAddTrailingZero_WhenExpressionEndsWithSeparator()
     {
         // Arrange

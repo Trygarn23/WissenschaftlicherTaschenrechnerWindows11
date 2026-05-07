@@ -41,4 +41,19 @@ public class GraphEvaluatorTest
         assertEquals(1.0, deg, 1e-10);
         assertEquals(1.0, rad, 1e-10);
     }
+
+    @Test
+    void graphEvaluator_ShouldApproximateFirstAndSecondDerivative()
+    {
+        // Arrange
+        GraphEvaluator evaluator = new GraphEvaluator();
+
+        // Act
+        double first = evaluator.ersteAbleitung("x^3", 2.0, WinkelModus.DEG);
+        double second = evaluator.zweiteAbleitung("x^3", 2.0, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(12.0, first, 1e-5);
+        assertEquals(12.0, second, 1e-3);
+    }
 }
