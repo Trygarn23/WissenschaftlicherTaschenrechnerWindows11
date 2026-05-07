@@ -9,6 +9,11 @@ public class ZahlenFormatter
 {
     private static final double SCIENTIFIC_UPPER_LIMIT = 1_000_000_000_000.0;
     private static final double SCIENTIFIC_LOWER_LIMIT = 0.000000001;
+    private static final int MIN_NACHKOMMASTELLEN = 2;
+    private static final int MAX_NACHKOMMASTELLEN = 15;
+
+    private int nachkommastellen = 11;
+    private ZahlenFormatModus formatModus = ZahlenFormatModus.AUTO;
 
     public String formatiereZahl(double zahl)
     {
@@ -18,7 +23,8 @@ public class ZahlenFormatter
         }
 
         double absolut = Math.abs(zahl);
-        if (absolut >= SCIENTIFIC_UPPER_LIMIT || absolut < SCIENTIFIC_LOWER_LIMIT)
+        if (formatModus == ZahlenFormatModus.WISSENSCHAFTLICH
+                || (formatModus == ZahlenFormatModus.AUTO && (absolut >= SCIENTIFIC_UPPER_LIMIT || absolut < SCIENTIFIC_LOWER_LIMIT)))
         {
             return formatiereWissenschaftlich(zahl);
         }
@@ -27,7 +33,7 @@ public class ZahlenFormatter
         symbole.setDecimalSeparator(',');
         symbole.setGroupingSeparator('.');
 
-        DecimalFormat format = new DecimalFormat("#,###.###########", symbole);
+        DecimalFormat format = new DecimalFormat("#,###." + "#".repeat(nachkommastellen), symbole);
         String text = format.format(zahl);
 
         if (text.contains(",") && text.endsWith(",0"))
@@ -98,12 +104,32 @@ public class ZahlenFormatter
         return text.replace('.', ',');
     }
 
+    public void setNachkommastellen(int nachkommastellen)
+    {
+        this.nachkommastellen = Math.max(MIN_NACHKOMMASTELLEN, Math.min(MAX_NACHKOMMASTELLEN, nachkommastellen));
+    }
+
+    public int getNachkommastellen()
+    {
+        return nachkommastellen;
+    }
+
+    public void setFormatModus(ZahlenFormatModus formatModus)
+    {
+        this.formatModus = formatModus == null ? ZahlenFormatModus.AUTO : formatModus;
+    }
+
+    public ZahlenFormatModus getFormatModus()
+    {
+        return formatModus;
+    }
+
     private String formatiereWissenschaftlich(double zahl)
     {
         DecimalFormatSymbols symbole = new DecimalFormatSymbols(Locale.GERMANY);
         symbole.setDecimalSeparator(',');
 
-        DecimalFormat format = new DecimalFormat("0.###########E0", symbole);
+        DecimalFormat format = new DecimalFormat("0." + "#".repeat(nachkommastellen) + "E0", symbole);
         return format.format(zahl).replace('E', 'e');
     }
 

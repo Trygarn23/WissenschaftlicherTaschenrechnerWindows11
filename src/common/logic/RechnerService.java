@@ -1,5 +1,6 @@
 package common.logic;
 
+import common.formatting.ZahlenFormatModus;
 import common.formatting.ZahlenFormatter;
 import common.state.RechnerZustand;
 import common.state.SpeicherState;
@@ -152,6 +153,31 @@ public class RechnerService
     public WinkelModus getWinkelModus()
     {
         return zustand.getWinkelModus();
+    }
+
+    public void setWinkelModus(WinkelModus winkelModus)
+    {
+        zustand.setWinkelModus(winkelModus);
+    }
+
+    public void setNachkommastellen(int nachkommastellen)
+    {
+        zahlenFormatierer.setNachkommastellen(nachkommastellen);
+    }
+
+    public int getNachkommastellen()
+    {
+        return zahlenFormatierer.getNachkommastellen();
+    }
+
+    public void setZahlenFormatModus(ZahlenFormatModus formatModus)
+    {
+        zahlenFormatierer.setFormatModus(formatModus);
+    }
+
+    public ZahlenFormatModus getZahlenFormatModus()
+    {
+        return zahlenFormatierer.getFormatModus();
     }
 
     public String speicherLoeschen()

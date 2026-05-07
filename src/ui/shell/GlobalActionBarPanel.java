@@ -15,7 +15,7 @@ public class GlobalActionBarPanel extends JPanel
     private final JLabel titleLabel = new JLabel("Taschenrechner");
     private final JButton angleModeButton = new JButton("DEG");
     private final JButton themeButton = new JButton("ui/Theme");
-    private final JButton menuButton = new JButton("⋮");
+    private final JButton settingsButton = new JButton("⚙");
 
     private final JPopupMenu themePopupMenu = new JPopupMenu();
     private final Map<ThemeType, JButton> themeOptionButtons = new LinkedHashMap<>();
@@ -33,7 +33,8 @@ public class GlobalActionBarPanel extends JPanel
 
         angleModeButton.setFocusable(false);
         themeButton.setFocusable(false);
-        menuButton.setFocusable(false);
+        settingsButton.setFocusable(false);
+        settingsButton.setToolTipText("Einstellungen öffnen");
 
         buildThemePopup();
 
@@ -41,7 +42,7 @@ public class GlobalActionBarPanel extends JPanel
 
         actionsPanel.add(angleModeButton);
         actionsPanel.add(themeButton);
-        actionsPanel.add(menuButton);
+        actionsPanel.add(settingsButton);
 
         add(titleLabel, BorderLayout.WEST);
         add(actionsPanel, BorderLayout.EAST);
@@ -118,9 +119,9 @@ public class GlobalActionBarPanel extends JPanel
         this.themeSelectionListener = listener;
     }
 
-    public void setMenuListener(java.awt.event.ActionListener listener)
+    public void setSettingsListener(java.awt.event.ActionListener listener)
     {
-        menuButton.addActionListener(listener);
+        settingsButton.addActionListener(listener);
     }
 
     public void highlightSelectedTheme(ThemeType selectedTheme)
@@ -151,7 +152,7 @@ public class GlobalActionBarPanel extends JPanel
 
         styleActionButton(angleModeButton, theme);
         styleActionButton(themeButton, theme);
-        styleActionButton(menuButton, theme);
+        styleIconButton(settingsButton, theme);
     }
 
     private void styleActionButton(JButton button, AppTheme theme)
@@ -163,5 +164,14 @@ public class GlobalActionBarPanel extends JPanel
         button.setOpaque(true);
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         button.setBorder(BorderFactory.createEmptyBorder(8, 14, 8, 14));
+    }
+
+    private void styleIconButton(JButton button, AppTheme theme)
+    {
+        styleActionButton(button, theme);
+        button.setFont(new Font("Segoe UI Symbol", Font.BOLD, 18));
+        button.setMargin(new Insets(0, 0, 0, 0));
+        button.setPreferredSize(new Dimension(42, 42));
+        button.setMinimumSize(new Dimension(42, 42));
     }
 }

@@ -12,8 +12,11 @@ import common.logic.RechnerService;
 import modes.wissenschaftlich.logic.WissenschaftlichOperationen;
 import modes.wissenschaftlich.ui.WissenschaftlichPanel;
 import ui.theme.AppTheme;
+import ui.settings.AppSettings;
 import ui.theme.ThemeManager;
 import ui.theme.ThemeType;
+import ui.settings.SettingsDialog;
+import ui.settings.SettingsPersistence;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -24,11 +27,13 @@ import java.util.Map;
 public class TaschenrechnerUI extends JFrame
 {
     private final ThemeManager themeManager = new ThemeManager();
+    private final SettingsPersistence settingsPersistence = new SettingsPersistence();
+    private AppSettings appSettings = settingsPersistence.lade();
     private final RechnerService rechner = new RechnerService();
     private final WissenschaftlichOperationen wissenschaftlichOperationen = new WissenschaftlichOperationen(rechner.getAusdruckEditor());
     private final VerlaufService verlaufService = new VerlaufService(new DateiVerlaufRepository());
 
-    private RechnerModus aktuellerModus = RechnerModus.STANDARD;
+    private RechnerModus aktuellerModus = appSettings.getStartModus();
 
     private final GlobalActionBarPanel globalActionBarPanel = new GlobalActionBarPanel();
     private final ModeBarPanel modeBarPanel = new ModeBarPanel();
@@ -42,6 +47,8 @@ public class TaschenrechnerUI extends JFrame
 
     public TaschenrechnerUI()
     {
+        applySettingsToServices();
+        themeManager.setTheme(appSettings.getThemeType());
         configureFrame();
         buildLayout();
 
@@ -145,6 +152,7 @@ public class TaschenrechnerUI extends JFrame
         });
 
         globalActionBarPanel.setThemeSelectionListener(this::setTheme);
+        globalActionBarPanel.setSettingsListener(e -> SettingsDialog.showDialog(this, theme(), appSettings, this::applySettings));
         historyPanel.setClearHistoryListener(e -> speichereVerlauf());
         historyPanel.setEntryDoubleClickListener(this::useHistoryEntryResult);
         displayPanel.setPasteListener(this::pasteDisplayText);
@@ -241,8 +249,31 @@ public class TaschenrechnerUI extends JFrame
 
     private void setTheme(ThemeType themeType)
     {
-        themeManager.setTheme(themeType);
+        AppSettings updatedSettings = appSettings.copy();
+        updatedSettings.setThemeType(themeType);
+        applySettings(updatedSettings);
+    }
+
+    private void applySettings(AppSettings settings)
+    {
+        boolean historySettingChanged = appSettings.isHistoryEnabled() != settings.isHistoryEnabled();
+        appSettings = settings.copy();
+        settingsPersistence.speichere(appSettings);
+        applySettingsToServices();
+        themeManager.setTheme(appSettings.getThemeType());
+        if (historySettingChanged)
+        {
+            ladeVerlauf();
+        }
         applyCurrentTheme();
+        refresh();
+    }
+
+    private void applySettingsToServices()
+    {
+        rechner.setWinkelModus(appSettings.getWinkelModus());
+        rechner.setNachkommastellen(appSettings.getNachkommastellen());
+        rechner.setZahlenFormatModus(appSettings.getZahlenFormatModus());
     }
 
     private void applyCurrentTheme()
@@ -365,11 +396,14 @@ public class TaschenrechnerUI extends JFrame
 
     private void ladeVerlauf()
     {
-        historyPanel.setAllEntries(verlaufService.ladeEintraege());
+        historyPanel.setAllEntries(appSettings.isHistoryEnabled() ? verlaufService.ladeEintraege() : java.util.List.of());
     }
 
     private void speichereVerlauf()
     {
-        verlaufService.speichereEintraege(historyPanel.getAllEntries());
+        if (appSettings.isHistoryEnabled())
+        {
+            verlaufService.speichereEintraege(historyPanel.getAllEntries());
+        }
     }
 }
