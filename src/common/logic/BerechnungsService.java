@@ -10,15 +10,11 @@ public class BerechnungsService
 {
     private final RechnerZustand zustand;
     private final ZahlenFormatter zahlenFormatierer;
-    private final StringBuilder ausdruck;
-    private final StringBuilder verlauf;
 
     public BerechnungsService(RechnerZustand zustand, ZahlenFormatter zahlenFormatierer)
     {
         this.zustand = zustand;
         this.zahlenFormatierer = zahlenFormatierer;
-        this.ausdruck = zustand.getAusdruck();
-        this.verlauf = zustand.getVerlauf();
     }
 
     public String berechne()
@@ -30,7 +26,7 @@ public class BerechnungsService
     {
         try
         {
-            String original = ausdruck.toString();
+            String original = zustand.getAusdruckText();
             double ergebnis = AusdruckParser.auswerten(original, zustand.getLetzteAntwort(), zustand.getWinkelModus());
 
             if (!Double.isFinite(ergebnis)) return fehler(BerechnungsFehler.UNGUELTIGES_ERGEBNIS);
@@ -39,15 +35,13 @@ public class BerechnungsService
 
             String formatiertergebnis = zahlenFormatierer.formatiereZahl(ergebnis);
 
-            ausdruck.setLength(0);
-            ausdruck.append(zahlenFormatierer.interneDarstellung(ergebnis));
+            zustand.setAusdruckText(zahlenFormatierer.interneDarstellung(ergebnis));
 
             zustand.setGleichGedrueckt(true);
 
-            verlauf.setLength(0);
-            verlauf.append(original).append(" = ").append(formatiertergebnis);
+            zustand.setVerlaufText(original + " = " + formatiertergebnis);
 
-            return BerechnungsErgebnis.erfolg(formatiertergebnis, verlauf.toString());
+            return BerechnungsErgebnis.erfolg(formatiertergebnis, zustand.getVerlaufText());
         }
         catch (AusdruckParserException e)
         {
@@ -61,13 +55,13 @@ public class BerechnungsService
 
     public double aktuellerWertOder0()
     {
-        if (ausdruck.isEmpty()) return 0.0;
+        if (zustand.isAusdruckLeer()) return 0.0;
 
         try
         {
             if (endetMitOperatorOderKlammerAuf()) return 0.0;
 
-            double wert = AusdruckParser.auswerten(ausdruck.toString(), zustand.getLetzteAntwort(), zustand.getWinkelModus());
+            double wert = AusdruckParser.auswerten(zustand.getAusdruckText(), zustand.getLetzteAntwort(), zustand.getWinkelModus());
             return Double.isFinite(wert) ? wert : 0.0;
         }
         catch (Exception e)
@@ -78,15 +72,15 @@ public class BerechnungsService
 
     private boolean endetMitOperatorOderKlammerAuf()
     {
-        if (ausdruck.isEmpty()) return true;
-        char zeichen = ausdruck.charAt(ausdruck.length() - 1);
+        if (zustand.isAusdruckLeer()) return true;
+        char zeichen = zustand.getAusdruckZeichen(zustand.getAusdruckLaenge() - 1);
         return "+-*/^%".indexOf(zeichen) >= 0 || zeichen == '(';
     }
 
     private BerechnungsErgebnis fehler(BerechnungsFehler fehler)
     {
-        ausdruck.setLength(0);
-        verlauf.setLength(0);
+        zustand.clearAusdruck();
+        zustand.clearVerlauf();
         zustand.setGleichGedrueckt(true);
         return BerechnungsErgebnis.fehler(fehler);
     }

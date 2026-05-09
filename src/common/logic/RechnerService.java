@@ -137,12 +137,12 @@ public class RechnerService
 
     public String formatiereLiveAnzeige()
     {
-        return zahlenFormatierer.formatiereLiveAnzeige(zustand.getAusdruck().toString());
+        return zahlenFormatierer.formatiereLiveAnzeige(zustand.getAusdruckText());
     }
 
     public String getVerlauf()
     {
-        return zustand.getVerlauf().toString();
+        return zustand.getVerlaufText();
     }
 
     public void winkelModusUmschalten()

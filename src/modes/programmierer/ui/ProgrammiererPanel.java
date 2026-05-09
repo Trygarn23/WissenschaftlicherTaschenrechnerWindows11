@@ -5,46 +5,22 @@ import modes.programmierer.logic.ProgrammiererLogik;
 import modes.programmierer.model.Basis;
 import modes.programmierer.model.Wortbreite;
 import ui.theme.AppTheme;
-import ui.tooltips.ButtonTooltips;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ProgrammiererPanel extends JPanel
 {
     private static final Color BG = new Color(25, 25, 25);
-    private static final Color PANEL_BG = new Color(18, 22, 30);
-
-    private static final Color DISPLAY_MAIN = Color.WHITE;
-    private static final Color DISPLAY_SECONDARY = new Color(180, 180, 180);
-    private static final Color DISPLAY_ACCENT = new Color(0, 145, 210);
-
-    private static final String BASE_COLOR_KEY = "baseColor";
-    private static final String ACTIVE_KEY = "active";
 
     private final ProgrammiererLogik logik = new ProgrammiererLogik();
     private final ProgrammiererFormatter formatter = new ProgrammiererFormatter();
-
-    private final JLabel aktuelleBasisLabel = new JLabel("DEC: 0", SwingConstants.RIGHT);
-    private final JLabel hexLabel = new JLabel("HEX: 0", SwingConstants.RIGHT);
-    private final JLabel decLabel = new JLabel("DEC: 0", SwingConstants.RIGHT);
-    private final JLabel octLabel = new JLabel("OCT: 0", SwingConstants.RIGHT);
-    private final JLabel binLabel = new JLabel("BIN: 0", SwingConstants.RIGHT);
-    private final JLabel statusLabel = new JLabel("Basis: DEC | Wortbreite: QWORD | SIGNED", SwingConstants.RIGHT);
-
-    private final Map<Basis, JButton> basisButtons = new EnumMap<>(Basis.class);
-    private final Map<Wortbreite, JButton> wortbreiteButtons = new EnumMap<>(Wortbreite.class);
-    private final Map<String, JButton> tastenButtons = new HashMap<>();
-
-    private JButton unsignedButton;
+    private final ProgrammiererDisplayPanel displayPanel = new ProgrammiererDisplayPanel();
+    private final ProgrammiererOptionsPanel optionsPanel = new ProgrammiererOptionsPanel(this::setBasis, this::setWortbreite);
+    private final ProgrammiererTastenPanel tastenPanel = new ProgrammiererTastenPanel(this::handleButton);
 
     public ProgrammiererPanel()
     {
@@ -53,269 +29,25 @@ public class ProgrammiererPanel extends JPanel
         setOpaque(true);
         setBorder(new EmptyBorder(6, 0, 0, 0));
 
-        add(buildDisplayPanel(), BorderLayout.NORTH);
-        add(buildCenterPanel(), BorderLayout.CENTER);
+        optionsPanel.setTastenPanel(tastenPanel);
+
+        add(displayPanel, BorderLayout.NORTH);
+        add(optionsPanel, BorderLayout.CENTER);
         setupKeyboard();
 
         refreshAnzeige();
     }
 
-    private JPanel buildDisplayPanel()
+    private void setBasis(Basis basis)
     {
-        JPanel wrap = new JPanel(new BorderLayout());
-        wrap.setOpaque(false);
-        wrap.setBorder(new EmptyBorder(0, 0, 6, 0));
-
-        JPanel displayPanel = new JPanel(new BorderLayout(0, 10));
-        displayPanel.setBackground(BG);
-        displayPanel.setBorder(new EmptyBorder(8, 8, 8, 8));
-
-        aktuelleBasisLabel.setForeground(DISPLAY_MAIN);
-        aktuelleBasisLabel.setFont(new Font("Segoe UI", Font.PLAIN, 42));
-        aktuelleBasisLabel.setBorder(new EmptyBorder(0, 0, 4, 0));
-
-        JPanel conversions = new JPanel(new GridLayout(4, 1, 0, 6));
-        conversions.setOpaque(false);
-
-        styleSecondaryLabel(hexLabel);
-        styleSecondaryLabel(decLabel);
-        styleSecondaryLabel(octLabel);
-        styleSecondaryLabel(binLabel);
-        styleSecondaryLabel(statusLabel);
-        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-
-        conversions.add(hexLabel);
-        conversions.add(decLabel);
-        conversions.add(octLabel);
-        conversions.add(binLabel);
-
-        displayPanel.add(aktuelleBasisLabel, BorderLayout.NORTH);
-        displayPanel.add(conversions, BorderLayout.CENTER);
-        displayPanel.add(statusLabel, BorderLayout.SOUTH);
-
-        wrap.add(displayPanel, BorderLayout.CENTER);
-        return wrap;
+        logik.setBasis(basis);
+        refreshAnzeige();
     }
 
-    private JPanel buildCenterPanel()
+    private void setWortbreite(Wortbreite wortbreite)
     {
-        JPanel center = new JPanel(new BorderLayout(8, 8));
-        center.setOpaque(false);
-
-        center.add(buildBasisPanel(), BorderLayout.NORTH);
-        center.add(buildMainButtonGrid(), BorderLayout.CENTER);
-        center.add(buildWortbreitePanel(), BorderLayout.SOUTH);
-
-        return center;
-    }
-
-    private JPanel buildBasisPanel()
-    {
-        JPanel panel = new JPanel(new GridLayout(1, 4, 8, 0));
-        panel.setOpaque(false);
-        panel.setBorder(new EmptyBorder(0, 0, 6, 0));
-
-        panel.add(createBasisButton("BIN", Basis.BIN));
-        panel.add(createBasisButton("OCT", Basis.OCT));
-        panel.add(createBasisButton("DEC", Basis.DEC));
-        panel.add(createBasisButton("HEX", Basis.HEX));
-
-        return panel;
-    }
-
-    private JPanel buildMainButtonGrid()
-    {
-        JPanel panel = new JPanel(new GridLayout(6, 5, 6, 6));
-        panel.setBackground(BG);
-        panel.setOpaque(true);
-
-        String[] texte = {
-                "A", "B", "C", "D", "←",
-                "E", "F", "NOT", "<<", ">>",
-                "7", "8", "9", "AND", "OR",
-                "4", "5", "6", "XOR", "CLR",
-                "1", "2", "3", ">>>", "SIGNED",
-                "±", "0", "=", "+", "-"
-        };
-
-        for (String text : texte)
-        {
-            JButton btn = createStyledButton(text);
-            ButtonTooltips.apply(btn, tooltipKey(text));
-            btn.addActionListener(e -> handleButton(text));
-            panel.add(btn);
-
-            tastenButtons.put(text, btn);
-
-            if ("SIGNED".equals(text))
-            {
-                unsignedButton = btn;
-            }
-        }
-
-        return panel;
-    }
-
-    private JPanel buildWortbreitePanel()
-    {
-        JPanel panel = new JPanel(new GridLayout(1, 4, 8, 0));
-        panel.setOpaque(false);
-        panel.setBorder(new EmptyBorder(6, 0, 0, 0));
-
-        panel.add(createWortbreiteButton("BYTE", Wortbreite.BYTE));
-        panel.add(createWortbreiteButton("WORD", Wortbreite.WORD));
-        panel.add(createWortbreiteButton("DWORD", Wortbreite.DWORD));
-        panel.add(createWortbreiteButton("QWORD", Wortbreite.QWORD));
-
-        return panel;
-    }
-
-    private JButton createBasisButton(String text, Basis basis)
-    {
-        JButton btn = new JButton(text);
-        styleModeButton(btn);
-        ButtonTooltips.apply(btn, text);
-
-        btn.addActionListener(e -> {
-            logik.setBasis(basis);
-            refreshAnzeige();
-        });
-
-        basisButtons.put(basis, btn);
-        return btn;
-    }
-
-    private JButton createWortbreiteButton(String text, Wortbreite wortbreite)
-    {
-        JButton btn = new JButton(text);
-        styleModeButton(btn);
-        ButtonTooltips.apply(btn, text);
-
-        btn.addActionListener(e -> {
-            logik.setWortbreite(wortbreite);
-            refreshAnzeige();
-        });
-
-        wortbreiteButtons.put(wortbreite, btn);
-        return btn;
-    }
-
-    private JButton createStyledButton(String text)
-    {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setOpaque(true);
-        btn.setFocusable(false);
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        Color baseColor = getButtonBaseColor(text);
-        Color textColor = getButtonTextColor(text);
-
-        btn.setBackground(baseColor);
-        btn.setForeground(textColor);
-        btn.putClientProperty(BASE_COLOR_KEY, baseColor);
-
-        btn.addMouseListener(new MouseAdapter()
-        {
-            @Override
-            public void mousePressed(MouseEvent e)
-            {
-                if (!btn.isEnabled()) return;
-                btn.setBackground(ProgrammiererButtonStyler.darken(baseColor, 25));
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e)
-            {
-                if (!btn.isEnabled()) return;
-                btn.setBackground(ProgrammiererButtonStyler.brighten(baseColor, 20));
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e)
-            {
-                if (!btn.isEnabled()) return;
-                btn.setBackground(ProgrammiererButtonStyler.brighten(baseColor, 20));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e)
-            {
-                if (!btn.isEnabled()) return;
-                btn.setBackground((Color) btn.getClientProperty(BASE_COLOR_KEY));
-            }
-        });
-
-        return btn;
-    }
-
-    private void styleModeButton(JButton button)
-    {
-        button.setFocusPainted(false);
-        button.setBorderPainted(true);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        button.setOpaque(true);
-        button.setFocusable(false);
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        button.setForeground(Color.WHITE);
-
-        button.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(ProgrammiererButtonStyler.MODE_BORDER, 1),
-                BorderFactory.createEmptyBorder(12, 14, 12, 14)
-        ));
-
-        button.putClientProperty(ACTIVE_KEY, Boolean.FALSE);
-
-        button.addMouseListener(new MouseAdapter()
-        {
-            @Override
-            public void mouseEntered(MouseEvent e)
-            {
-                if (!isActive(button))
-                {
-                    button.setBackground(ProgrammiererButtonStyler.brighten(ProgrammiererButtonStyler.MODE_INACTIVE_BG, 12));
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e)
-            {
-                if (!isActive(button))
-                {
-                    button.setBackground(ProgrammiererButtonStyler.MODE_INACTIVE_BG);
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e)
-            {
-                if (!isActive(button))
-                {
-                    button.setBackground(ProgrammiererButtonStyler.brighten(ProgrammiererButtonStyler.MODE_INACTIVE_BG, 20));
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e)
-            {
-                if (!isActive(button))
-                {
-                    button.setBackground(ProgrammiererButtonStyler.brighten(ProgrammiererButtonStyler.MODE_INACTIVE_BG, 12));
-                }
-            }
-        });
-
-        button.setBackground(ProgrammiererButtonStyler.MODE_INACTIVE_BG);
-    }
-
-    private void styleSecondaryLabel(JLabel label)
-    {
-        label.setForeground(DISPLAY_SECONDARY);
-        label.setFont(new Font("Consolas", Font.PLAIN, 18));
-        label.setOpaque(false);
-        label.setHorizontalAlignment(SwingConstants.RIGHT);
+        logik.setWortbreite(wortbreite);
+        refreshAnzeige();
     }
 
     private void handleButton(String text)
@@ -400,177 +132,19 @@ public class ProgrammiererPanel extends JPanel
 
     private void refreshAnzeige()
     {
-        String op = logik.getPendingOperationText();
-
-        aktuelleBasisLabel.setText(
-                logik.getBasis().name() + ": "
-                        + formatter.emptyAsZero(logik.getAktuelleEingabe())
-                        + (op.isEmpty() ? "" : "   [" + op + "]")
-        );
-
-        hexLabel.setText("HEX: " + formatter.formatHex(logik.getAnzeige(Basis.HEX), logik.getWortbreite()));
-        decLabel.setText("DEC: " + formatter.formatDec(logik.getAnzeige(Basis.DEC)));
-        octLabel.setText("OCT: " + formatter.formatOct(logik.getAnzeige(Basis.OCT)));
-        binLabel.setText("BIN: " + formatter.formatBinary(logik.getAnzeige(Basis.BIN), logik.getWortbreite()));
-        statusLabel.setText("Basis: " + logik.getBasis().name()
-                + " | Wortbreite: " + logik.getWortbreite().name()
-                + " | " + (logik.isUnsigned() ? "UNSIGNED" : "SIGNED"));
-
-        updateBasisButtons();
-        updateWortbreiteButtons();
-        updateDigitButtonsByBasis();
-        updateUnsignedButton();
-    }
-
-    private void updateBasisButtons()
-    {
-        for (Map.Entry<Basis, JButton> entry : basisButtons.entrySet())
-        {
-            boolean active = entry.getKey() == logik.getBasis();
-            setModeButtonActive(entry.getValue(), active);
-        }
-    }
-
-    private void updateWortbreiteButtons()
-    {
-        for (Map.Entry<Wortbreite, JButton> entry : wortbreiteButtons.entrySet())
-        {
-            boolean active = entry.getKey() == logik.getWortbreite();
-            setModeButtonActive(entry.getValue(), active);
-        }
-    }
-
-    private void updateDigitButtonsByBasis()
-    {
-        for (Map.Entry<String, JButton> entry : tastenButtons.entrySet())
-        {
-            String text = entry.getKey();
-            JButton button = entry.getValue();
-
-            if (!text.matches("[0-9A-F]"))
-            {
-                continue;
-            }
-
-            boolean enabled = istTasteGueltigFuerBasis(text, logik.getBasis());
-            setButtonEnabledState(button, text, enabled);
-        }
-
-        JButton plusMinusButton = tastenButtons.get("±");
-        if (plusMinusButton != null)
-        {
-            boolean enabled = logik.getBasis() == Basis.DEC && !logik.isUnsigned();
-            setButtonEnabledState(plusMinusButton, "±", enabled);
-        }
-    }
-
-    private void updateUnsignedButton()
-    {
-        if (unsignedButton == null)
-        {
-            return;
-        }
-
-        unsignedButton.setText(logik.isUnsigned() ? "UNSIGNED" : "SIGNED");
-        ButtonTooltips.apply(unsignedButton, unsignedButton.getText());
-        unsignedButton.setBackground(logik.isUnsigned() ? ProgrammiererButtonStyler.MODE_ACTIVE_BG : getButtonBaseColor(unsignedButton.getText()));
-        unsignedButton.setForeground(Color.WHITE);
-    }
-
-    private String tooltipKey(String text)
-    {
-        return "C".equals(text) ? "PRG:C" : text;
-    }
-
-    private void setButtonEnabledState(JButton button, String text, boolean enabled)
-    {
-        button.setEnabled(enabled);
-
-        if (enabled)
-        {
-            Color baseColor = getButtonBaseColor(text);
-            button.putClientProperty(BASE_COLOR_KEY, baseColor);
-            button.setBackground(baseColor);
-            button.setForeground(getButtonTextColor(text));
-            button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        }
-        else
-        {
-            button.setBackground(ProgrammiererButtonStyler.DISABLED_BG);
-            button.setForeground(ProgrammiererButtonStyler.DISABLED_FG);
-            button.setCursor(Cursor.getDefaultCursor());
-        }
-    }
-
-    private boolean istTasteGueltigFuerBasis(String text, Basis basis)
-    {
-        return switch (basis)
-        {
-            case BIN -> text.matches("[01]");
-            case OCT -> text.matches("[0-7]");
-            case DEC -> text.matches("[0-9]");
-            case HEX -> text.matches("[0-9A-F]");
-        };
-    }
-
-    private void setModeButtonActive(JButton button, boolean active)
-    {
-        button.putClientProperty(ACTIVE_KEY, active);
-        button.setBackground(active ? ProgrammiererButtonStyler.MODE_ACTIVE_BG : ProgrammiererButtonStyler.MODE_INACTIVE_BG);
-        button.setForeground(Color.WHITE);
-    }
-
-    private boolean isActive(JButton button)
-    {
-        Object value = button.getClientProperty(ACTIVE_KEY);
-        return value instanceof Boolean b && b;
+        displayPanel.refresh(logik, formatter);
+        optionsPanel.refresh(logik.getBasis(), logik.getWortbreite());
+        tastenPanel.refresh(logik.getBasis(), logik.isUnsigned());
     }
 
     public void applyTheme(AppTheme theme)
     {
         setBackground(theme.panelBackground());
-
-        aktuelleBasisLabel.setForeground(theme.displayForeground());
-        hexLabel.setForeground(theme.displayForeground());
-        decLabel.setForeground(theme.displayForeground());
-        octLabel.setForeground(theme.displayForeground());
-        binLabel.setForeground(theme.displayForeground());
-        statusLabel.setForeground(theme.secondaryDisplayForeground());
-
-        for (JButton button : tastenButtons.values())
-        {
-            String text = button.getText();
-
-            if (button.isEnabled())
-            {
-                Color baseColor = getButtonBaseColor(text);
-                button.putClientProperty(BASE_COLOR_KEY, baseColor);
-                button.setBackground(baseColor);
-                button.setForeground(getButtonTextColor(text));
-            }
-        }
-
-        for (JButton button : basisButtons.values())
-        {
-            button.setForeground(theme.functionButtonForeground());
-        }
-
-        for (JButton button : wortbreiteButtons.values())
-        {
-            button.setForeground(theme.functionButtonForeground());
-        }
+        displayPanel.applyTheme(theme);
+        optionsPanel.applyTheme(theme);
+        tastenPanel.applyTheme(theme);
 
         revalidate();
         repaint();
-    }
-
-    private Color getButtonBaseColor(String text)
-    {
-        return ProgrammiererButtonStyler.buttonBackground(text);
-    }
-
-    private Color getButtonTextColor(String text)
-    {
-        return ProgrammiererButtonStyler.buttonForeground(text);
     }
 }

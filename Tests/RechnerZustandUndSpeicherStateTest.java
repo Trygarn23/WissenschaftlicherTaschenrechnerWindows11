@@ -53,6 +53,7 @@ public class RechnerZustandUndSpeicherStateTest
 
         // Act
         zustand.setAusdruckText("2+3");
+        zustand.appendAusdruck("*4");
         zustand.setVerlaufText("2+3 = 5");
         String ausdruckBeforeClear = zustand.getAusdruckText();
         String verlaufBeforeClear = zustand.getVerlaufText();
@@ -60,7 +61,7 @@ public class RechnerZustandUndSpeicherStateTest
         zustand.clearVerlauf();
 
         // Assert
-        assertEquals("2+3", ausdruckBeforeClear);
+        assertEquals("2+3*4", ausdruckBeforeClear);
         assertEquals("2+3 = 5", verlaufBeforeClear);
         assertEquals("", zustand.getAusdruckText());
         assertEquals("", zustand.getVerlaufText());

@@ -13,22 +13,18 @@ public class AusdruckEditor
 
     private final RechnerZustand zustand;
     private final ZahlenFormatter zahlenFormatierer;
-    private final StringBuilder ausdruck;
-    private final StringBuilder verlauf;
 
     public AusdruckEditor(RechnerZustand zustand, ZahlenFormatter zahlenFormatierer)
     {
         this.zustand = zustand;
         this.zahlenFormatierer = zahlenFormatierer;
-        this.ausdruck = zustand.getAusdruck();
-        this.verlauf = zustand.getVerlauf();
     }
 
     public String eingabeZahl(String ziffer)
     {
         resetNachGleichWennNoetig();
-        ausdruck.append(ziffer);
-        return ausdruck.toString();
+        zustand.appendAusdruck(ziffer);
+        return zustand.getAusdruckText();
     }
 
     public String eingabeKomma()
@@ -36,18 +32,20 @@ public class AusdruckEditor
         resetNachGleichWennNoetig();
 
         int start = startLetzteZahl();
-        if (ausdruck.length() > 0 && start < ausdruck.length() && ausdruck.substring(start).contains(","))
+        if (zustand.getAusdruckLaenge() > 0
+                && start < zustand.getAusdruckLaenge()
+                && zustand.getAusdruckTeilText(start).contains(","))
         {
-            return ausdruck.toString();
+            return zustand.getAusdruckText();
         }
 
-        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
+        if (zustand.isAusdruckLeer() || endetMitOperatorOderKlammerAuf())
         {
-            ausdruck.append("0");
+            zustand.appendAusdruck("0");
         }
 
-        ausdruck.append(",");
-        return ausdruck.toString();
+        zustand.appendAusdruck(",");
+        return zustand.getAusdruckText();
     }
 
     public String wechselVorzeichen()
@@ -57,65 +55,65 @@ public class AusdruckEditor
             zustand.setGleichGedrueckt(false);
         }
 
-        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf() || letztesZeichen() == '(')
+        if (zustand.isAusdruckLeer() || endetMitOperatorOderKlammerAuf() || letztesZeichen() == '(')
         {
-            ausdruck.append("-");
-            return ausdruck.toString();
+            zustand.appendAusdruck("-");
+            return zustand.getAusdruckText();
         }
 
         int start = startLetzteZahl();
-        if (start >= ausdruck.length())
+        if (start >= zustand.getAusdruckLaenge())
         {
-            ausdruck.append("-");
-            return ausdruck.toString();
+            zustand.appendAusdruck("-");
+            return zustand.getAusdruckText();
         }
 
-        if (ausdruck.charAt(start) == '-')
+        if (zustand.getAusdruckZeichen(start) == '-')
         {
-            ausdruck.deleteCharAt(start);
+            zustand.deleteAusdruckZeichen(start);
         } else
         {
-            ausdruck.insert(start, '-');
+            zustand.insertAusdruck(start, "-");
         }
 
-        return ausdruck.toString();
+        return zustand.getAusdruckText();
     }
 
     public String klammerAuf()
     {
         resetNachGleichWennNoetig();
 
-        if (ausdruck.length() > 0)
+        if (zustand.getAusdruckLaenge() > 0)
         {
             char letztesZeichen = letztesZeichen();
             if (Character.isDigit(letztesZeichen) || letztesZeichen == ')' || letztesZeichen == ',')
             {
-                ausdruck.append("*");
+                zustand.appendAusdruck("*");
             }
         }
 
-        ausdruck.append("(");
-        return ausdruck.toString();
+        zustand.appendAusdruck("(");
+        return zustand.getAusdruckText();
     }
 
     public String klammerZu()
     {
         if (!kannKlammerSchliessen())
         {
-            return ausdruck.isEmpty() ? "0" : ausdruck.toString();
+            return zustand.isAusdruckLeer() ? "0" : zustand.getAusdruckText();
         }
 
-        ausdruck.append(")");
-        return ausdruck.toString();
+        zustand.appendAusdruck(")");
+        return zustand.getAusdruckText();
     }
 
     public String loeschen()
     {
-        if (ausdruck.length() > 0)
+        if (zustand.getAusdruckLaenge() > 0)
         {
-            ausdruck.deleteCharAt(ausdruck.length() - 1);
+            zustand.deleteAusdruckZeichen(zustand.getAusdruckLaenge() - 1);
         }
-        return ausdruck.isEmpty() ? "0" : ausdruck.toString();
+        return zustand.isAusdruckLeer() ? "0" : zustand.getAusdruckText();
     }
 
     public String ce()
@@ -125,14 +123,14 @@ public class AusdruckEditor
             return allesLoeschen();
         }
 
-        ausdruck.setLength(0);
+        zustand.clearAusdruck();
         return "0";
     }
 
     public String allesLoeschen()
     {
-        verlauf.setLength(0);
-        ausdruck.setLength(0);
+        zustand.clearVerlauf();
+        zustand.clearAusdruck();
         zustand.setGleichGedrueckt(false);
         return "0";
     }
@@ -148,34 +146,34 @@ public class AusdruckEditor
 
         if ("-".equals(operator))
         {
-            if (ausdruck.isEmpty())
+            if (zustand.isAusdruckLeer())
             {
-                ausdruck.append("-");
-                return ausdruck.toString();
+                zustand.appendAusdruck("-");
+                return zustand.getAusdruckText();
             }
 
             char letztesZeichen = letztesZeichen();
             if (istOperatorZeichen(letztesZeichen) || letztesZeichen == '(')
             {
-                ausdruck.append("-");
-                return ausdruck.toString();
+                zustand.appendAusdruck("-");
+                return zustand.getAusdruckText();
             }
         }
 
-        if (ausdruck.isEmpty()) return ausdruck.toString();
-        if (endetMitOperatorOderKlammerAuf()) return ausdruck.toString();
+        if (zustand.isAusdruckLeer()) return zustand.getAusdruckText();
+        if (endetMitOperatorOderKlammerAuf()) return zustand.getAusdruckText();
 
-        ausdruck.append(operator);
-        return ausdruck.toString();
+        zustand.appendAusdruck(operator);
+        return zustand.getAusdruckText();
     }
 
     public String potenz()
     {
-        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf()) return ausdruck.toString();
+        if (zustand.isAusdruckLeer() || endetMitOperatorOderKlammerAuf()) return zustand.getAusdruckText();
 
         zustand.setGleichGedrueckt(false);
-        ausdruck.append("^");
-        return ausdruck.toString();
+        zustand.appendAusdruck("^");
+        return zustand.getAusdruckText();
     }
 
     public String prozent()
@@ -212,8 +210,7 @@ public class AusdruckEditor
         text = text.replace(".", "");
         text = text.replace('−', '-').replace('–', '-').replace('—', '-');
 
-        ausdruck.setLength(0);
-        ausdruck.append(text);
+        zustand.setAusdruckText(text);
         zustand.setGleichGedrueckt(false);
     }
 
@@ -231,9 +228,8 @@ public class AusdruckEditor
 
         if (normalisiert.isBlank()) return;
 
-        ausdruck.setLength(0);
-        ausdruck.append(normalisiereTausenderpunkte(normalisiert));
-        verlauf.setLength(0);
+        zustand.setAusdruckText(normalisiereTausenderpunkte(normalisiert));
+        zustand.clearVerlauf();
         zustand.setGleichGedrueckt(false);
     }
 
@@ -276,95 +272,103 @@ public class AusdruckEditor
     {
         resetNachGleichWennNoetig();
 
-        if (ausdruck.length() > 0)
+        if (zustand.getAusdruckLaenge() > 0)
         {
             char letztesZeichen = letztesZeichen();
             if (Character.isDigit(letztesZeichen) || letztesZeichen == ')' || letztesZeichen == ',')
             {
-                ausdruck.append("*");
+                zustand.appendAusdruck("*");
             }
         }
 
-        ausdruck.append(interneDarstellung(wert));
-        return ausdruck.toString();
+        zustand.appendAusdruck(interneDarstellung(wert));
+        return zustand.getAusdruckText();
     }
 
     public String funktionEinfuegenOderUmklammern(String funktionsName)
     {
         resetNachGleichWennNoetig();
 
-        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
+        if (zustand.isAusdruckLeer() || endetMitOperatorOderKlammerAuf())
         {
-            ausdruck.append(funktionsName).append("(");
+            zustand.appendAusdruck(funktionsName);
+            zustand.appendAusdruck("(");
             zustand.setGleichGedrueckt(false);
-            return ausdruck.toString();
+            return zustand.getAusdruckText();
         }
 
         int start = startLetzterTerm();
 
-        if (start < 0 || start >= ausdruck.length())
+        if (start < 0 || start >= zustand.getAusdruckLaenge())
         {
-            ausdruck.append(funktionsName).append("(");
+            zustand.appendAusdruck(funktionsName);
+            zustand.appendAusdruck("(");
             zustand.setGleichGedrueckt(false);
-            return ausdruck.toString();
+            return zustand.getAusdruckText();
         }
 
-        String term = ausdruck.substring(start);
-        ausdruck.delete(start, ausdruck.length());
-        ausdruck.append(funktionsName).append("(").append(term).append(")");
+        String term = zustand.getAusdruckTeilText(start);
+        zustand.deleteAusdruck(start, zustand.getAusdruckLaenge());
+        zustand.appendAusdruck(funktionsName);
+        zustand.appendAusdruck("(");
+        zustand.appendAusdruck(term);
+        zustand.appendAusdruck(")");
 
         zustand.setGleichGedrueckt(false);
-        return ausdruck.toString();
+        return zustand.getAusdruckText();
     }
 
     public String funktionOhneArgumenteEinfuegen(String funktionsName)
     {
         resetNachGleichWennNoetig();
 
-        if (ausdruck.length() > 0)
+        if (zustand.getAusdruckLaenge() > 0)
         {
             char letztesZeichen = letztesZeichen();
             if (Character.isDigit(letztesZeichen) || letztesZeichen == ')' || letztesZeichen == ',')
             {
-                ausdruck.append("*");
+                zustand.appendAusdruck("*");
             }
         }
 
-        ausdruck.append(funktionsName).append("()");
+        zustand.appendAusdruck(funktionsName);
+        zustand.appendAusdruck("()");
         zustand.setGleichGedrueckt(false);
-        return ausdruck.toString();
+        return zustand.getAusdruckText();
     }
 
     public String praefixOperatorEinfuegenOderUmklammern(String praefix)
     {
         resetNachGleichWennNoetig();
 
-        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
+        if (zustand.isAusdruckLeer() || endetMitOperatorOderKlammerAuf())
         {
-            ausdruck.append(praefix);
+            zustand.appendAusdruck(praefix);
             zustand.setGleichGedrueckt(false);
-            return ausdruck.toString();
+            return zustand.getAusdruckText();
         }
 
         int start = startLetzterTerm();
-        if (start < 0 || start >= ausdruck.length())
+        if (start < 0 || start >= zustand.getAusdruckLaenge())
         {
-            ausdruck.append(praefix);
+            zustand.appendAusdruck(praefix);
             zustand.setGleichGedrueckt(false);
-            return ausdruck.toString();
+            return zustand.getAusdruckText();
         }
 
-        String term = ausdruck.substring(start);
-        ausdruck.delete(start, ausdruck.length());
-        ausdruck.append(praefix).append(term).append(")");
+        String term = zustand.getAusdruckTeilText(start);
+        zustand.deleteAusdruck(start, zustand.getAusdruckLaenge());
+        zustand.appendAusdruck(praefix);
+        zustand.appendAusdruck(term);
+        zustand.appendAusdruck(")");
 
         zustand.setGleichGedrueckt(false);
-        return ausdruck.toString();
+        return zustand.getAusdruckText();
     }
 
     public String fakultaet()
     {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
+        if (!kannLetzteZahlBearbeiten()) return zustand.getAusdruckText();
 
         int start = startLetzteZahl();
         double wert = letzteZahlAlsDouble();
@@ -380,15 +384,15 @@ public class AusdruckEditor
             ergebnis = ergebnis.multiply(BigInteger.valueOf(i));
         }
 
-        ausdruck.delete(start, ausdruck.length());
-        ausdruck.append(ergebnis);
+        zustand.deleteAusdruck(start, zustand.getAusdruckLaenge());
+        zustand.appendAusdruck(ergebnis.toString());
         zustand.setGleichGedrueckt(false);
         return ergebnis.toString();
     }
 
     public boolean endetMitOperatorOderKlammerAuf()
     {
-        if (ausdruck.isEmpty()) return true;
+        if (zustand.isAusdruckLeer()) return true;
 
         char zeichen = letztesZeichen();
         return istOperatorZeichen(zeichen) || zeichen == '(';
@@ -398,31 +402,33 @@ public class AusdruckEditor
     {
         resetNachGleichWennNoetig();
 
-        if (ausdruck.isEmpty() || endetMitOperatorOderKlammerAuf())
+        if (zustand.isAusdruckLeer() || endetMitOperatorOderKlammerAuf())
         {
-            return ausdruck.toString();
+            return zustand.getAusdruckText();
         }
 
         int start = startLetzterTerm();
-        if (start < 0 || start >= ausdruck.length())
+        if (start < 0 || start >= zustand.getAusdruckLaenge())
         {
-            return ausdruck.toString();
+            return zustand.getAusdruckText();
         }
 
-        String term = ausdruck.substring(start);
-        ausdruck.delete(start, ausdruck.length());
-        ausdruck.append(praefix).append(term).append(suffix);
+        String term = zustand.getAusdruckTeilText(start);
+        zustand.deleteAusdruck(start, zustand.getAusdruckLaenge());
+        zustand.appendAusdruck(praefix);
+        zustand.appendAusdruck(term);
+        zustand.appendAusdruck(suffix);
 
         zustand.setGleichGedrueckt(false);
-        return ausdruck.toString();
+        return zustand.getAusdruckText();
     }
 
     private int startLetzterTerm()
     {
-        int i = ausdruck.length() - 1;
+        int i = zustand.getAusdruckLaenge() - 1;
         if (i < 0) return 0;
 
-        char letztesZeichen = ausdruck.charAt(i);
+        char letztesZeichen = zustand.getAusdruckZeichen(i);
 
         if (letztesZeichen == ')')
         {
@@ -431,7 +437,7 @@ public class AusdruckEditor
 
             while (i >= 0 && klammerStand > 0)
             {
-                char zeichen = ausdruck.charAt(i);
+                char zeichen = zustand.getAusdruckZeichen(i);
 
                 if (zeichen == ')') klammerStand++;
                 else if (zeichen == '(') klammerStand--;
@@ -441,7 +447,7 @@ public class AusdruckEditor
 
             if (klammerStand != 0) return 0;
 
-            while (i >= 0 && Character.isLetter(ausdruck.charAt(i)))
+            while (i >= 0 && Character.isLetter(zustand.getAusdruckZeichen(i)))
             {
                 i--;
             }
@@ -453,7 +459,7 @@ public class AusdruckEditor
         {
             while (i >= 0)
             {
-                char zeichen = ausdruck.charAt(i);
+                char zeichen = zustand.getAusdruckZeichen(i);
 
                 if (Character.isDigit(zeichen) || zeichen == ',' || zeichen == '.')
                 {
@@ -469,7 +475,7 @@ public class AusdruckEditor
 
         if (Character.isLetter(letztesZeichen))
         {
-            while (i >= 0 && Character.isLetter(ausdruck.charAt(i)))
+            while (i >= 0 && Character.isLetter(zustand.getAusdruckZeichen(i)))
             {
                 i--;
             }
@@ -477,16 +483,16 @@ public class AusdruckEditor
             return bezieheUnaeresMinusEin(i + 1);
         }
 
-        return ausdruck.length();
+        return zustand.getAusdruckLaenge();
     }
 
     private int bezieheUnaeresMinusEin(int start)
     {
-        if (start > 0 && ausdruck.charAt(start - 1) == '-')
+        if (start > 0 && zustand.getAusdruckZeichen(start - 1) == '-')
         {
             if (start - 1 == 0) return start - 1;
 
-            char davor = ausdruck.charAt(start - 2);
+            char davor = zustand.getAusdruckZeichen(start - 2);
             if (istOperatorZeichen(davor) || davor == '(')
             {
                 return start - 1;
@@ -500,13 +506,13 @@ public class AusdruckEditor
     {
         if (!zustand.isGleichGedrueckt()) return;
 
-        ausdruck.setLength(0);
+        zustand.clearAusdruck();
         zustand.setGleichGedrueckt(false);
     }
 
     private String wendeAufLetzteZahlAn(DoubleUnaryOperator operation, DoublePredicate eingabeGueltig)
     {
-        if (!kannLetzteZahlBearbeiten()) return ausdruck.toString();
+        if (!kannLetzteZahlBearbeiten()) return zustand.getAusdruckText();
 
         int start = startLetzteZahl();
         double eingabe = letzteZahlAlsDouble();
@@ -522,14 +528,14 @@ public class AusdruckEditor
 
     private boolean kannLetzteZahlBearbeiten()
     {
-        if (ausdruck.isEmpty()) return false;
+        if (zustand.isAusdruckLeer()) return false;
         if (endetMitOperatorOderKlammerAuf()) return false;
         return letztesZeichen() != ')';
     }
 
     private boolean kannKlammerSchliessen()
     {
-        if (ausdruck.isEmpty()) return false;
+        if (zustand.isAusdruckLeer()) return false;
         if (zaehleOffeneKlammern() <= 0) return false;
 
         char zeichen = letztesZeichen();
@@ -540,9 +546,9 @@ public class AusdruckEditor
     {
         int stand = 0;
 
-        for (int i = 0; i < ausdruck.length(); i++)
+        for (int i = 0; i < zustand.getAusdruckLaenge(); i++)
         {
-            char zeichen = ausdruck.charAt(i);
+            char zeichen = zustand.getAusdruckZeichen(i);
             if (zeichen == '(') stand++;
             else if (zeichen == ')') stand--;
         }
@@ -552,7 +558,7 @@ public class AusdruckEditor
 
     private char letztesZeichen()
     {
-        return ausdruck.charAt(ausdruck.length() - 1);
+        return zustand.getAusdruckZeichen(zustand.getAusdruckLaenge() - 1);
     }
 
     private boolean istOperatorZeichen(char zeichen)
@@ -562,20 +568,20 @@ public class AusdruckEditor
 
     private int startLetzteZahl()
     {
-        int i = ausdruck.length() - 1;
+        int i = zustand.getAusdruckLaenge() - 1;
 
         while (i >= 0)
         {
-            char zeichen = ausdruck.charAt(i);
+            char zeichen = zustand.getAusdruckZeichen(i);
             if (Character.isDigit(zeichen) || zeichen == ',' || zeichen == '.') i--;
             else break;
         }
 
-        if (i >= 0 && ausdruck.charAt(i) == '-')
+        if (i >= 0 && zustand.getAusdruckZeichen(i) == '-')
         {
             if (i == 0) return 0;
 
-            char davor = ausdruck.charAt(i - 1);
+            char davor = zustand.getAusdruckZeichen(i - 1);
             if (istOperatorZeichen(davor) || davor == '(')
             {
                 return i;
@@ -588,7 +594,7 @@ public class AusdruckEditor
     private double letzteZahlAlsDouble()
     {
         int start = startLetzteZahl();
-        String zahl = ausdruck.substring(start).replace(',', '.');
+        String zahl = zustand.getAusdruckTeilText(start).replace(',', '.');
         return Double.parseDouble(zahl);
     }
 
@@ -604,8 +610,8 @@ public class AusdruckEditor
 
     private void ersetzeLetzteZahl(int start, double wert)
     {
-        ausdruck.delete(start, ausdruck.length());
-        ausdruck.append(interneDarstellung(wert));
+        zustand.deleteAusdruck(start, zustand.getAusdruckLaenge());
+        zustand.appendAusdruck(interneDarstellung(wert));
         zustand.setGleichGedrueckt(false);
     }
 
@@ -618,8 +624,8 @@ public class AusdruckEditor
 
     private String fehler()
     {
-        ausdruck.setLength(0);
-        verlauf.setLength(0);
+        zustand.clearAusdruck();
+        zustand.clearVerlauf();
         zustand.setGleichGedrueckt(true);
         return FEHLER_TEXT;
     }

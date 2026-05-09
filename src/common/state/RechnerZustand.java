@@ -33,11 +33,13 @@ public class RechnerZustand
         this.gleichGedrueckt = gleichGedrueckt;
     }
 
+    @Deprecated
     public StringBuilder getVerlauf()
     {
         return verlauf;
     }
 
+    @Deprecated
     public StringBuilder getAusdruck()
     {
         return ausdruck;
@@ -61,7 +63,66 @@ public class RechnerZustand
     public void setAusdruckText(String text)
     {
         ausdruck.setLength(0);
-        ausdruck.append(text);
+        if (text != null)
+        {
+            ausdruck.append(text);
+        }
+    }
+
+    public void appendAusdruck(String text)
+    {
+        if (text != null)
+        {
+            ausdruck.append(text);
+        }
+    }
+
+    public int getAusdruckLaenge()
+    {
+        return ausdruck.length();
+    }
+
+    public boolean isAusdruckLeer()
+    {
+        return ausdruck.isEmpty();
+    }
+
+    public char getAusdruckZeichen(int index)
+    {
+        return ausdruck.charAt(index);
+    }
+
+    public String getAusdruckTeilText(int start)
+    {
+        return ausdruck.substring(start);
+    }
+
+    public String getAusdruckTeilText(int start, int end)
+    {
+        return ausdruck.substring(start, end);
+    }
+
+    public void insertAusdruck(int index, String text)
+    {
+        if (text != null)
+        {
+            ausdruck.insert(index, text);
+        }
+    }
+
+    public void deleteAusdruck(int start, int end)
+    {
+        ausdruck.delete(start, end);
+    }
+
+    public void deleteAusdruckZeichen(int index)
+    {
+        ausdruck.deleteCharAt(index);
+    }
+
+    public void setAusdruckLaenge(int laenge)
+    {
+        ausdruck.setLength(laenge);
     }
 
     public void clearAusdruck()
@@ -77,7 +138,18 @@ public class RechnerZustand
     public void setVerlaufText(String text)
     {
         verlauf.setLength(0);
-        verlauf.append(text);
+        if (text != null)
+        {
+            verlauf.append(text);
+        }
+    }
+
+    public void appendVerlauf(String text)
+    {
+        if (text != null)
+        {
+            verlauf.append(text);
+        }
     }
 
     public void clearVerlauf()
