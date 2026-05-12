@@ -7,5 +7,6 @@ public enum ThemeType
     NEON,
     MATRIX,
     WIN95,
-    WIN11
+    WIN11,
+    CUSTOM
 }

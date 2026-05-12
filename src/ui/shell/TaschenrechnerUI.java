@@ -1,6 +1,7 @@
 package ui.shell;
 
 import common.history.DateiVerlaufRepository;
+import common.history.VerlaufEintrag;
 import common.history.VerlaufService;
 import common.state.RechnerModus;
 import modes.graph.ui.GraphPanel;
@@ -17,6 +18,8 @@ import ui.theme.ThemeManager;
 import ui.theme.ThemeType;
 import ui.settings.SettingsDialog;
 import ui.settings.SettingsPersistence;
+import ui.session.RechnerSession;
+import ui.session.SessionPersistence;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -30,6 +33,7 @@ public class TaschenrechnerUI extends JFrame
 {
     private final ThemeManager themeManager = new ThemeManager();
     private final SettingsPersistence settingsPersistence = new SettingsPersistence();
+    private final SessionPersistence sessionPersistence = new SessionPersistence();
     private AppSettings appSettings = settingsPersistence.lade();
     private final RechnerService rechner = new RechnerService();
     private final WissenschaftlichOperationen wissenschaftlichOperationen = new WissenschaftlichOperationen(rechner.getAusdruckEditor());
@@ -165,7 +169,14 @@ public class TaschenrechnerUI extends JFrame
         });
 
         globalActionBarPanel.setThemeSelectionListener(this::setTheme);
-        globalActionBarPanel.setSettingsListener(e -> SettingsDialog.showDialog(this, theme(), appSettings, this::applySettings));
+        globalActionBarPanel.setSettingsListener(e -> SettingsDialog.showDialog(
+                this,
+                theme(),
+                appSettings,
+                this::applySettings,
+                this::speichereSession,
+                this::ladeSession
+        ));
         historyPanel.setClearHistoryListener(e -> speichereVerlauf());
         historyPanel.setEntryDoubleClickListener(this::useHistoryEntryResult);
         displayPanel.setPasteListener(this::pasteDisplayText);
@@ -428,20 +439,23 @@ public class TaschenrechnerUI extends JFrame
     {
         if (entry == null || entry.isBlank()) return;
 
-        historyPanel.addEntry(entry);
+        VerlaufEintrag verlaufEintrag = verlaufService.erstelleEintragAusText(entry, aktuellerModus);
+        historyPanel.addStructuredEntry(verlaufEintrag);
         speichereVerlauf();
     }
 
     private void ladeVerlauf()
     {
-        historyPanel.setAllEntries(appSettings.isHistoryEnabled() ? verlaufService.ladeEintraege() : java.util.List.of());
+        historyPanel.setAllStructuredEntries(appSettings.isHistoryEnabled()
+                ? verlaufService.ladeStrukturierteEintraege(RechnerModus.STANDARD)
+                : java.util.List.of());
     }
 
     private void speichereVerlauf()
     {
         if (appSettings.isHistoryEnabled())
         {
-            verlaufService.speichereEintraege(historyPanel.getAllEntries());
+            verlaufService.speichereStrukturierteEintraege(historyPanel.getAllStructuredEntries());
         }
     }
 
@@ -450,5 +464,46 @@ public class TaschenrechnerUI extends JFrame
         appSettings.setFensterBreite(getWidth());
         appSettings.setFensterHoehe(getHeight());
         settingsPersistence.speichere(appSettings);
+    }
+
+    private void speichereSession()
+    {
+        sessionPersistence.speichere(new RechnerSession(
+                RechnerSession.VERSION,
+                aktuellerModus,
+                rechner.getAusdruckText(),
+                rechner.getVerlauf(),
+                historyPanel.getAllEntries(),
+                rechner.getWinkelModus(),
+                rechner.getSpeicherWert(),
+                appSettings.getThemeType(),
+                rechner.getZahlenFormatModus(),
+                rechner.getNachkommastellen()
+        ));
+    }
+
+    private void ladeSession()
+    {
+        RechnerSession session = sessionPersistence.lade();
+
+        appSettings.setThemeType(session.getThemeType());
+        appSettings.setStartModus(session.getAktiverModus());
+        appSettings.setWinkelModus(session.getWinkelModus());
+        appSettings.setZahlenFormatModus(session.getZahlenFormatModus());
+        appSettings.setNachkommastellen(session.getNachkommastellen());
+        settingsPersistence.speichere(appSettings);
+
+        rechner.setWinkelModus(session.getWinkelModus());
+        rechner.setZahlenFormatModus(session.getZahlenFormatModus());
+        rechner.setNachkommastellen(session.getNachkommastellen());
+        rechner.setAusdruckText(session.getAusdruck());
+        rechner.setVerlauf(session.getVerlauf());
+        rechner.setSpeicherWert(session.getSpeicherWert());
+
+        historyPanel.setAllEntries(session.getHistoryEintraege());
+        themeManager.setTheme(session.getThemeType());
+        setAktuellerModus(session.getAktiverModus());
+        applyCurrentTheme();
+        refresh();
     }
 }

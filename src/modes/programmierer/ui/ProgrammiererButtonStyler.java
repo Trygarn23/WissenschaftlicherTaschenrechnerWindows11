@@ -1,76 +1,149 @@
 package modes.programmierer.ui;
 
+import ui.theme.AppTheme;
+
 import java.awt.Color;
 
 final class ProgrammiererButtonStyler
 {
-    static final Color MODE_ACTIVE_BG = new Color(0, 145, 210);
-    static final Color MODE_INACTIVE_BG = new Color(34, 39, 52);
-    static final Color MODE_BORDER = new Color(58, 66, 84);
-    static final Color DISABLED_BG = new Color(35, 35, 35);
-    static final Color DISABLED_FG = new Color(105, 105, 105);
-
     private ProgrammiererButtonStyler()
     {
     }
 
-    static Color buttonBackground(String text)
+    static Color buttonBackground(String text, AppTheme theme)
     {
-        if (text.matches("\\d"))
+        if (isDigit(text))
         {
-            return new Color(45, 45, 45);
+            return theme.numberButtonBackground();
         }
 
-        if ("+-".contains(text))
+        if (isOperator(text) || isBitOperation(text))
         {
-            return new Color(173, 41, 99);
+            return theme.operatorButtonBackground();
         }
 
-        if (text.equals("CLR") || text.equals("←"))
+        if (isToggle(text))
         {
-            return new Color(100, 60, 60);
+            return theme.toggleButtonBackground();
         }
 
-        if (text.equals("NOT") || text.equals("AND") || text.equals("OR") || text.equals("XOR")
-                || text.equals("<<") || text.equals(">>") || text.equals(">>>"))
+        if (isSpecial(text))
         {
-            return new Color(173, 41, 99);
+            return theme.specialButtonBackground();
         }
 
-        if (text.equals("="))
-        {
-            return new Color(70, 70, 70);
-        }
-
-        return new Color(60, 60, 60);
+        return theme.functionButtonBackground();
     }
 
-    static Color buttonForeground(String text)
+    static Color buttonForeground(String text, AppTheme theme)
     {
-        if ("+-".contains(text) || text.equals("NOT") || text.equals("AND") || text.equals("OR")
-                || text.equals("XOR") || text.equals("<<") || text.equals(">>") || text.equals(">>>"))
+        if (isDigit(text))
         {
-            return Color.BLACK;
+            return theme.numberButtonForeground();
         }
 
-        return Color.WHITE;
+        if (isOperator(text) || isBitOperation(text))
+        {
+            return theme.operatorButtonForeground();
+        }
+
+        if (isToggle(text))
+        {
+            return theme.toggleButtonForeground();
+        }
+
+        if (isSpecial(text))
+        {
+            return theme.specialButtonForeground();
+        }
+
+        return theme.functionButtonForeground();
     }
 
-    static Color brighten(Color color, int amount)
+    static Color modeButtonBackground(AppTheme theme, boolean active)
     {
+        return active ? theme.modeButtonActiveBackground() : theme.modeButtonInactiveBackground();
+    }
+
+    static Color modeButtonForeground(AppTheme theme, boolean active)
+    {
+        return active ? readableForeground(theme.modeButtonActiveBackground()) : theme.functionButtonForeground();
+    }
+
+    static Color disabledBackground(AppTheme theme)
+    {
+        return mix(theme.functionButtonBackground(), theme.panelBackground(), 0.65);
+    }
+
+    static Color disabledForeground(AppTheme theme)
+    {
+        return mix(theme.functionButtonForeground(), disabledBackground(theme), 0.45);
+    }
+
+    static Color hoverBackground(Color color)
+    {
+        return adjustForInteraction(color, 0.14);
+    }
+
+    static Color pressedBackground(Color color)
+    {
+        return adjustForInteraction(color, -0.16);
+    }
+
+    private static Color adjustForInteraction(Color color, double strength)
+    {
+        Color target = luminance(color) < 0.5 ? Color.WHITE : Color.BLACK;
+        return mix(color, target, Math.abs(strength));
+    }
+
+    private static Color readableForeground(Color background)
+    {
+        return luminance(background) < 0.55 ? Color.WHITE : Color.BLACK;
+    }
+
+    private static Color mix(Color base, Color target, double targetWeight)
+    {
+        double baseWeight = 1.0 - targetWeight;
         return new Color(
-                Math.min(255, color.getRed() + amount),
-                Math.min(255, color.getGreen() + amount),
-                Math.min(255, color.getBlue() + amount)
+                clamp((int) Math.round(base.getRed() * baseWeight + target.getRed() * targetWeight)),
+                clamp((int) Math.round(base.getGreen() * baseWeight + target.getGreen() * targetWeight)),
+                clamp((int) Math.round(base.getBlue() * baseWeight + target.getBlue() * targetWeight))
         );
     }
 
-    static Color darken(Color color, int amount)
+    private static int clamp(int value)
     {
-        return new Color(
-                Math.max(0, color.getRed() - amount),
-                Math.max(0, color.getGreen() - amount),
-                Math.max(0, color.getBlue() - amount)
-        );
+        return Math.max(0, Math.min(255, value));
+    }
+
+    private static double luminance(Color color)
+    {
+        return (0.2126 * color.getRed() + 0.7152 * color.getGreen() + 0.0722 * color.getBlue()) / 255.0;
+    }
+
+    private static boolean isDigit(String text)
+    {
+        return text != null && text.matches("[0-9A-F]");
+    }
+
+    private static boolean isOperator(String text)
+    {
+        return "+".equals(text) || "-".equals(text);
+    }
+
+    private static boolean isBitOperation(String text)
+    {
+        return "NOT".equals(text) || "AND".equals(text) || "OR".equals(text) || "XOR".equals(text)
+                || "<<".equals(text) || ">>".equals(text) || ">>>".equals(text);
+    }
+
+    private static boolean isToggle(String text)
+    {
+        return "SIGNED".equals(text) || "UNSIGNED".equals(text);
+    }
+
+    private static boolean isSpecial(String text)
+    {
+        return "CLR".equals(text) || "â†".equals(text) || "=".equals(text) || "Â±".equals(text);
     }
 }

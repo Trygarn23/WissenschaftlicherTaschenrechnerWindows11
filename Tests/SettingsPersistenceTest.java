@@ -46,4 +46,21 @@ public class SettingsPersistenceTest
         assertEquals(1400, loaded.getFensterBreite());
         assertEquals(900, loaded.getFensterHoehe());
     }
+
+    @Test
+    void settingsPersistence_ShouldSaveAndLoadCustomThemeSelection()
+    {
+        // Arrange
+        Path settingsFile = tempDir.resolve("custom-theme-settings.properties");
+        SettingsPersistence persistence = new SettingsPersistence(settingsFile);
+        AppSettings settings = new AppSettings();
+        settings.setThemeType(ThemeType.CUSTOM);
+
+        // Act
+        persistence.speichere(settings);
+        AppSettings loaded = persistence.lade();
+
+        // Assert
+        assertEquals(ThemeType.CUSTOM, loaded.getThemeType());
+    }
 }

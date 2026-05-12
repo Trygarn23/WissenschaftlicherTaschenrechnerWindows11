@@ -178,14 +178,14 @@
 - [x] `ProgrammiererButtonStyler` als Styling-Zentrale behalten, falls Styling weiter wächst.
 - [x] `ProgrammiererHostPanel` entweder mit echter Host-Funktion füllen oder entfernen.
 - [x] Länge anpassen oder begrenzen, damit die Anzeige nicht fehlschlägt
-- [ ] Programmierermodus optisch vollständig ans Theme-System anbinden, nicht nur Textfarben.
-- [ ] Hardcoded PRG-Farben aus `ProgrammiererButtonStyler` in eine theme-fähige Palette überführen.
-- [ ] PRG-Display-Hintergrund pro Theme angleichen.
-- [ ] PRG-Basis-/Wortbreitenbuttons pro Theme angleichen.
-- [ ] PRG-Ziffern-, Operator-, Bit- und Sonderbuttons pro Theme angleichen.
-- [ ] PRG-Disabled-Zustände pro Theme lesbar machen.
-- [ ] PRG-Hover-/Pressed-Zustände pro Theme angleichen.
-- [ ] Unit Tests nachziehen: Themewechsel verändert den Programmierermodus sichtbar.
+- [x] Programmierermodus optisch vollständig ans Theme-System anbinden, nicht nur Textfarben.
+- [x] Hardcoded PRG-Farben aus `ProgrammiererButtonStyler` in eine theme-fähige Palette überführen.
+- [x] PRG-Display-Hintergrund pro Theme angleichen.
+- [x] PRG-Basis-/Wortbreitenbuttons pro Theme angleichen.
+- [x] PRG-Ziffern-, Operator-, Bit- und Sonderbuttons pro Theme angleichen.
+- [x] PRG-Disabled-Zustände pro Theme lesbar machen.
+- [x] PRG-Hover-/Pressed-Zustände pro Theme angleichen.
+- [x] Unit Tests nachziehen: Themewechsel verändert den Programmierermodus sichtbar.
 
 ---
 
@@ -331,20 +331,20 @@
 ---
 
 ## Verlauf / History
-- [ ] Verlauf mit Zeitstempel erweitern.
-- [ ] Verlauf nach Modus kennzeichnen.
+- [x] Verlauf mit Zeitstempel erweitern.
+- [x] Verlauf nach Modus kennzeichnen.
 - [ ] Favoriten im Verlauf ermöglichen.
 - [ ] Verlauf exportieren.
 - [x] Verlauf erst nach Einführung einer strukturierten `VerlaufEintrag`-Klasse erweitern.
 - [x] `VerlaufEintrag` als Modell einführen.
 - [x] `VerlaufEintrag` Felder planen: Ausdruck, Ergebnis, Modus, Zeitstempel, Favorit.
 - [x] Bestehende String-History migrieren oder kompatibel einlesen.
-- [ ] Repository-Format festlegen: Text, CSV, JSON oder eigenes Format.
-- [ ] `DateiVerlaufRepository` auf strukturierte Einträge vorbereiten.
-- [ ] `VerlaufService` von `List<String>` auf `List<VerlaufEintrag>` umstellen.
-- [ ] `HistoryPanel` auf strukturierte Anzeige vorbereiten.
-- [ ] History-Suche über Ausdruck und Ergebnis ermöglichen.
-- [ ] History-Suche über Modus ermöglichen.
+- [x] Repository-Format festlegen: Text, CSV, JSON oder eigenes Format.
+- [x] `DateiVerlaufRepository` auf strukturierte Einträge vorbereiten.
+- [x] `VerlaufService` von `List<String>` auf `List<VerlaufEintrag>` umstellen.
+- [x] `HistoryPanel` auf strukturierte Anzeige vorbereiten.
+- [x] History-Suche über Ausdruck und Ergebnis ermöglichen.
+- [x] History-Suche über Modus ermöglichen.
 - [ ] History-Suche über Datum optional planen.
 - [ ] Favoriten im UI anzeigen.
 - [ ] Favoriten persistent speichern.
@@ -360,7 +360,7 @@
 - [ ] Doppelklick-Verhalten bei strukturierten Einträgen neu implementieren.
 - [ ] History bei Standard/Wissenschaftlich sichtbar lassen.
 - [ ] History bei Programmierer/Graph/Komplex bewusst ausblenden oder modusspezifisch machen.
-- [ ] Unit Tests nachziehen: Verlaufsladen alter Dateien absichern.
+- [x] Unit Tests nachziehen: Verlaufsladen alter Dateien absichern.
 - [x] Unit Tests nachgezogen: Verlaufsspeichern strukturierter Einträge absichern.
 - [ ] Unit Tests nachziehen: Favoriten absichern.
 - [ ] Unit Tests nachziehen: Export absichern.
@@ -379,9 +379,9 @@
 - [x] Win11 Theme hinzufügen.
 - [x] Neon Theme hinzufügen.
 - [x] Matrix Theme hinzufügen.
-- [ ] ! Nutzer eigene Theme kreation überlassen → Eigenes Menü, mit sowas wie einem Farbkreis
+- [x] Nutzer eigene Theme kreation überlassen → Eigenes Menü, mit sowas wie einem Farbkreis
 - [x] Aktives Theme persistent speichern.
-- [ ] Themes für Programmiermodus vollständig übernehmen.
+- [x] Themes für Programmiermodus vollständig übernehmen.
 - [ ] Layouts überarbeiten für:
   - [ ] Standard.
   - [ ] Wissenschaftlich.
@@ -426,7 +426,7 @@
 - [x] Setting Button richtig anzeigen
 - [x] Setting MenüButtons im Untermenü Clickable machen
 - [x] Funktionalität geben
-- [ ] Settings-Dialog: Änderungen optional mit Speichern/Abbrechen statt Sofortübernahme anbieten.
+- [x] Settings-Dialog: Änderungen optional mit Speichern/Abbrechen statt Sofortübernahme anbieten.
 - [ ] Settings-Datei versionieren, falls später neue Felder dazukommen.
 - [x] Einstellungen-Dialog planen.
 - [x] Einstellungen persistent speichern.
@@ -438,13 +438,13 @@
 - [x] Einstellungen für Zahlenformat ergänzen.
 
 ## Spätere Features
-- [ ] Session speichern/laden erst nach sauberem `RechnerZustand`.
-- [ ] ! Session speichern: Modus, Ausdruck, Verlauf, Winkelmodus, Speicher, Theme.
-- [ ] ! Session laden mit Kompatibilitätsprüfung.
-- [ ] Session-Datei robust gegen Fehler lesen.
-- [ ] Sessionmodell planen: aktiver Modus, Ausdruck, Verlauf, Settings, modusspezifische States.
-- [ ] Session-Dateiformat versionieren.
-- [ ] Session laden mit Migrations-/Kompatibilitätsprüfung.
+- [x] Session speichern/laden erst nach sauberem `RechnerZustand`.
+- [x] Session speichern: Modus, Ausdruck, Verlauf, Winkelmodus, Speicher, Theme.
+- [x] Session laden mit Kompatibilitätsprüfung.
+- [x] Session-Datei robust gegen Fehler lesen.
+- [x] Sessionmodell planen: aktiver Modus, Ausdruck, Verlauf, Settings, modusspezifische States.
+- [x] Session-Dateiformat versionieren.
+- [x] Session laden mit Migrations-/Kompatibilitätsprüfung.
 - [ ] Export/Screenshot des Rechners optional planen.
 - [ ] Export planen: Verlauf als TXT/CSV/JSON, Graph als PNG, Matrix als CSV.
 - [ ] Druck-/Report-Ansicht optional planen.
@@ -461,3 +461,8 @@
 - [x] fertig
 - [ ] offen
 - [ ] ! in Arbeit
+
+## Befehle
+git add .
+git commit -m ""
+git push

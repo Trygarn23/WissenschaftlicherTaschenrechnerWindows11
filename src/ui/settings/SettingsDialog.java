@@ -5,6 +5,8 @@ import common.state.RechnerModus;
 import common.state.WinkelModus;
 import ui.theme.AppTheme;
 import ui.theme.ThemeType;
+import ui.theme.custom.CustomThemeColors;
+import ui.theme.custom.CustomThemePersistence;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -14,15 +16,32 @@ import java.util.function.Consumer;
 public final class SettingsDialog extends JDialog
 {
     private final AppTheme theme;
-    private final AppSettings workingSettings;
+    private AppSettings workingSettings;
+    private AppSettings appliedSettings;
     private final Consumer<AppSettings> settingsListener;
+    private final Runnable sessionSaveListener;
+    private final Runnable sessionLoadListener;
+    private final CustomThemePersistence customThemePersistence = new CustomThemePersistence();
+    private CustomThemeColors customThemeColors;
+    private CustomThemeColors appliedCustomThemeColors;
 
-    private SettingsDialog(Frame owner, AppTheme theme, AppSettings settings, Consumer<AppSettings> settingsListener)
+    SettingsDialog(
+            Frame owner,
+            AppTheme theme,
+            AppSettings settings,
+            Consumer<AppSettings> settingsListener,
+            Runnable sessionSaveListener,
+            Runnable sessionLoadListener)
     {
         super(owner, "Einstellungen", false);
         this.theme = theme;
         this.workingSettings = settings.copy();
+        this.appliedSettings = settings.copy();
         this.settingsListener = settingsListener;
+        this.sessionSaveListener = sessionSaveListener;
+        this.sessionLoadListener = sessionLoadListener;
+        this.customThemeColors = customThemePersistence.lade();
+        this.appliedCustomThemeColors = customThemeColors;
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setContentPane(createContent());
@@ -33,7 +52,18 @@ public final class SettingsDialog extends JDialog
 
     public static void showDialog(Frame owner, AppTheme theme, AppSettings settings, Consumer<AppSettings> settingsListener)
     {
-        new SettingsDialog(owner, theme, settings, settingsListener).setVisible(true);
+        showDialog(owner, theme, settings, settingsListener, null, null);
+    }
+
+    public static void showDialog(
+            Frame owner,
+            AppTheme theme,
+            AppSettings settings,
+            Consumer<AppSettings> settingsListener,
+            Runnable sessionSaveListener,
+            Runnable sessionLoadListener)
+    {
+        new SettingsDialog(owner, theme, settings, settingsListener, sessionSaveListener, sessionLoadListener).setVisible(true);
     }
 
     private JPanel createContent()
@@ -48,38 +78,55 @@ public final class SettingsDialog extends JDialog
 
         JPanel settingsGrid = new JPanel(new GridLayout(0, 1, 0, 10));
         settingsGrid.setOpaque(false);
-        settingsGrid.add(createComboRow("Theme", ThemeType.values(), workingSettings.getThemeType(), value -> {
-            workingSettings.setThemeType(value);
-            publish();
-        }));
-        settingsGrid.add(createComboRow("Startmodus", RechnerModus.values(), workingSettings.getStartModus(), value -> {
-            workingSettings.setStartModus(value);
-            publish();
-        }));
-        settingsGrid.add(createComboRow("Winkelmodus", WinkelModus.values(), workingSettings.getWinkelModus(), value -> {
-            workingSettings.setWinkelModus(value);
-            publish();
-        }));
+        settingsGrid.add(createComboRow("Theme", ThemeType.values(), workingSettings.getThemeType(),
+                workingSettings::setThemeType));
+        settingsGrid.add(createCustomThemeSection());
+        settingsGrid.add(createComboRow("Startmodus", RechnerModus.values(), workingSettings.getStartModus(),
+                workingSettings::setStartModus));
+        settingsGrid.add(createComboRow("Winkelmodus", WinkelModus.values(), workingSettings.getWinkelModus(),
+                workingSettings::setWinkelModus));
         settingsGrid.add(createSpinnerRow("Präzision", workingSettings.getNachkommastellen()));
-        settingsGrid.add(createComboRow("Zahlenformat", ZahlenFormatModus.values(), workingSettings.getZahlenFormatModus(), value -> {
-            workingSettings.setZahlenFormatModus(value);
-            publish();
-        }));
+        settingsGrid.add(createComboRow("Zahlenformat", ZahlenFormatModus.values(), workingSettings.getZahlenFormatModus(),
+                workingSettings::setZahlenFormatModus));
         settingsGrid.add(createCheckRow("Verlauf speichern", workingSettings.isHistoryEnabled()));
+        settingsGrid.add(createSessionRow());
         settingsGrid.add(createValueRow("Version", AppSettings.VERSION));
-
-        JButton closeButton = new JButton("Schließen");
-        closeButton.addActionListener(e -> dispose());
-        styleButton(closeButton);
-
-        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        footer.setOpaque(false);
-        footer.add(closeButton);
 
         content.add(title, BorderLayout.NORTH);
         content.add(settingsGrid, BorderLayout.CENTER);
-        content.add(footer, BorderLayout.SOUTH);
+        content.add(createFooter(), BorderLayout.SOUTH);
         return content;
+    }
+
+    private JPanel createFooter()
+    {
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        footer.setOpaque(false);
+
+        JButton resetButton = new JButton("Zurücksetzen");
+        resetButton.addActionListener(e -> resetToAppliedValues());
+        styleButton(resetButton);
+
+        JButton cancelButton = new JButton("Abbrechen");
+        cancelButton.addActionListener(e -> dispose());
+        styleButton(cancelButton);
+
+        JButton applyButton = new JButton("Anwenden");
+        applyButton.addActionListener(e -> publish());
+        styleButton(applyButton);
+
+        JButton saveButton = new JButton("Speichern");
+        saveButton.addActionListener(e -> {
+            publish();
+            dispose();
+        });
+        styleButton(saveButton);
+
+        footer.add(resetButton);
+        footer.add(cancelButton);
+        footer.add(applyButton);
+        footer.add(saveButton);
+        return footer;
     }
 
     @SuppressWarnings("unchecked")
@@ -95,10 +142,7 @@ public final class SettingsDialog extends JDialog
     private JPanel createSpinnerRow(String name, int selected)
     {
         JSpinner spinner = new JSpinner(new SpinnerNumberModel(selected, 2, 15, 1));
-        spinner.addChangeListener(e -> {
-            workingSettings.setNachkommastellen((Integer) spinner.getValue());
-            publish();
-        });
+        spinner.addChangeListener(e -> workingSettings.setNachkommastellen((Integer) spinner.getValue()));
         spinner.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         return createSettingRow(name, spinner);
     }
@@ -109,11 +153,84 @@ public final class SettingsDialog extends JDialog
         checkBox.setSelected(selected);
         checkBox.setOpaque(false);
         checkBox.setForeground(theme.displayForeground());
-        checkBox.addActionListener(e -> {
-            workingSettings.setHistoryEnabled(checkBox.isSelected());
-            publish();
-        });
+        checkBox.addActionListener(e -> workingSettings.setHistoryEnabled(checkBox.isSelected()));
         return createSettingRow(name, checkBox);
+    }
+
+    private JPanel createCustomThemeSection()
+    {
+        JPanel section = new JPanel(new BorderLayout(0, 10));
+        section.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(theme.modeBorder(), 1),
+                new EmptyBorder(10, 12, 12, 12)
+        ));
+        section.setBackground(theme.panelBackground());
+
+        JLabel title = new JLabel("Custom Theme");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        title.setForeground(theme.displayForeground());
+
+        JPanel colorsGrid = new JPanel(new GridLayout(0, 2, 8, 8));
+        colorsGrid.setOpaque(false);
+        colorsGrid.add(createColorButton("Fenster/Panel", customThemeColors.panelBackground(),
+                color -> customThemeColors = customThemeColors.withPanelBackground(color)));
+        colorsGrid.add(createColorButton("Display", customThemeColors.displayBackground(),
+                color -> customThemeColors = customThemeColors.withDisplayBackground(color)));
+        colorsGrid.add(createColorButton("Display-Text", customThemeColors.displayForeground(),
+                color -> customThemeColors = customThemeColors.withDisplayForeground(color)));
+        colorsGrid.add(createColorButton("Zahlen", customThemeColors.numberButtonBackground(),
+                color -> customThemeColors = customThemeColors.withNumberButtonBackground(color)));
+        colorsGrid.add(createColorButton("Operatoren", customThemeColors.operatorButtonBackground(),
+                color -> customThemeColors = customThemeColors.withOperatorButtonBackground(color)));
+        colorsGrid.add(createColorButton("Funktionen", customThemeColors.functionButtonBackground(),
+                color -> customThemeColors = customThemeColors.withFunctionButtonBackground(color)));
+        colorsGrid.add(createColorButton("Akzent/Toggle", customThemeColors.accentBackground(),
+                color -> customThemeColors = customThemeColors.withAccentBackground(color)));
+
+        section.add(title, BorderLayout.NORTH);
+        section.add(colorsGrid, BorderLayout.CENTER);
+        return section;
+    }
+
+    private JButton createColorButton(String label, Color initialColor, Consumer<Color> updater)
+    {
+        JButton button = new JButton(label + " " + formatColor(initialColor));
+        styleColorButton(button, initialColor);
+        button.addActionListener(e -> {
+            Color selected = JColorChooser.showDialog(this, label + " auswählen", button.getBackground());
+            if (selected == null)
+            {
+                return;
+            }
+
+            updater.accept(selected);
+            workingSettings.setThemeType(ThemeType.CUSTOM);
+            button.setText(label + " " + formatColor(selected));
+            styleColorButton(button, selected);
+        });
+        return button;
+    }
+
+    private void styleColorButton(JButton button, Color color)
+    {
+        button.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        button.setBackground(color);
+        button.setForeground(contrastFor(color));
+        button.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        button.setFocusPainted(false);
+        button.setOpaque(true);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }
+
+    private Color contrastFor(Color color)
+    {
+        double luminance = (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255.0;
+        return luminance > 0.58 ? Color.BLACK : Color.WHITE;
+    }
+
+    private String formatColor(Color color)
+    {
+        return String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
     }
 
     private JPanel createValueRow(String name, String value)
@@ -122,6 +239,34 @@ public final class SettingsDialog extends JDialog
         valueLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         valueLabel.setForeground(theme.secondaryDisplayForeground());
         return createSettingRow(name, valueLabel);
+    }
+
+    private JPanel createSessionRow()
+    {
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        actions.setOpaque(false);
+
+        JButton saveButton = new JButton("Session speichern");
+        saveButton.addActionListener(e -> {
+            if (sessionSaveListener != null)
+            {
+                sessionSaveListener.run();
+            }
+        });
+        styleButton(saveButton);
+
+        JButton loadButton = new JButton("Session laden");
+        loadButton.addActionListener(e -> {
+            if (sessionLoadListener != null)
+            {
+                sessionLoadListener.run();
+            }
+        });
+        styleButton(loadButton);
+
+        actions.add(saveButton);
+        actions.add(loadButton);
+        return createSettingRow("Session", actions);
     }
 
     private JPanel createSettingRow(String name, JComponent control)
@@ -144,7 +289,20 @@ public final class SettingsDialog extends JDialog
 
     private void publish()
     {
-        settingsListener.accept(workingSettings.copy());
+        customThemePersistence.speichere(customThemeColors);
+        appliedSettings = workingSettings.copy();
+        appliedCustomThemeColors = customThemeColors;
+        settingsListener.accept(appliedSettings.copy());
+    }
+
+    private void resetToAppliedValues()
+    {
+        workingSettings = appliedSettings.copy();
+        customThemeColors = appliedCustomThemeColors;
+        setContentPane(createContent());
+        pack();
+        revalidate();
+        repaint();
     }
 
     private void styleComboBox(JComboBox<?> comboBox)

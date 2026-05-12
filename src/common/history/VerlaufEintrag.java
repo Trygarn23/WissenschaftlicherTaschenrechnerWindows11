@@ -3,10 +3,13 @@ package common.history;
 import common.state.RechnerModus;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public final class VerlaufEintrag
 {
+    private static final DateTimeFormatter DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
     private final String ausdruck;
     private final String ergebnis;
     private final RechnerModus modus;
@@ -55,6 +58,29 @@ public final class VerlaufEintrag
         }
 
         return ausdruck + " = " + ergebnis;
+    }
+
+    public String toDisplayText()
+    {
+        return "[" + modus.getLabel() + "] "
+                + zeitpunkt.format(DISPLAY_FORMATTER)
+                + " · "
+                + toLegacyText();
+    }
+
+    public boolean matchesSuchtext(String suchtext)
+    {
+        if (suchtext == null || suchtext.isBlank())
+        {
+            return true;
+        }
+
+        String query = suchtext.toLowerCase();
+        return ausdruck.toLowerCase().contains(query)
+                || ergebnis.toLowerCase().contains(query)
+                || modus.name().toLowerCase().contains(query)
+                || modus.getLabel().toLowerCase().contains(query)
+                || toLegacyText().toLowerCase().contains(query);
     }
 
     @Override

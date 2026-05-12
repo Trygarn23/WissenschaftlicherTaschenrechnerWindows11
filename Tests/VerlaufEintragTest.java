@@ -24,6 +24,10 @@ public class VerlaufEintragTest
         assertEquals(zeitpunkt, eintrag.getZeitpunkt());
         assertTrue(eintrag.isFavorit());
         assertEquals("2+3 = 5", eintrag.toLegacyText());
+        assertEquals("[Standard] 08.05.2026 12:00 · 2+3 = 5", eintrag.toDisplayText());
+        assertTrue(eintrag.matchesSuchtext("standard"));
+        assertTrue(eintrag.matchesSuchtext("2+3"));
+        assertTrue(eintrag.matchesSuchtext("5"));
     }
 
     @Test

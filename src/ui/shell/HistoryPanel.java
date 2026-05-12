@@ -1,5 +1,9 @@
 package ui.shell;
 
+import common.history.VerlaufEintrag;
+import common.history.VerlaufRepository;
+import common.history.VerlaufService;
+import common.state.RechnerModus;
 import ui.theme.AppTheme;
 
 import javax.swing.*;
@@ -15,14 +19,27 @@ import java.util.regex.Pattern;
 
 public class HistoryPanel extends JPanel
 {
-    private static final String SEARCH_PLACEHOLDER = "Suche…";
+    private static final String SEARCH_PLACEHOLDER = "Suche...";
+    private static final VerlaufService LEGACY_ADAPTER = new VerlaufService(new VerlaufRepository()
+    {
+        @Override
+        public List<String> ladeEintraege()
+        {
+            return List.of();
+        }
 
-    private final DefaultListModel<String> allHistoryModel = new DefaultListModel<>();
-    private final DefaultListModel<String> filteredHistoryModel = new DefaultListModel<>();
+        @Override
+        public void speichereEintraege(List<String> eintraege)
+        {
+        }
+    });
+
+    private final DefaultListModel<VerlaufEintrag> allHistoryModel = new DefaultListModel<>();
+    private final DefaultListModel<VerlaufEintrag> filteredHistoryModel = new DefaultListModel<>();
 
     private final JTextField historySearchField = new JTextField();
     private final JButton clearHistoryBtn = new JButton("Clear");
-    private final JList<String> historyList = new JList<>(filteredHistoryModel);
+    private final JList<VerlaufEintrag> historyList = new JList<>(filteredHistoryModel);
     private final JScrollPane historyScroll = new JScrollPane(historyList);
 
     private ActionListener clearHistoryListener;
@@ -149,7 +166,7 @@ public class HistoryPanel extends JPanel
                     return;
                 }
 
-                entryDoubleClickListener.accept(filteredHistoryModel.getElementAt(idx));
+                entryDoubleClickListener.accept(filteredHistoryModel.getElementAt(idx).toLegacyText());
             }
         });
     }
@@ -199,11 +216,25 @@ public class HistoryPanel extends JPanel
 
     public void setAllEntries(List<String> entries)
     {
-        allHistoryModel.clear();
-
+        List<VerlaufEintrag> strukturierteEintraege = new ArrayList<>();
         for (String entry : entries)
         {
             if (entry != null && !entry.isBlank())
+            {
+                strukturierteEintraege.add(LEGACY_ADAPTER.erstelleEintragAusText(entry, RechnerModus.STANDARD));
+            }
+        }
+
+        setAllStructuredEntries(strukturierteEintraege);
+    }
+
+    public void setAllStructuredEntries(List<VerlaufEintrag> entries)
+    {
+        allHistoryModel.clear();
+
+        for (VerlaufEintrag entry : entries)
+        {
+            if (entry != null && !entry.toLegacyText().isBlank())
             {
                 allHistoryModel.addElement(entry);
             }
@@ -217,6 +248,16 @@ public class HistoryPanel extends JPanel
         List<String> result = new ArrayList<>();
         for (int i = 0; i < allHistoryModel.size(); i++)
         {
+            result.add(allHistoryModel.getElementAt(i).toLegacyText());
+        }
+        return result;
+    }
+
+    public List<VerlaufEintrag> getAllStructuredEntries()
+    {
+        List<VerlaufEintrag> result = new ArrayList<>();
+        for (int i = 0; i < allHistoryModel.size(); i++)
+        {
             result.add(allHistoryModel.getElementAt(i));
         }
         return result;
@@ -225,6 +266,16 @@ public class HistoryPanel extends JPanel
     public void addEntry(String entry)
     {
         if (entry == null || entry.isBlank())
+        {
+            return;
+        }
+
+        addStructuredEntry(LEGACY_ADAPTER.erstelleEintragAusText(entry, RechnerModus.STANDARD));
+    }
+
+    public void addStructuredEntry(VerlaufEintrag entry)
+    {
+        if (entry == null || entry.toLegacyText().isBlank())
         {
             return;
         }
@@ -272,7 +323,18 @@ public class HistoryPanel extends JPanel
         repaint();
     }
 
-    private boolean matchesFilter(String entry)
+    void setSearchTextForTest(String text)
+    {
+        historySearchField.setForeground(getHistoryForeground());
+        historySearchField.setText(text == null ? "" : text);
+    }
+
+    int getVisibleEntryCountForTest()
+    {
+        return filteredHistoryModel.size();
+    }
+
+    private boolean matchesFilter(VerlaufEintrag entry)
     {
         String q = historySearchField.getText();
         if (q == null)
@@ -286,7 +348,7 @@ public class HistoryPanel extends JPanel
             return true;
         }
 
-        return entry.toLowerCase().contains(q.toLowerCase());
+        return entry.matchesSuchtext(q);
     }
 
     private void applyFilter()
@@ -295,7 +357,7 @@ public class HistoryPanel extends JPanel
 
         for (int i = 0; i < allHistoryModel.size(); i++)
         {
-            String entry = allHistoryModel.getElementAt(i);
+            VerlaufEintrag entry = allHistoryModel.getElementAt(i);
             if (matchesFilter(entry))
             {
                 filteredHistoryModel.addElement(entry);
@@ -345,7 +407,7 @@ public class HistoryPanel extends JPanel
         {
             JLabel lbl = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-            String text = value == null ? "" : value.toString();
+            String text = value instanceof VerlaufEintrag eintrag ? eintrag.toDisplayText() : "";
 
             String q = historySearchField.getText();
             q = (q == null) ? "" : q.trim();

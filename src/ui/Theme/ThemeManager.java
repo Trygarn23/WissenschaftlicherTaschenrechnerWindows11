@@ -2,16 +2,25 @@ package ui.theme;
 
 
 import ui.theme.themes.*;
+import ui.theme.custom.CustomTheme;
+import ui.theme.custom.CustomThemePersistence;
 
 public class ThemeManager
 {
     private final ThemePersistence themePersistence = new ThemePersistence();
+    private final CustomThemePersistence customThemePersistence;
 
     private AppTheme currentTheme;
     private ThemeType currentThemeType;
 
     public ThemeManager()
     {
+        this(new CustomThemePersistence());
+    }
+
+    public ThemeManager(CustomThemePersistence customThemePersistence)
+    {
+        this.customThemePersistence = customThemePersistence == null ? new CustomThemePersistence() : customThemePersistence;
         setTheme(themePersistence.ladeTheme(ThemeType.DARK));
     }
 
@@ -42,6 +51,7 @@ public class ThemeManager
             case MATRIX -> new MatrixTheme();
             case WIN95 -> new Win95Theme();
             case WIN11 -> new Win11Theme();
+            case CUSTOM -> new CustomTheme(customThemePersistence.lade());
         };
     }
 }

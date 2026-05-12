@@ -7,7 +7,7 @@ import ui.theme.ThemeType;
 
 public final class AppSettings
 {
-    public static final String VERSION = "0.4.0-local";
+    public static final String VERSION = "0.4.1-local";
 
     private ThemeType themeType = ThemeType.DARK;
     private RechnerModus startModus = RechnerModus.STANDARD;

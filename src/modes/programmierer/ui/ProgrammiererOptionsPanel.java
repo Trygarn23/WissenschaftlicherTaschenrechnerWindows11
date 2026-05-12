@@ -3,6 +3,7 @@ package modes.programmierer.ui;
 import modes.programmierer.model.Basis;
 import modes.programmierer.model.Wortbreite;
 import ui.theme.AppTheme;
+import ui.theme.themes.DarkTheme;
 import ui.tooltips.ButtonTooltips;
 
 import javax.swing.*;
@@ -20,6 +21,9 @@ class ProgrammiererOptionsPanel extends JPanel
 
     private final Map<Basis, JButton> basisButtons = new EnumMap<>(Basis.class);
     private final Map<Wortbreite, JButton> wortbreiteButtons = new EnumMap<>(Wortbreite.class);
+    private AppTheme currentTheme = new DarkTheme();
+    private Basis currentBasis = Basis.DEC;
+    private Wortbreite currentWortbreite = Wortbreite.QWORD;
 
     ProgrammiererOptionsPanel(Consumer<Basis> basisListener, Consumer<Wortbreite> wortbreiteListener)
     {
@@ -65,6 +69,9 @@ class ProgrammiererOptionsPanel extends JPanel
 
     void refresh(Basis basis, Wortbreite wortbreite)
     {
+        currentBasis = basis;
+        currentWortbreite = wortbreite;
+
         for (Map.Entry<Basis, JButton> entry : basisButtons.entrySet())
         {
             setModeButtonActive(entry.getValue(), entry.getKey() == basis);
@@ -78,15 +85,8 @@ class ProgrammiererOptionsPanel extends JPanel
 
     void applyTheme(AppTheme theme)
     {
-        for (JButton button : basisButtons.values())
-        {
-            button.setForeground(theme.functionButtonForeground());
-        }
-
-        for (JButton button : wortbreiteButtons.values())
-        {
-            button.setForeground(theme.functionButtonForeground());
-        }
+        currentTheme = theme;
+        refresh(currentBasis, currentWortbreite);
     }
 
     private JButton createBasisButton(String text, Basis basis, Consumer<Basis> listener)
@@ -117,23 +117,28 @@ class ProgrammiererOptionsPanel extends JPanel
         button.setOpaque(true);
         button.setFocusable(false);
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        button.setForeground(Color.WHITE);
 
-        button.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(ProgrammiererButtonStyler.MODE_BORDER, 1),
-                BorderFactory.createEmptyBorder(12, 14, 12, 14)
-        ));
+        setModeBorder(button);
 
         button.putClientProperty(ACTIVE_KEY, Boolean.FALSE);
         button.addMouseListener(new ModeButtonMouseAdapter(button));
-        button.setBackground(ProgrammiererButtonStyler.MODE_INACTIVE_BG);
+        setModeButtonActive(button, false);
     }
 
     private void setModeButtonActive(JButton button, boolean active)
     {
         button.putClientProperty(ACTIVE_KEY, active);
-        button.setBackground(active ? ProgrammiererButtonStyler.MODE_ACTIVE_BG : ProgrammiererButtonStyler.MODE_INACTIVE_BG);
-        button.setForeground(Color.WHITE);
+        button.setBackground(ProgrammiererButtonStyler.modeButtonBackground(currentTheme, active));
+        button.setForeground(ProgrammiererButtonStyler.modeButtonForeground(currentTheme, active));
+        setModeBorder(button);
+    }
+
+    private void setModeBorder(JButton button)
+    {
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(currentTheme.modeBorder(), 1),
+                BorderFactory.createEmptyBorder(12, 14, 12, 14)
+        ));
     }
 
     private boolean isActive(JButton button)
@@ -156,7 +161,8 @@ class ProgrammiererOptionsPanel extends JPanel
         {
             if (!isActive(button))
             {
-                button.setBackground(ProgrammiererButtonStyler.brighten(ProgrammiererButtonStyler.MODE_INACTIVE_BG, 12));
+                button.setBackground(ProgrammiererButtonStyler.hoverBackground(
+                        ProgrammiererButtonStyler.modeButtonBackground(currentTheme, false)));
             }
         }
 
@@ -165,7 +171,7 @@ class ProgrammiererOptionsPanel extends JPanel
         {
             if (!isActive(button))
             {
-                button.setBackground(ProgrammiererButtonStyler.MODE_INACTIVE_BG);
+                button.setBackground(ProgrammiererButtonStyler.modeButtonBackground(currentTheme, false));
             }
         }
 
@@ -174,7 +180,8 @@ class ProgrammiererOptionsPanel extends JPanel
         {
             if (!isActive(button))
             {
-                button.setBackground(ProgrammiererButtonStyler.brighten(ProgrammiererButtonStyler.MODE_INACTIVE_BG, 20));
+                button.setBackground(ProgrammiererButtonStyler.pressedBackground(
+                        ProgrammiererButtonStyler.modeButtonBackground(currentTheme, false)));
             }
         }
 
@@ -183,7 +190,8 @@ class ProgrammiererOptionsPanel extends JPanel
         {
             if (!isActive(button))
             {
-                button.setBackground(ProgrammiererButtonStyler.brighten(ProgrammiererButtonStyler.MODE_INACTIVE_BG, 12));
+                button.setBackground(ProgrammiererButtonStyler.hoverBackground(
+                        ProgrammiererButtonStyler.modeButtonBackground(currentTheme, false)));
             }
         }
     }

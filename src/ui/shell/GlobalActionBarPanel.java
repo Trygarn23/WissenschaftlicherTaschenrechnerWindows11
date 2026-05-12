@@ -67,6 +67,7 @@ public class GlobalActionBarPanel extends JPanel
         addThemeOption(themeGrid, ThemeType.MATRIX, "Matrix");
         addThemeOption(themeGrid, ThemeType.WIN95, "Win95");
         addThemeOption(themeGrid, ThemeType.WIN11, "Win11");
+        addThemeOption(themeGrid, ThemeType.CUSTOM, "Custom");
 
         popupContent.add(popupTitle, BorderLayout.NORTH);
         popupContent.add(themeGrid, BorderLayout.CENTER);

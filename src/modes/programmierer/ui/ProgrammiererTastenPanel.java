@@ -2,6 +2,7 @@ package modes.programmierer.ui;
 
 import modes.programmierer.model.Basis;
 import ui.theme.AppTheme;
+import ui.theme.themes.DarkTheme;
 import ui.tooltips.ButtonTooltips;
 
 import javax.swing.*;
@@ -14,16 +15,18 @@ import java.util.function.Consumer;
 
 class ProgrammiererTastenPanel extends JPanel
 {
-    private static final Color BG = new Color(25, 25, 25);
     private static final String BASE_COLOR_KEY = "baseColor";
 
     private final Map<String, JButton> tastenButtons = new HashMap<>();
+    private AppTheme currentTheme = new DarkTheme();
+    private Basis currentBasis = Basis.DEC;
+    private boolean currentUnsigned;
     private JButton unsignedButton;
 
     ProgrammiererTastenPanel(Consumer<String> buttonListener)
     {
         setLayout(new GridLayout(6, 5, 6, 6));
-        setBackground(BG);
+        setBackground(currentTheme.panelBackground());
         setOpaque(true);
 
         String[] texte = {
@@ -53,24 +56,18 @@ class ProgrammiererTastenPanel extends JPanel
 
     void refresh(Basis basis, boolean unsigned)
     {
+        currentBasis = basis;
+        currentUnsigned = unsigned;
         updateDigitButtonsByBasis(basis, unsigned);
+        updateActionButtons();
         updateUnsignedButton(unsigned);
     }
 
     void applyTheme(AppTheme theme)
     {
-        for (JButton button : tastenButtons.values())
-        {
-            String text = button.getText();
-
-            if (button.isEnabled())
-            {
-                Color baseColor = getButtonBaseColor(text);
-                button.putClientProperty(BASE_COLOR_KEY, baseColor);
-                button.setBackground(baseColor);
-                button.setForeground(getButtonTextColor(text));
-            }
-        }
+        currentTheme = theme;
+        setBackground(theme.panelBackground());
+        refresh(currentBasis, currentUnsigned);
     }
 
     private JButton createStyledButton(String text)
@@ -89,7 +86,7 @@ class ProgrammiererTastenPanel extends JPanel
         btn.setBackground(baseColor);
         btn.setForeground(textColor);
         btn.putClientProperty(BASE_COLOR_KEY, baseColor);
-        btn.addMouseListener(new ButtonHoverAdapter(btn, baseColor));
+        btn.addMouseListener(new ButtonHoverAdapter(btn));
 
         return btn;
     }
@@ -118,6 +115,22 @@ class ProgrammiererTastenPanel extends JPanel
         }
     }
 
+    private void updateActionButtons()
+    {
+        for (Map.Entry<String, JButton> entry : tastenButtons.entrySet())
+        {
+            String text = entry.getKey();
+            JButton button = entry.getValue();
+
+            if (text.matches("[0-9A-F]") || button == unsignedButton || "Â±".equals(text))
+            {
+                continue;
+            }
+
+            setButtonEnabledState(button, button.getText(), true);
+        }
+    }
+
     private void updateUnsignedButton(boolean unsigned)
     {
         if (unsignedButton == null)
@@ -127,8 +140,7 @@ class ProgrammiererTastenPanel extends JPanel
 
         unsignedButton.setText(unsigned ? "UNSIGNED" : "SIGNED");
         ButtonTooltips.apply(unsignedButton, unsignedButton.getText());
-        unsignedButton.setBackground(unsigned ? ProgrammiererButtonStyler.MODE_ACTIVE_BG : getButtonBaseColor(unsignedButton.getText()));
-        unsignedButton.setForeground(Color.WHITE);
+        setButtonEnabledState(unsignedButton, unsignedButton.getText(), true);
     }
 
     private void setButtonEnabledState(JButton button, String text, boolean enabled)
@@ -145,8 +157,10 @@ class ProgrammiererTastenPanel extends JPanel
         }
         else
         {
-            button.setBackground(ProgrammiererButtonStyler.DISABLED_BG);
-            button.setForeground(ProgrammiererButtonStyler.DISABLED_FG);
+            Color disabledBackground = ProgrammiererButtonStyler.disabledBackground(currentTheme);
+            button.putClientProperty(BASE_COLOR_KEY, disabledBackground);
+            button.setBackground(disabledBackground);
+            button.setForeground(ProgrammiererButtonStyler.disabledForeground(currentTheme));
             button.setCursor(Cursor.getDefaultCursor());
         }
     }
@@ -169,51 +183,54 @@ class ProgrammiererTastenPanel extends JPanel
 
     private Color getButtonBaseColor(String text)
     {
-        return ProgrammiererButtonStyler.buttonBackground(text);
+        return ProgrammiererButtonStyler.buttonBackground(text, currentTheme);
     }
 
     private Color getButtonTextColor(String text)
     {
-        return ProgrammiererButtonStyler.buttonForeground(text);
+        return ProgrammiererButtonStyler.buttonForeground(text, currentTheme);
     }
 
     private static class ButtonHoverAdapter extends MouseAdapter
     {
         private final JButton button;
-        private final Color baseColor;
 
-        private ButtonHoverAdapter(JButton button, Color baseColor)
+        private ButtonHoverAdapter(JButton button)
         {
             this.button = button;
-            this.baseColor = baseColor;
         }
 
         @Override
         public void mousePressed(MouseEvent e)
         {
             if (!button.isEnabled()) return;
-            button.setBackground(ProgrammiererButtonStyler.darken(baseColor, 25));
+            button.setBackground(ProgrammiererButtonStyler.pressedBackground(baseColor()));
         }
 
         @Override
         public void mouseReleased(MouseEvent e)
         {
             if (!button.isEnabled()) return;
-            button.setBackground(ProgrammiererButtonStyler.brighten(baseColor, 20));
+            button.setBackground(ProgrammiererButtonStyler.hoverBackground(baseColor()));
         }
 
         @Override
         public void mouseEntered(MouseEvent e)
         {
             if (!button.isEnabled()) return;
-            button.setBackground(ProgrammiererButtonStyler.brighten(baseColor, 20));
+            button.setBackground(ProgrammiererButtonStyler.hoverBackground(baseColor()));
         }
 
         @Override
         public void mouseExited(MouseEvent e)
         {
             if (!button.isEnabled()) return;
-            button.setBackground((Color) button.getClientProperty(BASE_COLOR_KEY));
+            button.setBackground(baseColor());
+        }
+
+        private Color baseColor()
+        {
+            return (Color) button.getClientProperty(BASE_COLOR_KEY);
         }
     }
 }

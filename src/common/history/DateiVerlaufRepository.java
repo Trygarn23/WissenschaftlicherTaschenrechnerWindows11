@@ -47,6 +47,12 @@ public class DateiVerlaufRepository implements VerlaufRepository
     {
         try
         {
+            Path parent = datei.getParent();
+            if (parent != null)
+            {
+                Files.createDirectories(parent);
+            }
+
             Files.write(
                     datei,
                     eintraege,

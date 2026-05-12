@@ -1,10 +1,13 @@
 import modes.programmierer.ui.ProgrammiererPanel;
 import org.junit.jupiter.api.Test;
+import ui.theme.themes.DarkTheme;
+import ui.theme.themes.LightTheme;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
@@ -77,6 +80,49 @@ public class ProgrammiererPanelTest
 
         // Assert
         assertNotNull(findLabelContaining(panel, "DEC: 0"));
+    }
+
+    @Test
+    void applyTheme_ShouldUpdateProgrammerButtonColors_WhenThemeChanges()
+    {
+        // Arrange
+        ProgrammiererPanel panel = new ProgrammiererPanel();
+        DarkTheme darkTheme = new DarkTheme();
+        LightTheme lightTheme = new LightTheme();
+
+        // Act
+        panel.applyTheme(darkTheme);
+        Color darkSeven = findButton(panel, "7").getBackground();
+        Color darkAnd = findButton(panel, "AND").getBackground();
+        panel.applyTheme(lightTheme);
+
+        // Assert
+        assertNotEquals(darkSeven, findButton(panel, "7").getBackground());
+        assertNotEquals(darkAnd, findButton(panel, "AND").getBackground());
+        assertEquals(lightTheme.numberButtonBackground(), findButton(panel, "7").getBackground());
+        assertEquals(lightTheme.operatorButtonBackground(), findButton(panel, "AND").getBackground());
+        assertEquals(lightTheme.specialButtonBackground(), findButton(panel, "CLR").getBackground());
+        assertEquals(lightTheme.modeButtonActiveBackground(), findButton(panel, "DEC").getBackground());
+        assertEquals(lightTheme.modeButtonInactiveBackground(), findButton(panel, "BIN").getBackground());
+    }
+
+    @Test
+    void applyTheme_ShouldUpdateDisabledProgrammerButtonColors_WhenThemeChanges()
+    {
+        // Arrange
+        ProgrammiererPanel panel = new ProgrammiererPanel();
+        panel.applyTheme(new DarkTheme());
+        findButton(panel, "BIN").doClick();
+        JButton twoButton = findButton(panel, "2");
+        Color darkDisabled = twoButton.getBackground();
+
+        // Act
+        panel.applyTheme(new LightTheme());
+
+        // Assert
+        assertFalse(twoButton.isEnabled());
+        assertNotEquals(darkDisabled, twoButton.getBackground());
+        assertNotEquals(new LightTheme().numberButtonBackground(), twoButton.getBackground());
     }
 
     private JButton findButton(Container container, String text)

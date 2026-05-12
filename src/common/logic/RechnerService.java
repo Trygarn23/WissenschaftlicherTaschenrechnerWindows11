@@ -145,6 +145,22 @@ public class RechnerService
         return zustand.getVerlaufText();
     }
 
+    public void setVerlauf(String verlauf)
+    {
+        zustand.setVerlaufText(verlauf);
+    }
+
+    public String getAusdruckText()
+    {
+        return zustand.getAusdruckText();
+    }
+
+    public void setAusdruckText(String ausdruck)
+    {
+        zustand.setAusdruckText(ausdruck);
+        zustand.setGleichGedrueckt(false);
+    }
+
     public void winkelModusUmschalten()
     {
         zustand.winkelModusUmschalten();
@@ -203,5 +219,15 @@ public class RechnerService
     public boolean hatSpeicherWert()
     {
         return speicherService.hatSpeicherWert();
+    }
+
+    public double getSpeicherWert()
+    {
+        return speicherState.getWert();
+    }
+
+    public void setSpeicherWert(double wert)
+    {
+        speicherState.setWert(Double.isFinite(wert) ? wert : 0.0);
     }
 }
