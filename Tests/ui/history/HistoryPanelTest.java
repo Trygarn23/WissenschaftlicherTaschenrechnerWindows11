@@ -1,4 +1,4 @@
-package ui.shell;
+package ui.history;
 
 import common.history.VerlaufEintrag;
 import common.state.RechnerModus;

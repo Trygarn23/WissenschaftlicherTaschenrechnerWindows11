@@ -14,6 +14,7 @@ import common.logic.RechnerService;
 import modes.wissenschaftlich.logic.WissenschaftlichOperationen;
 import modes.wissenschaftlich.ui.WissenschaftlichPanel;
 import ui.theme.AppTheme;
+import ui.history.HistoryPanel;
 import ui.settings.AppSettings;
 import ui.theme.ThemeManager;
 import ui.theme.ThemeType;
@@ -193,9 +194,9 @@ public class TaschenrechnerUI extends JFrame
         modeBarPanel.setSelectedMode(modus, themeManager.getCurrentTheme());
         modeContentHostPanel.showMode(modus);
 
-        displayPanel.setVisible(sollGlobalesDisplayAnzeigen(modus));
-        historyPanel.setVisible(sollHistoryAnzeigen(modus));
-        if (!sollHistoryAnzeigen(modus) && keyboardShortcutBinder != null)
+        displayPanel.setVisible(ModeVisibilityPolicy.sollGlobalesDisplayAnzeigen(modus));
+        historyPanel.setVisible(ModeVisibilityPolicy.sollHistoryAnzeigen(modus));
+        if (!ModeVisibilityPolicy.sollHistoryAnzeigen(modus) && keyboardShortcutBinder != null)
         {
             keyboardShortcutBinder.defocusSearchIfNeeded();
         }
@@ -205,23 +206,9 @@ public class TaschenrechnerUI extends JFrame
         repaint();
     }
 
-    private boolean sollHistoryAnzeigen(RechnerModus modus)
-    {
-        return switch (modus)
-        {
-            case STANDARD, WISSENSCHAFTLICH -> true;
-            case PROGRAMMIERER, GRAPH, KOMPLEX, MATRIX -> false;
-        };
-    }
-
-    private boolean sollGlobalesDisplayAnzeigen(RechnerModus modus)
-    {
-        return modus != RechnerModus.PROGRAMMIERER && modus != RechnerModus.GRAPH && modus != RechnerModus.MATRIX;
-    }
-
     private boolean sindStandardShortcutsAktiv()
     {
-        return aktuellerModus == RechnerModus.STANDARD || aktuellerModus == RechnerModus.WISSENSCHAFTLICH;
+        return ModeVisibilityPolicy.sindStandardShortcutsAktiv(aktuellerModus);
     }
 
     private void useHistoryEntryResult(String entry)
@@ -329,102 +316,13 @@ public class TaschenrechnerUI extends JFrame
 
         for (Map.Entry<RechnerModus, JPanel> entry : modePanels.entrySet())
         {
-            applyThemeRecursively(entry.getValue());
+            ShellThemeApplier.applyThemeRecursively(entry.getValue(), theme(), rechner.getWinkelModus());
         }
 
         repaint();
         revalidate();
     }
 
-    private void applyThemeRecursively(Component component)
-    {
-        if (component instanceof ProgrammiererPanel programmiererPanel)
-        {
-            programmiererPanel.applyTheme(theme());
-            return;
-        }
-
-        if (component instanceof GraphPanel graphPanel)
-        {
-            graphPanel.setWinkelModus(rechner.getWinkelModus());
-            graphPanel.applyTheme(theme());
-            return;
-        }
-
-        if (component instanceof KomplexPanel komplexPanel)
-        {
-            komplexPanel.applyTheme(theme());
-            return;
-        }
-
-        if (component instanceof MatrixPanel matrixPanel)
-        {
-            matrixPanel.applyTheme(theme());
-            return;
-        }
-
-        if (component instanceof WissenschaftlichPanel wissenschaftlichPanel)
-        {
-            wissenschaftlichPanel.applyTheme(theme());
-        }
-
-        if (component instanceof JButton button)
-        {
-            styleButton(button, button.getText());
-        }
-        else if (component instanceof JLabel label)
-        {
-            label.setForeground(theme().displayForeground());
-        }
-        else if (component instanceof JPanel panel)
-        {
-            panel.setBackground(theme().panelBackground());
-        }
-
-        if (component instanceof Container container)
-        {
-            for (Component child : container.getComponents())
-            {
-                applyThemeRecursively(child);
-            }
-        }
-    }
-
-    private void styleButton(JButton btn, String text)
-    {
-        btn.setFont(theme().buttonFont());
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setOpaque(true);
-        btn.setFocusable(Boolean.TRUE.equals(btn.getClientProperty("keyboardFocusable")));
-
-        Color bg;
-        Color fg;
-
-        if (text != null && text.matches("\\d"))
-        {
-            bg = theme().numberButtonBackground();
-            fg = theme().numberButtonForeground();
-        }
-        else if (text != null && "+-×÷".contains(text))
-        {
-            bg = theme().operatorButtonBackground();
-            fg = theme().operatorButtonForeground();
-        }
-        else if ("C".equals(text) || "CE".equals(text) || "←".equals(text))
-        {
-            bg = theme().specialButtonBackground();
-            fg = theme().specialButtonForeground();
-        }
-        else
-        {
-            bg = theme().functionButtonBackground();
-            fg = theme().functionButtonForeground();
-        }
-
-        btn.setBackground(bg);
-        btn.setForeground(fg);
-    }
 
     private void evaluate()
     {

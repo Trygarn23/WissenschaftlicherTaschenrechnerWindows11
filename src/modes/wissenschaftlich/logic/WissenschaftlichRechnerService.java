@@ -2,6 +2,11 @@ package modes.wissenschaftlich.logic;
 
 import common.logic.RechnerService;
 
+/**
+ * Kompatibilitätsadapter für ältere Aufrufer. Neue UI- und Logikpfade verwenden
+ * {@link RechnerService} zusammen mit {@link WissenschaftlichOperationen}.
+ */
+@Deprecated
 public class WissenschaftlichRechnerService extends RechnerService
 {
     private final WissenschaftlichOperationen wissenschaftlichOperationen;

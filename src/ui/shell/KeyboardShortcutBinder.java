@@ -1,6 +1,7 @@
 package ui.shell;
 
 import common.logic.RechnerService;
+import ui.history.HistoryPanel;
 
 import javax.swing.*;
 import java.awt.*;

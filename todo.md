@@ -386,20 +386,23 @@
   - [ ] Standard.
   - [ ] Wissenschaftlich.
   - [x] Programmierer.
-- [ ] `WissenschaftlichRechnerService` langfristig entfernen oder als Deprecated-Adapter markieren.
+- [x] `WissenschaftlichRechnerService` langfristig entfernen oder als Deprecated-Adapter markieren.
 - [ ] `WissenschaftlichRechnerService`-Adapter aus Tests entfernen, sobald kein Kompatibilitätsbedarf mehr besteht.
 - [ ] `ShellActionRegistry` weiter beobachten: Wird sie zu groß?
+- [ ] Persistence-Orchestrierung aus `TaschenrechnerUI` in einen Shell-Service auslagern.
+- [ ] `GraphPanel`, `MatrixPanel` und `AusdruckEditor` in weiteren sicheren Schritten verkleinern.
+- [ ] Gemeinsame Theme-Hilfen für einfache Mode-Panels prüfen, ohne Spezialpanels zu verbiegen.
 - [ ] Optional `StandardActionFactory` nur einführen, falls Standardaktionen wachsen.
 - [ ] Optional `WissenschaftlichActionFactory` einführen, falls wissenschaftliche Actions wachsen.
 - [ ] `KeyboardShortcutBinder` mit Tooltips synchron halten.
 - [ ] `ButtonTooltips` und `ShellActionRegistry` auf gemeinsame Action-Namen vereinheitlichen.
-- [ ] Package-Namen vereinheitlichen: überall lowercase, z. B. `ui.theme`.
+- [x] Package-Namen vereinheitlichen: überall lowercase, z. B. `ui.theme`.
 - [ ] Unit Tests nachziehen: Teststruktur langfristig in Standardstruktur überführen, z. B. `src/test/java`.
 - [x] README aktualisieren: Projektstruktur, Modi, Tastenkürzel, Build/Test-Anleitung.
 - [ ] README Screenshots ergänzen.
 - [x] Parser weiter modularisieren: Tokenizer.
-- [ ] Parser weiter modularisieren: PostfixKonverter.
-- [ ] Parser weiter modularisieren: PostfixAuswerter.
+- [x] Parser weiter modularisieren: PostfixKonverter.
+- [x] Parser weiter modularisieren: PostfixAuswerter.
 - [ ] Parser weiter modularisieren: OperatorRegistry.
 - [ ] Parser weiter modularisieren: FunktionsRegistry.
 - [ ] Parser weiter modularisieren, bevor CAS-/Matrix-/Statistikfeatures auf ihn aufbauen.
@@ -413,7 +416,14 @@
 - [ ] Benutzerdefinierte Themes erst nach Theme-Palette planen.
 - [ ] Layouts auf gemeinsame Hilfsmethoden reduzieren.
 - [ ] Große UI-Klassen verkleinern: `TaschenrechnerUI`, `ProgrammiererPanel`, `HistoryPanel`.
-- [ ] `HistoryPanel` bei strukturiertem Verlauf aufteilen.
+- [x] `HistoryPanel` bei strukturiertem Verlauf aufteilen.
+- [x] `HistoryPanel` nach `ui.history` verschieben.
+- [x] `HistoryEntryRenderer` aus `HistoryPanel` auslagern.
+- [x] `TaschenrechnerUI` Theme-Rekursion in `ShellThemeApplier` auslagern.
+- [x] Modus-Sichtbarkeitsregeln in `ModeVisibilityPolicy` auslagern.
+- [x] Ausdruck-/Clipboard-Normalisierung aus `AusdruckEditor` auslagern.
+- [x] Legacy-Verlaufstext-Mapping aus `HistoryPanel` nach `common.history` verschieben.
+- [x] Hardcoded Start-Hintergrund aus `ProgrammiererPanel` entfernen.
 - [x] `ProgrammiererPanel` nach Funktionalitätsabschluss aufteilen.
 - [ ] Build-System sauber entscheiden: Maven oder Gradle, danach Unit Tests mit einem Standardbefehl ausführbar machen.
 - [ ] UI-Checkliste für alle Themes und Modi anlegen.

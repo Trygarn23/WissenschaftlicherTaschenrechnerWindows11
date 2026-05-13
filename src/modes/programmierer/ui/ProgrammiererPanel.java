@@ -14,8 +14,6 @@ import java.awt.event.KeyEvent;
 
 public class ProgrammiererPanel extends JPanel
 {
-    private static final Color BG = new Color(25, 25, 25);
-
     private final ProgrammiererLogik logik = new ProgrammiererLogik();
     private final ProgrammiererFormatter formatter = new ProgrammiererFormatter();
     private final ProgrammiererDisplayPanel displayPanel = new ProgrammiererDisplayPanel();
@@ -25,7 +23,6 @@ public class ProgrammiererPanel extends JPanel
     public ProgrammiererPanel()
     {
         setLayout(new BorderLayout(10, 10));
-        setBackground(BG);
         setOpaque(true);
         setBorder(new EmptyBorder(6, 0, 0, 0));
 

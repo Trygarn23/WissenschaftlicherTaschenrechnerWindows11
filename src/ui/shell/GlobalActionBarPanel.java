@@ -14,7 +14,7 @@ public class GlobalActionBarPanel extends JPanel
 {
     private final JLabel titleLabel = new JLabel("Taschenrechner");
     private final JButton angleModeButton = new JButton("DEG");
-    private final JButton themeButton = new JButton("ui/Theme");
+    private final JButton themeButton = new JButton("Theme");
     private final JButton settingsButton = new JButton("⚙");
 
     private final JPopupMenu themePopupMenu = new JPopupMenu();

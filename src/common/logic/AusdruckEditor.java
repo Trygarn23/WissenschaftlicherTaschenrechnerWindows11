@@ -205,11 +205,7 @@ public class AusdruckEditor
     {
         if (verlaufErgebnis == null) return;
 
-        String text = verlaufErgebnis.trim();
-        text = text.replace(" ", "");
-        text = text.replace(".", "");
-        text = text.replace('−', '-').replace('–', '-').replace('—', '-');
-
+        String text = AusdruckNormalisierung.verlaufErgebnis(verlaufErgebnis);
         zustand.setAusdruckText(text);
         zustand.setGleichGedrueckt(false);
     }
@@ -218,55 +214,14 @@ public class AusdruckEditor
     {
         if (text == null) return;
 
-        String normalisiert = text.trim()
-                .replaceAll("\\s+", "")
-                .replace('×', '*')
-                .replace('÷', '/')
-                .replace('−', '-')
-                .replace('–', '-')
-                .replace('—', '-');
-
+        String normalisiert = AusdruckNormalisierung.zwischenablage(text);
         if (normalisiert.isBlank()) return;
 
-        zustand.setAusdruckText(normalisiereTausenderpunkte(normalisiert));
+        zustand.setAusdruckText(normalisiert);
         zustand.clearVerlauf();
         zustand.setGleichGedrueckt(false);
     }
 
-    private String normalisiereTausenderpunkte(String text)
-    {
-        StringBuilder result = new StringBuilder();
-
-        for (int i = 0; i < text.length(); i++)
-        {
-            char zeichen = text.charAt(i);
-            if (Character.isDigit(zeichen) || zeichen == ',' || zeichen == '.')
-            {
-                int start = i;
-                while (i + 1 < text.length())
-                {
-                    char next = text.charAt(i + 1);
-                    if (Character.isDigit(next) || next == ',' || next == '.')
-                    {
-                        i++;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                String zahl = text.substring(start, i + 1);
-                result.append(zahl.contains(",") ? zahl.replace(".", "") : zahl);
-            }
-            else
-            {
-                result.append(zeichen);
-            }
-        }
-
-        return result.toString();
-    }
 
     public String konstanteEinsetzen(double wert)
     {
@@ -617,9 +572,7 @@ public class AusdruckEditor
 
     private String normalisiereOperator(String operator)
     {
-        if ("×".equals(operator)) return "*";
-        if ("÷".equals(operator)) return "/";
-        return operator;
+        return AusdruckNormalisierung.operator(operator);
     }
 
     private String fehler()

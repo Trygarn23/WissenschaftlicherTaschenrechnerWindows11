@@ -99,7 +99,7 @@ public class VerlaufService
 
     public String formatiereLegacyEintrag(VerlaufEintrag eintrag)
     {
-        return eintrag == null ? "" : eintrag.toLegacyText();
+        return VerlaufTextMapper.zuLegacyText(eintrag);
     }
 
     String formatiereStrukturiertenEintrag(VerlaufEintrag eintrag)
@@ -126,7 +126,7 @@ public class VerlaufService
             }
         }
 
-        return parseLegacyEintrag(text, fallbackModus);
+        return VerlaufTextMapper.ausLegacyText(text, fallbackModus);
     }
 
     private VerlaufEintrag parseStrukturierterEintrag(String raw)
@@ -151,28 +151,6 @@ public class VerlaufService
         {
             return null;
         }
-    }
-
-    private VerlaufEintrag parseLegacyEintrag(String raw, RechnerModus modus)
-    {
-        String text = nullZuLeer(raw).trim();
-        int separator = text.lastIndexOf(" = ");
-        int offset = 3;
-
-        if (separator < 0)
-        {
-            separator = text.lastIndexOf('=');
-            offset = 1;
-        }
-
-        if (separator < 0)
-        {
-            return new VerlaufEintrag(text, "", modus, LocalDateTime.now(), false);
-        }
-
-        String ausdruck = text.substring(0, separator).trim();
-        String ergebnis = text.substring(separator + offset).trim();
-        return new VerlaufEintrag(ausdruck, ergebnis, modus, LocalDateTime.now(), false);
     }
 
     private String encode(String text)

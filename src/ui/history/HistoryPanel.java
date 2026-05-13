@@ -1,13 +1,11 @@
-package ui.shell;
+package ui.history;
 
 import common.history.VerlaufEintrag;
-import common.history.VerlaufRepository;
-import common.history.VerlaufService;
+import common.history.VerlaufTextMapper;
 import common.state.RechnerModus;
 import ui.theme.AppTheme;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
@@ -15,25 +13,10 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 public class HistoryPanel extends JPanel
 {
     private static final String SEARCH_PLACEHOLDER = "Suche...";
-    private static final VerlaufService LEGACY_ADAPTER = new VerlaufService(new VerlaufRepository()
-    {
-        @Override
-        public List<String> ladeEintraege()
-        {
-            return List.of();
-        }
-
-        @Override
-        public void speichereEintraege(List<String> eintraege)
-        {
-        }
-    });
-
     private final DefaultListModel<VerlaufEintrag> allHistoryModel = new DefaultListModel<>();
     private final DefaultListModel<VerlaufEintrag> filteredHistoryModel = new DefaultListModel<>();
 
@@ -63,7 +46,11 @@ public class HistoryPanel extends JPanel
         historyList.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         historyList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         historyList.setFocusable(false);
-        historyList.setCellRenderer(new HistoryHighlightRenderer());
+        historyList.setCellRenderer(new HistoryEntryRenderer(
+                () -> historySearchField.getText(),
+                () -> currentTheme,
+                SEARCH_PLACEHOLDER
+        ));
 
         historyScroll.setBorder(null);
         historyScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -221,7 +208,7 @@ public class HistoryPanel extends JPanel
         {
             if (entry != null && !entry.isBlank())
             {
-                strukturierteEintraege.add(LEGACY_ADAPTER.erstelleEintragAusText(entry, RechnerModus.STANDARD));
+                strukturierteEintraege.add(VerlaufTextMapper.ausLegacyText(entry, RechnerModus.STANDARD));
             }
         }
 
@@ -270,7 +257,7 @@ public class HistoryPanel extends JPanel
             return;
         }
 
-        addStructuredEntry(LEGACY_ADAPTER.erstelleEintragAusText(entry, RechnerModus.STANDARD));
+        addStructuredEntry(VerlaufTextMapper.ausLegacyText(entry, RechnerModus.STANDARD));
     }
 
     public void addStructuredEntry(VerlaufEintrag entry)
@@ -387,78 +374,4 @@ public class HistoryPanel extends JPanel
         return currentTheme != null ? currentTheme.placeholderForeground() : Color.GRAY;
     }
 
-    private Color getHistoryBackground()
-    {
-        return currentTheme != null ? currentTheme.historyBackground() : new Color(35, 35, 35);
-    }
-
-    private Color getHistorySelectionBackground()
-    {
-        return currentTheme != null ? currentTheme.historySelectionBackground() : new Color(70, 70, 70);
-    }
-
-    private class HistoryHighlightRenderer extends DefaultListCellRenderer
-    {
-        private final EmptyBorder pad = new EmptyBorder(6, 8, 6, 8);
-
-        @Override
-        public Component getListCellRendererComponent(
-                JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus)
-        {
-            JLabel lbl = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-            String text = value instanceof VerlaufEintrag eintrag ? eintrag.toDisplayText() : "";
-
-            String q = historySearchField.getText();
-            q = (q == null) ? "" : q.trim();
-            boolean hasQuery = !q.isEmpty() && !SEARCH_PLACEHOLDER.equals(q);
-
-            if (hasQuery)
-            {
-                String safeText = escapeHtml(text);
-                String safeQuery = escapeHtml(q);
-
-                String highlighted = safeText.replaceAll(
-                        "(?i)(" + Pattern.quote(safeQuery) + ")",
-                        "<span style='background:#ffea00; color:#000; padding:1px 2px; border-radius:3px;'>$1</span>"
-                );
-
-                lbl.setText("<html><div style='white-space:nowrap;'>" + highlighted + "</div></html>");
-            }
-            else
-            {
-                lbl.setText(text);
-            }
-
-            lbl.setBorder(pad);
-
-            if (isSelected)
-            {
-                lbl.setBackground(getHistorySelectionBackground());
-                lbl.setForeground(getHistoryForeground());
-            }
-            else
-            {
-                lbl.setBackground(getHistoryBackground());
-                lbl.setForeground(getHistoryForeground());
-            }
-
-            lbl.setOpaque(true);
-            return lbl;
-        }
-    }
-
-    private String escapeHtml(String s)
-    {
-        if (s == null)
-        {
-            return "";
-        }
-
-        return s
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;");
-    }
 }

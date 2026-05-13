@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class WissenschaftlichRechnerServiceAdapterTest
 {
     @Test
+    @SuppressWarnings("deprecation")
     void wissenschaftlichRechnerService_ShouldRemainCompatible_WhenScientificMethodIsCalled()
     {
         // Arrange
