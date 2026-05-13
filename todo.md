@@ -308,9 +308,13 @@
 ---
 
 ## Einheiten / Konstanten
-- [ ] Einheitenumrechnung als eigener Modus oder Sidepanel entscheiden.
-- [ ] Einheitenmodell planen: Kategorie, Einheit, Symbol, Faktor, Offset.
-- [ ] Temperatur separat behandeln, weil Celsius/Fahrenheit nicht nur Faktor sind.
+- [x] Einheitenumrechnung als eigener Modus oder Sidepanel entscheiden.
+- [x] Einheitenmodell planen: Kategorie, Einheit, Symbol, Faktor, Offset.
+- [x] Temperatur separat behandeln, weil Celsius/Fahrenheit nicht nur Faktor sind.
+- [x] Einheitenumrechnung als ausfahrbares SidePanel bauen.
+- [x] Einheiten-SidePanel ans Theme-System anbinden.
+- [x] SidePanel mit Swing-Animation oeffnen und schliessen.
+- [x] Unit Tests nachziehen: Einheitenumrechnung und SidePanel absichern.
 - [ ] Konstantenbibliothek mit Kategorien planen: Mathematik, Physik, Informatik, Chemie.
 - [ ] Konstanten suchbar machen und in Standard/Wissenschaftlich einfügbar machen.
 - [ ] Favorisierte Konstanten persistent speichern.

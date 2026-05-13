@@ -15,6 +15,7 @@ public class GlobalActionBarPanel extends JPanel
     private final JLabel titleLabel = new JLabel("Taschenrechner");
     private final JButton angleModeButton = new JButton("DEG");
     private final JButton themeButton = new JButton("Theme");
+    private final JButton unitsButton = new JButton("Einheiten");
     private final JButton settingsButton = new JButton("⚙");
 
     private final JPopupMenu themePopupMenu = new JPopupMenu();
@@ -33,6 +34,8 @@ public class GlobalActionBarPanel extends JPanel
 
         angleModeButton.setFocusable(false);
         themeButton.setFocusable(false);
+        unitsButton.setFocusable(false);
+        unitsButton.setToolTipText("Einheitenumrechnung oeffnen");
         settingsButton.setFocusable(false);
         settingsButton.setToolTipText("Einstellungen öffnen");
 
@@ -42,6 +45,7 @@ public class GlobalActionBarPanel extends JPanel
 
         actionsPanel.add(angleModeButton);
         actionsPanel.add(themeButton);
+        actionsPanel.add(unitsButton);
         actionsPanel.add(settingsButton);
 
         add(titleLabel, BorderLayout.WEST);
@@ -125,6 +129,11 @@ public class GlobalActionBarPanel extends JPanel
         settingsButton.addActionListener(listener);
     }
 
+    public void setUnitsListener(java.awt.event.ActionListener listener)
+    {
+        unitsButton.addActionListener(listener);
+    }
+
     public void highlightSelectedTheme(ThemeType selectedTheme)
     {
         for (Map.Entry<ThemeType, JButton> entry : themeOptionButtons.entrySet())
@@ -153,6 +162,7 @@ public class GlobalActionBarPanel extends JPanel
 
         styleActionButton(angleModeButton, theme);
         styleActionButton(themeButton, theme);
+        styleActionButton(unitsButton, theme);
         styleIconButton(settingsButton, theme);
     }
 

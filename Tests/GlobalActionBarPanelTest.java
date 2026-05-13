@@ -38,6 +38,21 @@ public class GlobalActionBarPanelTest
         assertTrue(invoked.get());
     }
 
+    @Test
+    void actionBar_ShouldInvokeUnitsListener_WhenUnitsButtonIsClicked()
+    {
+        // Arrange
+        GlobalActionBarPanel panel = new GlobalActionBarPanel();
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        panel.setUnitsListener(e -> invoked.set(true));
+
+        // Act
+        findButton(panel, "Einheiten").doClick();
+
+        // Assert
+        assertTrue(invoked.get());
+    }
+
     private JButton findButton(Container container, String text)
     {
         for (Component component : container.getComponents())

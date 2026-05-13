@@ -23,6 +23,7 @@ import ui.settings.SettingsDialog;
 import ui.settings.SettingsPersistence;
 import ui.session.RechnerSession;
 import ui.session.SessionPersistence;
+import ui.units.EinheitenSidePanelHost;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -49,6 +50,7 @@ public class TaschenrechnerUI extends JFrame
     private final DisplayPanel displayPanel = new DisplayPanel();
     private final ModeContentHostPanel modeContentHostPanel = new ModeContentHostPanel();
     private final HistoryPanel historyPanel = new HistoryPanel();
+    private final EinheitenSidePanelHost einheitenSidePanelHost = new EinheitenSidePanelHost();
     private final Map<RechnerModus, JPanel> modePanels = new EnumMap<>(RechnerModus.class);
 
     private ShellActionRegistry shellActionRegistry;
@@ -125,7 +127,12 @@ public class TaschenrechnerUI extends JFrame
         JPanel centerArea = new JPanel(new BorderLayout(12, 0));
         centerArea.setOpaque(false);
         centerArea.add(modeContentHostPanel, BorderLayout.CENTER);
-        centerArea.add(historyPanel, BorderLayout.EAST);
+
+        JPanel sideArea = new JPanel(new BorderLayout(10, 0));
+        sideArea.setOpaque(false);
+        sideArea.add(einheitenSidePanelHost, BorderLayout.WEST);
+        sideArea.add(historyPanel, BorderLayout.EAST);
+        centerArea.add(sideArea, BorderLayout.EAST);
 
         contentPane.add(topArea, BorderLayout.NORTH);
         contentPane.add(centerArea, BorderLayout.CENTER);
@@ -174,6 +181,7 @@ public class TaschenrechnerUI extends JFrame
         });
 
         globalActionBarPanel.setThemeSelectionListener(this::setTheme);
+        globalActionBarPanel.setUnitsListener(e -> einheitenSidePanelHost.toggle());
         globalActionBarPanel.setSettingsListener(e -> SettingsDialog.showDialog(
                 this,
                 theme(),
@@ -315,6 +323,7 @@ public class TaschenrechnerUI extends JFrame
         modeBarPanel.setSelectedMode(aktuellerModus, theme());
         displayPanel.applyTheme(theme());
         historyPanel.applyTheme(theme());
+        einheitenSidePanelHost.applyTheme(theme());
 
         for (Map.Entry<RechnerModus, JPanel> entry : modePanels.entrySet())
         {
