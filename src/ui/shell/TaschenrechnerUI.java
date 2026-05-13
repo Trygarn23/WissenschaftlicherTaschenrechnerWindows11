@@ -8,6 +8,7 @@ import modes.graph.ui.GraphPanel;
 import modes.komplex.ui.KomplexPanel;
 import modes.matrix.ui.MatrixPanel;
 import modes.programmierer.ui.ProgrammiererPanel;
+import modes.statistik.ui.StatistikPanel;
 import modes.standard.ui.StandardPanel;
 import common.logic.BerechnungsErgebnis;
 import common.logic.RechnerService;
@@ -142,6 +143,7 @@ public class TaschenrechnerUI extends JFrame
         registerMode(RechnerModus.GRAPH, new GraphPanel());
         registerMode(RechnerModus.KOMPLEX, new KomplexPanel());
         registerMode(RechnerModus.MATRIX, new MatrixPanel());
+        registerMode(RechnerModus.STATISTIK, new StatistikPanel());
 
         setAktuellerModus(aktuellerModus);
     }

@@ -18,6 +18,7 @@ class ModeVisibilityPolicyTest
         assertFalse(ModeVisibilityPolicy.sollHistoryAnzeigen(RechnerModus.GRAPH));
         assertFalse(ModeVisibilityPolicy.sollHistoryAnzeigen(RechnerModus.KOMPLEX));
         assertFalse(ModeVisibilityPolicy.sollHistoryAnzeigen(RechnerModus.MATRIX));
+        assertFalse(ModeVisibilityPolicy.sollHistoryAnzeigen(RechnerModus.STATISTIK));
     }
 
     @Test
@@ -30,6 +31,7 @@ class ModeVisibilityPolicyTest
         assertFalse(ModeVisibilityPolicy.sollGlobalesDisplayAnzeigen(RechnerModus.PROGRAMMIERER));
         assertFalse(ModeVisibilityPolicy.sollGlobalesDisplayAnzeigen(RechnerModus.GRAPH));
         assertFalse(ModeVisibilityPolicy.sollGlobalesDisplayAnzeigen(RechnerModus.MATRIX));
+        assertFalse(ModeVisibilityPolicy.sollGlobalesDisplayAnzeigen(RechnerModus.STATISTIK));
     }
 
     @Test
@@ -38,5 +40,6 @@ class ModeVisibilityPolicyTest
         assertTrue(ModeVisibilityPolicy.sindStandardShortcutsAktiv(RechnerModus.STANDARD));
         assertTrue(ModeVisibilityPolicy.sindStandardShortcutsAktiv(RechnerModus.WISSENSCHAFTLICH));
         assertFalse(ModeVisibilityPolicy.sindStandardShortcutsAktiv(RechnerModus.PROGRAMMIERER));
+        assertFalse(ModeVisibilityPolicy.sindStandardShortcutsAktiv(RechnerModus.STATISTIK));
     }
 }

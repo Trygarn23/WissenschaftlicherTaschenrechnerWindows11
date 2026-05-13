@@ -297,13 +297,13 @@
 ---
 
 ## Statistikmodus
-- [ ] Statistikmodus als eigenen State planen: Datenliste, Sortierung, Klassen, optional Gewichte.
-- [ ] Eingabe per Textfeld, Tabelle und Paste aus Tabellenkalkulation planen.
-- [ ] Kennzahlen planen: Summe, Mittelwert, Median, Modus, Minimum, Maximum.
-- [ ] Streuung planen: Varianz, Standardabweichung, Spannweite, Quartile.
-- [ ] Regressionsfunktionen planen: linear, quadratisch optional später.
-- [ ] Diagramme planen: Histogramm, Boxplot, Streudiagramm.
-- [ ] Statistikmodus sauber von Graphmodus trennen.
+- [x] Statistikmodus als eigenen State planen: Datenliste, Sortierung, Klassen, optional Gewichte.
+- [x] Eingabe per Textfeld, Tabelle und Paste aus Tabellenkalkulation planen.
+- [x] Kennzahlen planen: Summe, Mittelwert, Median, Modus, Minimum, Maximum.
+- [x] Streuung planen: Varianz, Standardabweichung, Spannweite, Quartile.
+- [x] Regressionsfunktionen planen: linear, quadratisch optional später.
+- [x] Diagramme planen: Histogramm, Boxplot, Streudiagramm.
+- [x] Statistikmodus sauber von Graphmodus trennen.
 
 ---
 

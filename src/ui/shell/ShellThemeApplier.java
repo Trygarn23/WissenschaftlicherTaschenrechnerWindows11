@@ -5,6 +5,7 @@ import modes.graph.ui.GraphPanel;
 import modes.komplex.ui.KomplexPanel;
 import modes.matrix.ui.MatrixPanel;
 import modes.programmierer.ui.ProgrammiererPanel;
+import modes.statistik.ui.StatistikPanel;
 import modes.wissenschaftlich.ui.WissenschaftlichPanel;
 import ui.theme.AppTheme;
 
@@ -45,6 +46,12 @@ final class ShellThemeApplier
         if (component instanceof MatrixPanel matrixPanel)
         {
             matrixPanel.applyTheme(theme);
+            return;
+        }
+
+        if (component instanceof StatistikPanel statistikPanel)
+        {
+            statistikPanel.applyTheme(theme);
             return;
         }
 

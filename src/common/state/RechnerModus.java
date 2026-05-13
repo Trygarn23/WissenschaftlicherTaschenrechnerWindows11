@@ -6,7 +6,8 @@ public enum RechnerModus {
     PROGRAMMIERER("PRG"),
     GRAPH("Graph"),
     KOMPLEX("Komplex"),
-    MATRIX("Matrix");
+    MATRIX("Matrix"),
+    STATISTIK("Statistik");
 
     private final String label;
 

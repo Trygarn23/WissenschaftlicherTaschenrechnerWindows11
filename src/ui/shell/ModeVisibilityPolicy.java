@@ -13,7 +13,7 @@ final class ModeVisibilityPolicy
         return switch (modus)
         {
             case STANDARD, WISSENSCHAFTLICH -> true;
-            case PROGRAMMIERER, GRAPH, KOMPLEX, MATRIX -> false;
+            case PROGRAMMIERER, GRAPH, KOMPLEX, MATRIX, STATISTIK -> false;
         };
     }
 
@@ -21,7 +21,8 @@ final class ModeVisibilityPolicy
     {
         return modus != RechnerModus.PROGRAMMIERER
                 && modus != RechnerModus.GRAPH
-                && modus != RechnerModus.MATRIX;
+                && modus != RechnerModus.MATRIX
+                && modus != RechnerModus.STATISTIK;
     }
 
     static boolean sindStandardShortcutsAktiv(RechnerModus modus)
