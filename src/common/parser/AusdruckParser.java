@@ -2,14 +2,16 @@ package common.parser;
 
 import common.state.WinkelModus;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.List;
+import java.util.Map;
 
 public final class AusdruckParser
 {
-    private static final String UNARY_MINUS = "u-";
-    private static final String OPEN = "(";
-    private static final String CLOSE = ")";
-    private static final String MUL = "*";
+    private static final String UNARY_MINUS = AusdruckTokenizer.UNARY_MINUS;
+    private static final String OPEN = AusdruckTokenizer.OPEN;
+    private static final String CLOSE = AusdruckTokenizer.CLOSE;
 
     private static final Map<String, Integer> PRIORITY = Map.of(
             "+", 1,
@@ -19,15 +21,6 @@ public final class AusdruckParser
             "%", 2,
             "^", 3,
             UNARY_MINUS, 4
-    );
-
-    private static final Set<String> FUNCTIONS = Set.of(
-            "sin", "cos", "tan",
-            "asin", "acos", "atan",
-            "sinh", "cosh", "tanh",
-            "ln", "log", "sqrt", "abs", "exp",
-            "floor", "ceil", "round",
-            "rand"
     );
 
     private AusdruckParser()
@@ -43,31 +36,11 @@ public final class AusdruckParser
     {
         if (expr == null) throw parserFehler(ParserFehler.SYNTAX, "expr is null");
 
-        String normalized = normalize(expr);
-        normalized = ensureTrailingZero(normalized);
-
-        List<String> tokens = tokenize(normalized);
+        List<String> tokens = AusdruckTokenizer.tokenisiere(expr).stream()
+                .map(AusdruckToken::text)
+                .toList();
         List<String> postfix = toPostfix(tokens);
         return evalPostfix(postfix, ans, winkelModus, variablen == null ? Map.of() : variablen);
-    }
-
-    private static String normalize(String expr)
-    {
-        return expr
-                .replace('×', '*')
-                .replace('÷', '/')
-                .replace('−', '-')
-                .replace('–', '-')
-                .replace('—', '-')
-                .replaceAll("\\s+", "");
-    }
-
-    private static String ensureTrailingZero(String expr)
-    {
-        if (expr.isEmpty()) return expr;
-        char last = expr.charAt(expr.length() - 1);
-        if (last == ',' || last == '.') return expr + "0";
-        return expr;
     }
 
     private static boolean isRightAssociative(String op)
@@ -82,7 +55,7 @@ public final class AusdruckParser
 
     private static boolean isFunction(String t)
     {
-        return FUNCTIONS.contains(t);
+        return AusdruckTokenizer.isFunction(t);
     }
 
     private static boolean isIdentifier(String t)
@@ -90,101 +63,9 @@ public final class AusdruckParser
         return t != null && t.matches("[a-zA-Z]+");
     }
 
-    private static boolean isIdentifierChar(char c)
-    {
-        return Character.isLetter(c) || c == 'π';
-    }
-
-    private static List<String> tokenize(String expr)
-    {
-        List<String> tokens = new ArrayList<>();
-        StringBuilder number = new StringBuilder();
-        StringBuilder ident = new StringBuilder();
-        String prev = null;
-
-        for (int i = 0; i < expr.length(); i++)
-        {
-            char c = expr.charAt(i);
-
-            if (isIdentifierChar(c))
-            {
-                String flushedNumber = flush(number, tokens);
-                if (flushedNumber != null) prev = flushedNumber;
-
-                if (isValue(prev)) tokens.add(MUL);
-
-                ident.append(c);
-                while (i + 1 < expr.length() && isIdentifierChar(expr.charAt(i + 1)))
-                {
-                    ident.append(expr.charAt(++i));
-                }
-
-                String id = ident.toString().toLowerCase(Locale.ROOT).replace("π", "pi");
-                tokens.add(id);
-                ident.setLength(0);
-                prev = id;
-                continue;
-            }
-
-            boolean unaryNumber =
-                    c == '-' && number.isEmpty() &&
-                            (prev == null || isOperator(prev) || OPEN.equals(prev)) &&
-                            i + 1 < expr.length() &&
-                            (Character.isDigit(expr.charAt(i + 1)) || expr.charAt(i + 1) == ',');
-
-            if (Character.isDigit(c) || c == ',' || c == '.' || unaryNumber)
-            {
-                String flushedIdent = flush(ident, tokens);
-                if (flushedIdent != null) prev = flushedIdent;
-
-                if (number.isEmpty() && isValue(prev)) tokens.add(MUL);
-
-                number.append(c);
-                while (i + 1 < expr.length() && istTeilVonZahl(expr, i + 1, number))
-                {
-                    number.append(expr.charAt(++i));
-                }
-
-                prev = null;
-                continue;
-            }
-
-            String flushedNumber = flush(number, tokens);
-            if (flushedNumber != null) prev = flushedNumber;
-
-            String flushedIdent = flush(ident, tokens);
-            if (flushedIdent != null) prev = flushedIdent;
-
-            String t = String.valueOf(c);
-
-            if (OPEN.equals(t) && isValue(prev) && !isFunction(prev)) tokens.add(MUL);
-
-            if ("-".equals(t) &&
-                    (prev == null || isOperator(prev) || OPEN.equals(prev)) &&
-                    i + 1 < expr.length() &&
-                    !Character.isDigit(expr.charAt(i + 1)))
-            {
-                t = UNARY_MINUS;
-            }
-
-            if (isOperator(t) || OPEN.equals(t) || CLOSE.equals(t))
-            {
-                tokens.add(t);
-                prev = t;
-            } else
-            {
-                throw parserFehler(ParserFehler.SYNTAX, "Unknown token: " + t);
-            }
-        }
-
-        flush(number, tokens);
-        flush(ident, tokens);
-        return tokens;
-    }
-
     private static List<String> toPostfix(List<String> tokens)
     {
-        List<String> out = new ArrayList<>();
+        List<String> out = new java.util.ArrayList<>();
         Deque<String> stack = new ArrayDeque<>();
 
         for (int i = 0; i < tokens.size(); i++)
@@ -400,50 +281,8 @@ public final class AusdruckParser
         return new AusdruckParserException(fehler, message);
     }
 
-    private static boolean isValue(String t)
-    {
-        return t != null && (isNumber(t) || isIdentifier(t) || CLOSE.equals(t));
-    }
-
     private static boolean isNumber(String s)
     {
         return s != null && s.matches("-?(?:[0-9]+(?:[.,][0-9]+)?|[.,][0-9]+)(?:[eE][+-]?[0-9]+)?");
-    }
-
-    private static boolean istTeilVonZahl(String expr, int index, StringBuilder number)
-    {
-        char c = expr.charAt(index);
-
-        if (Character.isDigit(c) || c == ',' || c == '.')
-        {
-            return true;
-        }
-
-        String bisher = number.toString();
-
-        if ((c == 'e' || c == 'E') && !bisher.contains("e") && !bisher.contains("E"))
-        {
-            int exponentStart = index + 1;
-            if (exponentStart < expr.length() && (expr.charAt(exponentStart) == '+' || expr.charAt(exponentStart) == '-'))
-            {
-                exponentStart++;
-            }
-
-            return exponentStart < expr.length() && Character.isDigit(expr.charAt(exponentStart));
-        }
-
-        return (c == '+' || c == '-')
-                && !bisher.isEmpty()
-                && (bisher.endsWith("e") || bisher.endsWith("E"));
-    }
-
-    private static String flush(StringBuilder sb, List<String> out)
-    {
-        if (sb.isEmpty()) return null;
-
-        String token = sb.toString();
-        out.add(token);
-        sb.setLength(0);
-        return token;
     }
 }

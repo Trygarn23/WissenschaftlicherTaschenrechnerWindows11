@@ -6,6 +6,7 @@ import common.history.VerlaufService;
 import common.state.RechnerModus;
 import modes.graph.ui.GraphPanel;
 import modes.komplex.ui.KomplexPanel;
+import modes.matrix.ui.MatrixPanel;
 import modes.programmierer.ui.ProgrammiererPanel;
 import modes.standard.ui.StandardPanel;
 import common.logic.BerechnungsErgebnis;
@@ -139,6 +140,7 @@ public class TaschenrechnerUI extends JFrame
         registerMode(RechnerModus.PROGRAMMIERER, new ProgrammiererPanel());
         registerMode(RechnerModus.GRAPH, new GraphPanel());
         registerMode(RechnerModus.KOMPLEX, new KomplexPanel());
+        registerMode(RechnerModus.MATRIX, new MatrixPanel());
 
         setAktuellerModus(aktuellerModus);
     }
@@ -208,13 +210,13 @@ public class TaschenrechnerUI extends JFrame
         return switch (modus)
         {
             case STANDARD, WISSENSCHAFTLICH -> true;
-            case PROGRAMMIERER, GRAPH, KOMPLEX -> false;
+            case PROGRAMMIERER, GRAPH, KOMPLEX, MATRIX -> false;
         };
     }
 
     private boolean sollGlobalesDisplayAnzeigen(RechnerModus modus)
     {
-        return modus != RechnerModus.PROGRAMMIERER && modus != RechnerModus.GRAPH;
+        return modus != RechnerModus.PROGRAMMIERER && modus != RechnerModus.GRAPH && modus != RechnerModus.MATRIX;
     }
 
     private boolean sindStandardShortcutsAktiv()
@@ -352,6 +354,12 @@ public class TaschenrechnerUI extends JFrame
         if (component instanceof KomplexPanel komplexPanel)
         {
             komplexPanel.applyTheme(theme());
+            return;
+        }
+
+        if (component instanceof MatrixPanel matrixPanel)
+        {
+            matrixPanel.applyTheme(theme());
             return;
         }
 

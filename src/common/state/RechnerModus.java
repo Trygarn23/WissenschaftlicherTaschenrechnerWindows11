@@ -5,7 +5,8 @@ public enum RechnerModus {
     WISSENSCHAFTLICH("Wissenschaftlich"),
     PROGRAMMIERER("PRG"),
     GRAPH("Graph"),
-    KOMPLEX("Komplex");
+    KOMPLEX("Komplex"),
+    MATRIX("Matrix");
 
     private final String label;
 

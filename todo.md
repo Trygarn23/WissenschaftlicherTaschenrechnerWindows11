@@ -281,18 +281,18 @@
 ---
 
 ## Matrixmodus
-- [ ] Matrixmodus als eigenen Modus planen, nicht als Erweiterung des normalen Ausdruckparsers.
-- [ ] Package-Struktur planen: `modes.matrix.model`, `modes.matrix.logic`, `modes.matrix.ui`, `modes.matrix.formatting`.
-- [ ] Immutable `Matrix`-Modell planen: Zeilen, Spalten, Werte, Dimensionvalidierung.
-- [ ] Matrix-Erstellung im UI planen: Größenwahl, editierbares Raster, Beispielwerte, Clear.
-- [ ] Matrix-Grundoperationen planen: Addition, Subtraktion, Skalarmultiplikation.
-- [ ] Matrixmultiplikation mit Dimensionsprüfung planen.
-- [ ] Determinante für 2x2 und 3x3 starten, größere Matrizen später über Gauß.
+- [x] Matrixmodus als eigenen Modus planen, nicht als Erweiterung des normalen Ausdruckparsers.
+- [x] Package-Struktur planen: `modes.matrix.model`, `modes.matrix.logic`, `modes.matrix.ui`, `modes.matrix.formatting`.
+- [x] Immutable `Matrix`-Modell planen: Zeilen, Spalten, Werte, Dimensionvalidierung.
+- [x] Matrix-Erstellung im UI planen: Größenwahl, editierbares Raster, Beispielwerte, Clear.
+- [x] Matrix-Grundoperationen planen: Addition, Subtraktion, Skalarmultiplikation.
+- [x] Matrixmultiplikation mit Dimensionsprüfung planen.
+- [x] Determinante für 2x2 und 3x3 starten, größere Matrizen später über Gauß.
 - [ ] Inverse Matrix über Gauß-Jordan planen.
 - [ ] Rang, Transponieren und Spur planen.
 - [ ] Lineare Gleichungssysteme `Ax = b` als späteres Overkill-Feature planen.
-- [ ] Matrixformatierung planen: kompakte Anzeige, Copy/Paste als Tabellenformat, CSV-kompatibel.
-- [ ] Unit Tests nachziehen: Matrixmodus mit Dimensionsfehlern, Rundung, singulären Matrizen und großen Werten absichern.
+- [x] Matrixformatierung planen: kompakte Anzeige, Copy/Paste als Tabellenformat, CSV-kompatibel.
+- [x] Unit Tests nachziehen: Matrixmodus mit Dimensionsfehlern, Rundung, singulären Matrizen und großen Werten absichern.
 
 ---
 
@@ -397,7 +397,7 @@
 - [ ] Unit Tests nachziehen: Teststruktur langfristig in Standardstruktur überführen, z. B. `src/test/java`.
 - [x] README aktualisieren: Projektstruktur, Modi, Tastenkürzel, Build/Test-Anleitung.
 - [ ] README Screenshots ergänzen.
-- [ ] Parser weiter modularisieren: Tokenizer.
+- [x] Parser weiter modularisieren: Tokenizer.
 - [ ] Parser weiter modularisieren: PostfixKonverter.
 - [ ] Parser weiter modularisieren: PostfixAuswerter.
 - [ ] Parser weiter modularisieren: OperatorRegistry.
