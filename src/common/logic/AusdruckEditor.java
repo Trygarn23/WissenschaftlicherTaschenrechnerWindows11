@@ -153,7 +153,7 @@ public class AusdruckEditor
             }
 
             char letztesZeichen = letztesZeichen();
-            if (istOperatorZeichen(letztesZeichen) || letztesZeichen == '(')
+            if (AusdruckTermFinder.istOperatorZeichen(letztesZeichen) || letztesZeichen == '(')
             {
                 zustand.appendAusdruck("-");
                 return zustand.getAusdruckText();
@@ -350,7 +350,7 @@ public class AusdruckEditor
         if (zustand.isAusdruckLeer()) return true;
 
         char zeichen = letztesZeichen();
-        return istOperatorZeichen(zeichen) || zeichen == '(';
+        return AusdruckTermFinder.istOperatorZeichen(zeichen) || zeichen == '(';
     }
 
     private String letztenTermEinrahmen(String praefix, String suffix)
@@ -380,81 +380,7 @@ public class AusdruckEditor
 
     private int startLetzterTerm()
     {
-        int i = zustand.getAusdruckLaenge() - 1;
-        if (i < 0) return 0;
-
-        char letztesZeichen = zustand.getAusdruckZeichen(i);
-
-        if (letztesZeichen == ')')
-        {
-            int klammerStand = 1;
-            i--;
-
-            while (i >= 0 && klammerStand > 0)
-            {
-                char zeichen = zustand.getAusdruckZeichen(i);
-
-                if (zeichen == ')') klammerStand++;
-                else if (zeichen == '(') klammerStand--;
-
-                i--;
-            }
-
-            if (klammerStand != 0) return 0;
-
-            while (i >= 0 && Character.isLetter(zustand.getAusdruckZeichen(i)))
-            {
-                i--;
-            }
-
-            return bezieheUnaeresMinusEin(i + 1);
-        }
-
-        if (Character.isDigit(letztesZeichen) || letztesZeichen == ',' || letztesZeichen == '.')
-        {
-            while (i >= 0)
-            {
-                char zeichen = zustand.getAusdruckZeichen(i);
-
-                if (Character.isDigit(zeichen) || zeichen == ',' || zeichen == '.')
-                {
-                    i--;
-                } else
-                {
-                    break;
-                }
-            }
-
-            return bezieheUnaeresMinusEin(i + 1);
-        }
-
-        if (Character.isLetter(letztesZeichen))
-        {
-            while (i >= 0 && Character.isLetter(zustand.getAusdruckZeichen(i)))
-            {
-                i--;
-            }
-
-            return bezieheUnaeresMinusEin(i + 1);
-        }
-
-        return zustand.getAusdruckLaenge();
-    }
-
-    private int bezieheUnaeresMinusEin(int start)
-    {
-        if (start > 0 && zustand.getAusdruckZeichen(start - 1) == '-')
-        {
-            if (start - 1 == 0) return start - 1;
-
-            char davor = zustand.getAusdruckZeichen(start - 2);
-            if (istOperatorZeichen(davor) || davor == '(')
-            {
-                return start - 1;
-            }
-        }
-
-        return start;
+        return AusdruckTermFinder.startLetzterTerm(zustand.getAusdruckText());
     }
 
     private void resetNachGleichWennNoetig()
@@ -491,24 +417,10 @@ public class AusdruckEditor
     private boolean kannKlammerSchliessen()
     {
         if (zustand.isAusdruckLeer()) return false;
-        if (zaehleOffeneKlammern() <= 0) return false;
+        if (AusdruckTermFinder.zaehleOffeneKlammern(zustand.getAusdruckText()) <= 0) return false;
 
         char zeichen = letztesZeichen();
-        return !istOperatorZeichen(zeichen) && zeichen != '(';
-    }
-
-    private int zaehleOffeneKlammern()
-    {
-        int stand = 0;
-
-        for (int i = 0; i < zustand.getAusdruckLaenge(); i++)
-        {
-            char zeichen = zustand.getAusdruckZeichen(i);
-            if (zeichen == '(') stand++;
-            else if (zeichen == ')') stand--;
-        }
-
-        return stand;
+        return !AusdruckTermFinder.istOperatorZeichen(zeichen) && zeichen != '(';
     }
 
     private char letztesZeichen()
@@ -516,34 +428,9 @@ public class AusdruckEditor
         return zustand.getAusdruckZeichen(zustand.getAusdruckLaenge() - 1);
     }
 
-    private boolean istOperatorZeichen(char zeichen)
-    {
-        return "+-*/^%".indexOf(zeichen) >= 0;
-    }
-
     private int startLetzteZahl()
     {
-        int i = zustand.getAusdruckLaenge() - 1;
-
-        while (i >= 0)
-        {
-            char zeichen = zustand.getAusdruckZeichen(i);
-            if (Character.isDigit(zeichen) || zeichen == ',' || zeichen == '.') i--;
-            else break;
-        }
-
-        if (i >= 0 && zustand.getAusdruckZeichen(i) == '-')
-        {
-            if (i == 0) return 0;
-
-            char davor = zustand.getAusdruckZeichen(i - 1);
-            if (istOperatorZeichen(davor) || davor == '(')
-            {
-                return i;
-            }
-        }
-
-        return i + 1;
+        return AusdruckTermFinder.startLetzteZahl(zustand.getAusdruckText());
     }
 
     private double letzteZahlAlsDouble()

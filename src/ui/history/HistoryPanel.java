@@ -21,11 +21,13 @@ public class HistoryPanel extends JPanel
     private final DefaultListModel<VerlaufEintrag> filteredHistoryModel = new DefaultListModel<>();
 
     private final JTextField historySearchField = new JTextField();
+    private final JButton favoriteButton = new JButton("\u2606");
     private final JButton clearHistoryBtn = new JButton("Clear");
     private final JList<VerlaufEintrag> historyList = new JList<>(filteredHistoryModel);
     private final JScrollPane historyScroll = new JScrollPane(historyList);
 
     private ActionListener clearHistoryListener;
+    private ActionListener favoriteChangedListener;
     private Consumer<String> entryDoubleClickListener;
 
     private AppTheme currentTheme;
@@ -66,10 +68,19 @@ public class HistoryPanel extends JPanel
             }
         });
 
+        favoriteButton.setFocusable(false);
+        favoriteButton.setToolTipText("Favorit umschalten");
+        favoriteButton.addActionListener(e -> toggleSelectedFavorite());
+
+        JPanel historyActions = new JPanel(new GridLayout(1, 2, 6, 0));
+        historyActions.setOpaque(false);
+        historyActions.add(favoriteButton);
+        historyActions.add(clearHistoryBtn);
+
         JPanel historyTop = new JPanel(new BorderLayout(6, 6));
         historyTop.setOpaque(false);
         historyTop.add(historySearchField, BorderLayout.CENTER);
-        historyTop.add(clearHistoryBtn, BorderLayout.EAST);
+        historyTop.add(historyActions, BorderLayout.EAST);
 
         add(historyTop, BorderLayout.NORTH);
         add(historyScroll, BorderLayout.CENTER);
@@ -161,6 +172,11 @@ public class HistoryPanel extends JPanel
     public void setClearHistoryListener(ActionListener listener)
     {
         this.clearHistoryListener = listener;
+    }
+
+    public void setFavoriteChangedListener(ActionListener listener)
+    {
+        this.favoriteChangedListener = listener;
     }
 
     public void setEntryDoubleClickListener(Consumer<String> listener)
@@ -289,6 +305,12 @@ public class HistoryPanel extends JPanel
 
         historyScroll.getViewport().setBackground(theme.historyBackground());
 
+        favoriteButton.setBackground(theme.toggleButtonBackground());
+        favoriteButton.setForeground(theme.toggleButtonForeground());
+        favoriteButton.setBorderPainted(false);
+        favoriteButton.setOpaque(true);
+        favoriteButton.setFont(theme.buttonFont());
+
         clearHistoryBtn.setBackground(theme.specialButtonBackground());
         clearHistoryBtn.setForeground(theme.specialButtonForeground());
         clearHistoryBtn.setBorderPainted(false);
@@ -319,6 +341,77 @@ public class HistoryPanel extends JPanel
     int getVisibleEntryCountForTest()
     {
         return filteredHistoryModel.size();
+    }
+
+    String getVisibleEntryTextForTest(int index)
+    {
+        return rendererText(filteredHistoryModel.getElementAt(index));
+    }
+
+    void selectVisibleEntryForTest(int index)
+    {
+        historyList.setSelectedIndex(index);
+    }
+
+    void toggleSelectedFavoriteForTest()
+    {
+        toggleSelectedFavorite();
+    }
+
+    private void toggleSelectedFavorite()
+    {
+        int selectedIndex = historyList.getSelectedIndex();
+        if (selectedIndex < 0 || selectedIndex >= filteredHistoryModel.size())
+        {
+            return;
+        }
+
+        VerlaufEintrag selected = filteredHistoryModel.getElementAt(selectedIndex);
+        int modelIndex = findEntryIndex(selected);
+        if (modelIndex < 0)
+        {
+            return;
+        }
+
+        VerlaufEintrag updated = selected.toggleFavorit();
+        allHistoryModel.set(modelIndex, updated);
+        applyFilter();
+        selectUpdatedEntry(updated);
+
+        if (favoriteChangedListener != null)
+        {
+            favoriteChangedListener.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "favoriteChanged"));
+        }
+    }
+
+    private int findEntryIndex(VerlaufEintrag selected)
+    {
+        for (int i = 0; i < allHistoryModel.size(); i++)
+        {
+            if (allHistoryModel.getElementAt(i).equals(selected))
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void selectUpdatedEntry(VerlaufEintrag updated)
+    {
+        for (int i = 0; i < filteredHistoryModel.size(); i++)
+        {
+            if (filteredHistoryModel.getElementAt(i).equals(updated))
+            {
+                historyList.setSelectedIndex(i);
+                historyList.ensureIndexIsVisible(i);
+                return;
+            }
+        }
+    }
+
+    private String rendererText(VerlaufEintrag entry)
+    {
+        return (entry.isFavorit() ? "\u2605 " : "\u2606 ") + entry.toDisplayText();
     }
 
     private boolean matchesFilter(VerlaufEintrag entry)

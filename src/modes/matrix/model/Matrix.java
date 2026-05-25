@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 public final class Matrix
 {
+    private static final double RANG_TOLERANZ = 1e-10;
+
     private final int zeilen;
     private final int spalten;
     private final double[][] werte;
@@ -140,6 +142,57 @@ public final class Matrix
         throw new IllegalArgumentException("Determinante ist aktuell nur für 2x2 und 3x3 umgesetzt.");
     }
 
+    public Matrix transponiere()
+    {
+        double[][] result = new double[spalten][zeilen];
+        for (int z = 0; z < zeilen; z++)
+        {
+            for (int s = 0; s < spalten; s++)
+            {
+                result[s][z] = werte[z][s];
+            }
+        }
+        return new Matrix(result);
+    }
+
+    public double spur()
+    {
+        if (zeilen != spalten)
+        {
+            throw new IllegalArgumentException("Spur ist nur fÃ¼r quadratische Matrizen definiert.");
+        }
+
+        double summe = 0.0;
+        for (int i = 0; i < zeilen; i++)
+        {
+            summe += werte[i][i];
+        }
+        return summe;
+    }
+
+    public int rang()
+    {
+        double[][] arbeitskopie = toArray();
+        int rang = 0;
+        int pivotZeile = 0;
+
+        for (int spalte = 0; spalte < spalten && pivotZeile < zeilen; spalte++)
+        {
+            int besteZeile = findePivotZeile(arbeitskopie, pivotZeile, spalte);
+            if (Math.abs(arbeitskopie[besteZeile][spalte]) <= RANG_TOLERANZ)
+            {
+                continue;
+            }
+
+            tauscheZeilen(arbeitskopie, pivotZeile, besteZeile);
+            eliminiereSpalte(arbeitskopie, pivotZeile, spalte);
+            pivotZeile++;
+            rang++;
+        }
+
+        return rang;
+    }
+
     private Matrix kombiniere(Matrix andere, double faktor)
     {
         double[][] result = new double[zeilen][spalten];
@@ -171,6 +224,56 @@ public final class Matrix
         if (zeilen <= 0 || spalten <= 0)
         {
             throw new IllegalArgumentException("Matrixdimensionen müssen positiv sein.");
+        }
+    }
+
+    private int findePivotZeile(double[][] matrix, int startZeile, int spalte)
+    {
+        int besteZeile = startZeile;
+        double besterWert = Math.abs(matrix[startZeile][spalte]);
+        for (int z = startZeile + 1; z < zeilen; z++)
+        {
+            double wert = Math.abs(matrix[z][spalte]);
+            if (wert > besterWert)
+            {
+                besterWert = wert;
+                besteZeile = z;
+            }
+        }
+        return besteZeile;
+    }
+
+    private void tauscheZeilen(double[][] matrix, int ersteZeile, int zweiteZeile)
+    {
+        if (ersteZeile == zweiteZeile)
+        {
+            return;
+        }
+
+        double[] tmp = matrix[ersteZeile];
+        matrix[ersteZeile] = matrix[zweiteZeile];
+        matrix[zweiteZeile] = tmp;
+    }
+
+    private void eliminiereSpalte(double[][] matrix, int pivotZeile, int pivotSpalte)
+    {
+        double pivot = matrix[pivotZeile][pivotSpalte];
+        for (int z = pivotZeile + 1; z < zeilen; z++)
+        {
+            double faktor = matrix[z][pivotSpalte] / pivot;
+            if (Math.abs(faktor) <= RANG_TOLERANZ)
+            {
+                continue;
+            }
+
+            for (int s = pivotSpalte; s < spalten; s++)
+            {
+                matrix[z][s] -= faktor * matrix[pivotZeile][s];
+                if (Math.abs(matrix[z][s]) <= RANG_TOLERANZ)
+                {
+                    matrix[z][s] = 0.0;
+                }
+            }
         }
     }
 

@@ -162,7 +162,7 @@ class ProgrammiererOptionsPanel extends JPanel
             if (!isActive(button))
             {
                 button.setBackground(ProgrammiererButtonStyler.hoverBackground(
-                        ProgrammiererButtonStyler.modeButtonBackground(currentTheme, false)));
+                        ProgrammiererButtonStyler.modeButtonBackground(currentTheme, false), currentTheme));
             }
         }
 
@@ -181,7 +181,7 @@ class ProgrammiererOptionsPanel extends JPanel
             if (!isActive(button))
             {
                 button.setBackground(ProgrammiererButtonStyler.pressedBackground(
-                        ProgrammiererButtonStyler.modeButtonBackground(currentTheme, false)));
+                        ProgrammiererButtonStyler.modeButtonBackground(currentTheme, false), currentTheme));
             }
         }
 
@@ -191,7 +191,7 @@ class ProgrammiererOptionsPanel extends JPanel
             if (!isActive(button))
             {
                 button.setBackground(ProgrammiererButtonStyler.hoverBackground(
-                        ProgrammiererButtonStyler.modeButtonBackground(currentTheme, false)));
+                        ProgrammiererButtonStyler.modeButtonBackground(currentTheme, false), currentTheme));
             }
         }
     }

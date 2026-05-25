@@ -22,6 +22,9 @@ public class MatrixPanelTest
         assertEquals(1, countComponents(panel, JTextArea.class));
         assertNotNull(findButton(panel, "A + B"));
         assertNotNull(findButton(panel, "A × B"));
+        assertNotNull(findButton(panel, "A^T"));
+        assertNotNull(findButton(panel, "spur A"));
+        assertNotNull(findButton(panel, "rang A"));
         assertNotNull(findButton(panel, "det A"));
     }
 

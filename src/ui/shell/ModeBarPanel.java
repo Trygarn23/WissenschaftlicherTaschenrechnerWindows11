@@ -55,7 +55,7 @@ public class ModeBarPanel extends JPanel {
                             ? theme.modeButtonActiveBackground()
                             : theme.modeButtonInactiveBackground()
             );
-            button.setForeground(Color.WHITE);
+            button.setForeground(theme.modeButtonForeground(aktiv));
             button.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(theme.modeBorder(), 1),
                     BorderFactory.createEmptyBorder(12, 14, 12, 14)

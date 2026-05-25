@@ -297,7 +297,7 @@ public class GraphPanel extends JPanel
         statusLabel.setText(text);
         if (theme != null)
         {
-            statusLabel.setForeground(ok ? theme.secondaryDisplayForeground() : theme.operatorButtonBackground());
+            statusLabel.setForeground(ok ? theme.secondaryDisplayForeground() : theme.dangerBackground());
         }
     }
 

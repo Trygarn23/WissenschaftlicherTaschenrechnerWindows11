@@ -32,7 +32,7 @@ final class HistoryEntryRenderer extends DefaultListCellRenderer
     {
         JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-        String text = value instanceof VerlaufEintrag eintrag ? eintrag.toDisplayText() : "";
+        String text = value instanceof VerlaufEintrag eintrag ? favoritePrefix(eintrag) + eintrag.toDisplayText() : "";
         String query = normalizedQuery();
 
         if (!query.isEmpty())
@@ -87,6 +87,11 @@ final class HistoryEntryRenderer extends DefaultListCellRenderer
     {
         AppTheme theme = themeSupplier.get();
         return theme != null ? theme.historySelectionBackground() : new Color(70, 70, 70);
+    }
+
+    private String favoritePrefix(VerlaufEintrag eintrag)
+    {
+        return eintrag.isFavorit() ? "\u2605 " : "\u2606 ";
     }
 
     private static String escapeHtml(String text)

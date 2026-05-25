@@ -289,7 +289,7 @@
 - [x] Matrixmultiplikation mit Dimensionsprüfung planen.
 - [x] Determinante für 2x2 und 3x3 starten, größere Matrizen später über Gauß.
 - [ ] Inverse Matrix über Gauß-Jordan planen.
-- [ ] Rang, Transponieren und Spur planen.
+- [x] Rang, Transponieren und Spur umsetzen.
 - [ ] Lineare Gleichungssysteme `Ax = b` als späteres Overkill-Feature planen.
 - [x] Matrixformatierung planen: kompakte Anzeige, Copy/Paste als Tabellenformat, CSV-kompatibel.
 - [x] Unit Tests nachziehen: Matrixmodus mit Dimensionsfehlern, Rundung, singulären Matrizen und großen Werten absichern.
@@ -337,7 +337,7 @@
 ## Verlauf / History
 - [x] Verlauf mit Zeitstempel erweitern.
 - [x] Verlauf nach Modus kennzeichnen.
-- [ ] Favoriten im Verlauf ermöglichen.
+- [x] Favoriten im Verlauf ermöglichen.
 - [ ] Verlauf exportieren.
 - [x] Verlauf erst nach Einführung einer strukturierten `VerlaufEintrag`-Klasse erweitern.
 - [x] `VerlaufEintrag` als Modell einführen.
@@ -350,8 +350,8 @@
 - [x] History-Suche über Ausdruck und Ergebnis ermöglichen.
 - [x] History-Suche über Modus ermöglichen.
 - [ ] History-Suche über Datum optional planen.
-- [ ] Favoriten im UI anzeigen.
-- [ ] Favoriten persistent speichern.
+- [x] Favoriten im UI anzeigen.
+- [x] Favoriten persistent speichern.
 - [ ] Verlaufseinträge löschen: einzeln.
 - [ ] Verlaufseinträge löschen: alle.
 - [ ] Verlaufseinträge löschen: nur aktueller Modus.
@@ -366,7 +366,7 @@
 - [ ] History bei Programmierer/Graph/Komplex bewusst ausblenden oder modusspezifisch machen.
 - [x] Unit Tests nachziehen: Verlaufsladen alter Dateien absichern.
 - [x] Unit Tests nachgezogen: Verlaufsspeichern strukturierter Einträge absichern.
-- [ ] Unit Tests nachziehen: Favoriten absichern.
+- [x] Unit Tests nachziehen: Favoriten absichern.
 - [ ] Unit Tests nachziehen: Export absichern.
 
 ---
@@ -393,7 +393,7 @@
 - [x] `WissenschaftlichRechnerService` langfristig entfernen oder als Deprecated-Adapter markieren.
 - [ ] `WissenschaftlichRechnerService`-Adapter aus Tests entfernen, sobald kein Kompatibilitätsbedarf mehr besteht.
 - [ ] `ShellActionRegistry` weiter beobachten: Wird sie zu groß?
-- [ ] Persistence-Orchestrierung aus `TaschenrechnerUI` in einen Shell-Service auslagern.
+- [x] Persistence-Orchestrierung aus `TaschenrechnerUI` in einen Shell-Service auslagern.
 - [ ] `GraphPanel`, `MatrixPanel` und `AusdruckEditor` in weiteren sicheren Schritten verkleinern.
 - [ ] Gemeinsame Theme-Hilfen für einfache Mode-Panels prüfen, ohne Spezialpanels zu verbiegen.
 - [ ] Optional `StandardActionFactory` nur einführen, falls Standardaktionen wachsen.
@@ -411,12 +411,14 @@
 - [ ] Parser weiter modularisieren: FunktionsRegistry.
 - [ ] Parser weiter modularisieren, bevor CAS-/Matrix-/Statistikfeatures auf ihn aufbauen.
 - [x] `RechnerZustand` stärker kapseln und direkte `StringBuilder`-Zugriffe reduzieren.
-- [ ] Unit Tests nachziehen: `BerechnungsService` stärker über Ergebnisobjekte statt Strings absichern.
+- [x] Unit Tests nachziehen: `BerechnungsService` stärker über Ergebnisobjekte statt Strings absichern.
 - [ ] Fehlerbehandlung vereinheitlichen.
 - [ ] Einheitliches `ModePanel`-Konzept planen: Jeder Modus bekommt klare Methoden für Theme, Fokus, Reset und optionale History.
 - [ ] Gemeinsames `ModeState`-Konzept entwerfen, ohne Spezialzustände wie Graph/Komplex/PRG in `RechnerZustand` zu quetschen.
 - [ ] Theme-Duplikation reduzieren, z. B. über `ThemePalette` oder Basisklasse.
 - [ ] Theme-System um semantische Rollen erweitern: Display, Function, Operator, Danger, Accent, Disabled, Grid, Canvas.
+- [x] Theme Default-Rollen für Disabled, Hover, Pressed, Danger, Grid, Canvas und Popup ergänzen.
+- [x] Action-Bar-Popup und Graph-Canvas auf semantische Theme-Rollen umstellen.
 - [ ] Benutzerdefinierte Themes erst nach Theme-Palette planen.
 - [ ] Layouts auf gemeinsame Hilfsmethoden reduzieren.
 - [ ] Große UI-Klassen verkleinern: `TaschenrechnerUI`, `ProgrammiererPanel`, `HistoryPanel`.
@@ -426,6 +428,7 @@
 - [x] `TaschenrechnerUI` Theme-Rekursion in `ShellThemeApplier` auslagern.
 - [x] Modus-Sichtbarkeitsregeln in `ModeVisibilityPolicy` auslagern.
 - [x] Ausdruck-/Clipboard-Normalisierung aus `AusdruckEditor` auslagern.
+- [x] `AusdruckEditor` Term- und Zahlenpositionslogik in package-private Helper auslagern.
 - [x] Legacy-Verlaufstext-Mapping aus `HistoryPanel` nach `common.history` verschieben.
 - [x] Hardcoded Start-Hintergrund aus `ProgrammiererPanel` entfernen.
 - [x] `ProgrammiererPanel` nach Funktionalitätsabschluss aufteilen.

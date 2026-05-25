@@ -20,6 +20,7 @@ public class GlobalActionBarPanel extends JPanel
 
     private final JPopupMenu themePopupMenu = new JPopupMenu();
     private final Map<ThemeType, JButton> themeOptionButtons = new LinkedHashMap<>();
+    private AppTheme currentTheme;
 
     private Consumer<ThemeType> themeSelectionListener;
 
@@ -56,11 +57,9 @@ public class GlobalActionBarPanel extends JPanel
     {
         JPanel popupContent = new JPanel(new BorderLayout(0, 10));
         popupContent.setBorder(new EmptyBorder(10, 10, 10, 10));
-        popupContent.setBackground(new Color(28, 28, 28));
 
         JLabel popupTitle = new JLabel("Theme auswählen");
         popupTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        popupTitle.setForeground(Color.WHITE);
 
         JPanel themeGrid = new JPanel(new GridLayout(0, 2, 8, 8));
         themeGrid.setOpaque(false);
@@ -76,7 +75,6 @@ public class GlobalActionBarPanel extends JPanel
         popupContent.add(popupTitle, BorderLayout.NORTH);
         popupContent.add(themeGrid, BorderLayout.CENTER);
 
-        themePopupMenu.setBorder(BorderFactory.createLineBorder(new Color(55, 55, 55), 1));
         themePopupMenu.add(popupContent);
     }
 
@@ -85,8 +83,6 @@ public class GlobalActionBarPanel extends JPanel
         JButton optionButton = new JButton(label);
         optionButton.setFocusable(false);
         optionButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        optionButton.setBackground(new Color(55, 55, 55));
-        optionButton.setForeground(Color.WHITE);
         optionButton.setBorderPainted(false);
         optionButton.setOpaque(true);
         optionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -143,22 +139,25 @@ public class GlobalActionBarPanel extends JPanel
 
             if (selected)
             {
-                button.setBackground(new Color(24, 153, 219));
-                button.setForeground(Color.WHITE);
+                button.setBackground(currentTheme == null ? button.getBackground() : currentTheme.popupSelectedBackground());
+                button.setForeground(currentTheme == null ? button.getForeground() : currentTheme.popupSelectedForeground());
             } else
             {
-                button.setBackground(new Color(55, 55, 55));
-                button.setForeground(Color.WHITE);
+                button.setBackground(currentTheme == null ? button.getBackground() : currentTheme.popupOptionBackground());
+                button.setForeground(currentTheme == null ? button.getForeground() : currentTheme.popupOptionForeground());
             }
         }
     }
 
     public void applyTheme(AppTheme theme)
     {
+        this.currentTheme = theme;
         setBackground(theme.windowBackground());
 
         titleLabel.setForeground(theme.displayForeground());
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        themePopupMenu.setBorder(BorderFactory.createLineBorder(theme.modeBorder(), 1));
+        applyThemeToPopup(themePopupMenu, theme);
 
         styleActionButton(angleModeButton, theme);
         styleActionButton(themeButton, theme);
@@ -184,5 +183,30 @@ public class GlobalActionBarPanel extends JPanel
         button.setMargin(new Insets(0, 0, 0, 0));
         button.setPreferredSize(new Dimension(42, 42));
         button.setMinimumSize(new Dimension(42, 42));
+    }
+
+    private void applyThemeToPopup(Component component, AppTheme theme)
+    {
+        if (component instanceof JButton button)
+        {
+            button.setBackground(theme.popupOptionBackground());
+            button.setForeground(theme.popupOptionForeground());
+        }
+        else if (component instanceof JLabel label)
+        {
+            label.setForeground(theme.popupForeground());
+        }
+        else if (component instanceof JPanel panel)
+        {
+            panel.setBackground(theme.popupBackground());
+        }
+
+        if (component instanceof Container container)
+        {
+            for (Component child : container.getComponents())
+            {
+                applyThemeToPopup(child, theme);
+            }
+        }
     }
 }

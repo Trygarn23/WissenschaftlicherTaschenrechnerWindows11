@@ -233,7 +233,7 @@ public class KomplexPanel extends JPanel
         state.setStatus(message == null || message.isBlank() ? "Ungültige Eingabe" : message);
         if (theme != null)
         {
-            statusLabel.setForeground(theme.operatorButtonBackground());
+            statusLabel.setForeground(theme.dangerBackground());
         }
         else
         {

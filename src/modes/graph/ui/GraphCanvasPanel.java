@@ -80,10 +80,10 @@ public class GraphCanvasPanel extends JPanel
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         AppTheme activeTheme = theme;
-        Color background = activeTheme == null ? new Color(18, 18, 18) : activeTheme.displayBackground();
+        Color background = activeTheme == null ? new Color(18, 18, 18) : activeTheme.canvasBackground();
         Color foreground = activeTheme == null ? Color.WHITE : activeTheme.displayForeground();
         Color secondary = activeTheme == null ? new Color(150, 150, 150) : activeTheme.secondaryDisplayForeground();
-        Color grid = blend(background, foreground, 0.18);
+        Color grid = activeTheme == null ? blend(background, foreground, 0.18) : activeTheme.gridColor();
 
         g.setColor(background);
         g.fillRect(0, 0, getWidth(), getHeight());
@@ -232,10 +232,11 @@ public class GraphCanvasPanel extends JPanel
             return;
         }
 
-        Color nullstelle = new Color(30, 190, 120);
-        Color extremum = new Color(255, 190, 60);
-        Color wendestelle = new Color(190, 120, 255);
-        Color yAchse = new Color(70, 190, 255);
+        AppTheme activeTheme = theme;
+        Color nullstelle = activeTheme == null ? new Color(30, 190, 120) : activeTheme.graphNullstelleColor();
+        Color extremum = activeTheme == null ? new Color(255, 190, 60) : activeTheme.graphExtremumColor();
+        Color wendestelle = activeTheme == null ? new Color(190, 120, 255) : activeTheme.graphWendestelleColor();
+        Color yAchse = activeTheme == null ? new Color(70, 190, 255) : activeTheme.graphYAchseColor();
 
         zeichneMarker(g, kurvendiskussionResult.getYAchsenSchnittpunkt(), yAchse, background, "Y");
 

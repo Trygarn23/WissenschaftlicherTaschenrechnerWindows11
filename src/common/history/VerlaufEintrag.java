@@ -50,6 +50,21 @@ public final class VerlaufEintrag
         return favorit;
     }
 
+    public VerlaufEintrag withFavorit(boolean favorit)
+    {
+        if (this.favorit == favorit)
+        {
+            return this;
+        }
+
+        return new VerlaufEintrag(ausdruck, ergebnis, modus, zeitpunkt, favorit);
+    }
+
+    public VerlaufEintrag toggleFavorit()
+    {
+        return withFavorit(!favorit);
+    }
+
     public String toLegacyText()
     {
         if (ergebnis.isBlank())

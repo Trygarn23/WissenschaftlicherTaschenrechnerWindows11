@@ -191,7 +191,7 @@ class ProgrammiererTastenPanel extends JPanel
         return ProgrammiererButtonStyler.buttonForeground(text, currentTheme);
     }
 
-    private static class ButtonHoverAdapter extends MouseAdapter
+    private class ButtonHoverAdapter extends MouseAdapter
     {
         private final JButton button;
 
@@ -204,21 +204,21 @@ class ProgrammiererTastenPanel extends JPanel
         public void mousePressed(MouseEvent e)
         {
             if (!button.isEnabled()) return;
-            button.setBackground(ProgrammiererButtonStyler.pressedBackground(baseColor()));
+            button.setBackground(ProgrammiererButtonStyler.pressedBackground(baseColor(), currentTheme));
         }
 
         @Override
         public void mouseReleased(MouseEvent e)
         {
             if (!button.isEnabled()) return;
-            button.setBackground(ProgrammiererButtonStyler.hoverBackground(baseColor()));
+            button.setBackground(ProgrammiererButtonStyler.hoverBackground(baseColor(), currentTheme));
         }
 
         @Override
         public void mouseEntered(MouseEvent e)
         {
             if (!button.isEnabled()) return;
-            button.setBackground(ProgrammiererButtonStyler.hoverBackground(baseColor()));
+            button.setBackground(ProgrammiererButtonStyler.hoverBackground(baseColor(), currentTheme));
         }
 
         @Override

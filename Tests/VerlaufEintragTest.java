@@ -44,4 +44,24 @@ public class VerlaufEintragTest
         assertEquals(erster, zweiter);
         assertEquals(erster.hashCode(), zweiter.hashCode());
     }
+
+    @Test
+    void verlaufEintrag_ShouldCreateFavoriteCopies_WhenFavoriteChanges()
+    {
+        // Arrange
+        LocalDateTime zeitpunkt = LocalDateTime.of(2026, 5, 8, 12, 0);
+        VerlaufEintrag eintrag = new VerlaufEintrag("2+3", "5", RechnerModus.STANDARD, zeitpunkt, false);
+
+        // Act
+        VerlaufEintrag favorit = eintrag.withFavorit(true);
+        VerlaufEintrag normal = favorit.toggleFavorit();
+
+        // Assert
+        assertFalse(eintrag.isFavorit());
+        assertTrue(favorit.isFavorit());
+        assertFalse(normal.isFavorit());
+        assertEquals(eintrag.getAusdruck(), favorit.getAusdruck());
+        assertEquals(eintrag.getErgebnis(), favorit.getErgebnis());
+        assertEquals(eintrag.getZeitpunkt(), favorit.getZeitpunkt());
+    }
 }

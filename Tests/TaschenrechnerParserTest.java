@@ -71,6 +71,20 @@ public class TaschenrechnerParserTest
     }
 
     @Test
+    void auswerten_ShouldSupportImplicitMultiplication_WithFunctionConstantAndParentheses()
+    {
+        // Act
+        double functionActual = AusdruckParser.auswerten("2sin(30)", 0.0, WinkelModus.DEG);
+        double constantGroupActual = AusdruckParser.auswerten("pi(2+1)", 0.0, WinkelModus.DEG);
+        double groupedActual = AusdruckParser.auswerten("(1+2)(3+4)", 0.0, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(1.0, functionActual, 1e-10);
+        assertEquals(3.0 * Math.PI, constantGroupActual, 1e-10);
+        assertEquals(21.0, groupedActual, EPSILON);
+    }
+
+    @Test
     void auswerten_ShouldSupportConstants_WhenPiAndEAreUsed()
     {
         // Arrange
@@ -143,6 +157,26 @@ public class TaschenrechnerParserTest
         // Assert
         assertEquals(0.000012, commaActual, EPSILON);
         assertEquals(1200.0, dotActual, EPSILON);
+    }
+
+    @Test
+    void auswerten_ShouldKeepScientificNotationStableInsideLongerExpression()
+    {
+        // Act
+        double actual = AusdruckParser.auswerten("1e3+2,5e-1", 0.0, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(1000.25, actual, EPSILON);
+    }
+
+    @Test
+    void auswerten_ShouldNormalizeUnicodeOperators()
+    {
+        // Act
+        double actual = AusdruckParser.auswerten("6\u00d77\u22122\u00f72", 0.0, WinkelModus.DEG);
+
+        // Assert
+        assertEquals(41.0, actual, EPSILON);
     }
 
     @Test
@@ -328,6 +362,18 @@ public class TaschenrechnerParserTest
                 () -> AusdruckParser.auswerten(unknownVariable, 0.0, WinkelModus.DEG));
         assertThrows(IllegalArgumentException.class,
                 () -> AusdruckParser.auswerten(unknownFunction, 0.0, WinkelModus.DEG));
+    }
+
+    @Test
+    void auswerten_ShouldExposeSpecificParserError_WhenUnknownIdentifierIsUsed()
+    {
+        AusdruckParserException variableException = assertThrows(AusdruckParserException.class,
+                () -> AusdruckParser.auswerten("1+a", 0.0, WinkelModus.DEG));
+        AusdruckParserException functionException = assertThrows(AusdruckParserException.class,
+                () -> AusdruckParser.auswerten("foo(2)", 0.0, WinkelModus.DEG));
+
+        assertEquals(ParserFehler.UNBEKANNTE_FUNKTION, variableException.getFehler());
+        assertEquals(ParserFehler.UNBEKANNTE_FUNKTION, functionException.getFehler());
     }
 
     @Test

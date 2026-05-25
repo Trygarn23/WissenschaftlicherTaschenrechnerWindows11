@@ -73,4 +73,49 @@ public class MatrixTest
         assertEquals(-2, twoByTwo.determinante(), 1e-10);
         assertEquals(-306, threeByThree.determinante(), 1e-10);
     }
+
+    @Test
+    void transponiere_ShouldSwapRowsAndColumns()
+    {
+        Matrix matrix = new Matrix(new double[][]{{1, 2, 3}, {4, 5, 6}});
+
+        Matrix transponiert = matrix.transponiere();
+
+        assertEquals(new Matrix(new double[][]{{1, 4}, {2, 5}, {3, 6}}), transponiert);
+        assertEquals(new Matrix(new double[][]{{1, 2, 3}, {4, 5, 6}}), matrix);
+    }
+
+    @Test
+    void spur_ShouldCalculateTraceForTwoByTwoAndThreeByThree()
+    {
+        Matrix twoByTwo = new Matrix(new double[][]{{1, 2}, {3, 4}});
+        Matrix threeByThree = new Matrix(new double[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}});
+
+        assertEquals(5, twoByTwo.spur(), 1e-10);
+        assertEquals(15, threeByThree.spur(), 1e-10);
+    }
+
+    @Test
+    void spur_ShouldRejectNonSquareMatrix()
+    {
+        Matrix matrix = new Matrix(new double[][]{{1, 2, 3}, {4, 5, 6}});
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, matrix::spur);
+
+        assertTrue(exception.getMessage().contains("quadratische"));
+    }
+
+    @Test
+    void rang_ShouldCalculateRankForFullSingularZeroAndRectangularMatrices()
+    {
+        Matrix full = new Matrix(new double[][]{{1, 2}, {3, 4}});
+        Matrix singular = new Matrix(new double[][]{{1, 2}, {2, 4}});
+        Matrix zero = Matrix.nullMatrix(3, 3);
+        Matrix rectangular = new Matrix(new double[][]{{1, 2, 3}, {2, 4, 6}, {1, 1, 0}});
+
+        assertEquals(2, full.rang());
+        assertEquals(1, singular.rang());
+        assertEquals(0, zero.rang());
+        assertEquals(2, rectangular.rang());
+    }
 }

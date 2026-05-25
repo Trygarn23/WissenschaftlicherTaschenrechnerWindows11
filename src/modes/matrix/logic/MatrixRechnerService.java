@@ -28,4 +28,19 @@ public class MatrixRechnerService
     {
         return matrix.determinante();
     }
+
+    public Matrix transponiere(Matrix matrix)
+    {
+        return matrix.transponiere();
+    }
+
+    public double spur(Matrix matrix)
+    {
+        return matrix.spur();
+    }
+
+    public int rang(Matrix matrix)
+    {
+        return matrix.rang();
+    }
 }

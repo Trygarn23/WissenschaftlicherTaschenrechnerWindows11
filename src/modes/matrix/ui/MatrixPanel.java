@@ -101,6 +101,12 @@ public class MatrixPanel extends JPanel
         controls.add(createButton("A - B", () -> showMatrix(service.subtrahiere(readA(), readB()), "Subtraktion")));
         controls.add(createButton("A × B", () -> showMatrix(service.multipliziere(readA(), readB()), "Multiplikation")));
         controls.add(createButton("k × A", () -> showMatrix(service.skalarMultiplizieren(readA(), parse(skalarField)), "Skalarmultiplikation")));
+        controls.add(createButton("A^T", () -> showMatrix(service.transponiere(readA()), "Transponieren A")));
+        controls.add(createButton("B^T", () -> showMatrix(service.transponiere(readB()), "Transponieren B")));
+        controls.add(createButton("spur A", () -> showScalar(service.spur(readA()), "Spur A")));
+        controls.add(createButton("spur B", () -> showScalar(service.spur(readB()), "Spur B")));
+        controls.add(createButton("rang A", () -> showScalar(service.rang(readA()), "Rang A")));
+        controls.add(createButton("rang B", () -> showScalar(service.rang(readB()), "Rang B")));
         controls.add(createButton("det A", () -> showScalar(service.determinante(readA()), "Determinante A")));
         controls.add(createButton("det B", () -> showScalar(service.determinante(readB()), "Determinante B")));
         controls.add(wrapScalarInput());
@@ -291,7 +297,7 @@ public class MatrixPanel extends JPanel
         statusLabel.setText(message == null || message.isBlank() ? "Ungültige Matrixeingabe" : message);
         if (theme != null)
         {
-            statusLabel.setForeground(theme.operatorButtonBackground());
+            statusLabel.setForeground(theme.dangerBackground());
         }
         resultArea.setText("Fehler");
     }

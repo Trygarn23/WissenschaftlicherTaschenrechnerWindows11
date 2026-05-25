@@ -53,6 +53,25 @@ public class VerlaufServiceTest
     }
 
     @Test
+    void speichereStrukturierteEintraege_ShouldKeepFavoriteFlag()
+    {
+        // Arrange
+        InMemoryVerlaufRepository repository = new InMemoryVerlaufRepository();
+        VerlaufService service = new VerlaufService(repository);
+        VerlaufEintrag eintrag = service.erstelleEintrag("9-4", "5", RechnerModus.STANDARD).withFavorit(true);
+
+        // Act
+        service.speichereStrukturierteEintraege(List.of(eintrag));
+        List<VerlaufEintrag> geladen = service.ladeStrukturierteEintraege(RechnerModus.STANDARD);
+
+        // Assert
+        assertEquals(1, geladen.size());
+        assertTrue(geladen.getFirst().isFavorit());
+        assertEquals("9-4", geladen.getFirst().getAusdruck());
+        assertEquals("5", geladen.getFirst().getErgebnis());
+    }
+
+    @Test
     void ladeEintraege_ShouldExposeLegacyText_WhenStructuredEntriesAreStored()
     {
         // Arrange

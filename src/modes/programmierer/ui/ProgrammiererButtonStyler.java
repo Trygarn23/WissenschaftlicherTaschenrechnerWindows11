@@ -67,58 +67,27 @@ final class ProgrammiererButtonStyler
 
     static Color modeButtonForeground(AppTheme theme, boolean active)
     {
-        return active ? readableForeground(theme.modeButtonActiveBackground()) : theme.functionButtonForeground();
+        return theme.modeButtonForeground(active);
     }
 
     static Color disabledBackground(AppTheme theme)
     {
-        return mix(theme.functionButtonBackground(), theme.panelBackground(), 0.65);
+        return theme.disabledButtonBackground();
     }
 
     static Color disabledForeground(AppTheme theme)
     {
-        return mix(theme.functionButtonForeground(), disabledBackground(theme), 0.45);
+        return theme.disabledButtonForeground();
     }
 
-    static Color hoverBackground(Color color)
+    static Color hoverBackground(Color color, AppTheme theme)
     {
-        return adjustForInteraction(color, 0.14);
+        return theme.hoverBackground(color);
     }
 
-    static Color pressedBackground(Color color)
+    static Color pressedBackground(Color color, AppTheme theme)
     {
-        return adjustForInteraction(color, -0.16);
-    }
-
-    private static Color adjustForInteraction(Color color, double strength)
-    {
-        Color target = luminance(color) < 0.5 ? Color.WHITE : Color.BLACK;
-        return mix(color, target, Math.abs(strength));
-    }
-
-    private static Color readableForeground(Color background)
-    {
-        return luminance(background) < 0.55 ? Color.WHITE : Color.BLACK;
-    }
-
-    private static Color mix(Color base, Color target, double targetWeight)
-    {
-        double baseWeight = 1.0 - targetWeight;
-        return new Color(
-                clamp((int) Math.round(base.getRed() * baseWeight + target.getRed() * targetWeight)),
-                clamp((int) Math.round(base.getGreen() * baseWeight + target.getGreen() * targetWeight)),
-                clamp((int) Math.round(base.getBlue() * baseWeight + target.getBlue() * targetWeight))
-        );
-    }
-
-    private static int clamp(int value)
-    {
-        return Math.max(0, Math.min(255, value));
-    }
-
-    private static double luminance(Color color)
-    {
-        return (0.2126 * color.getRed() + 0.7152 * color.getGreen() + 0.0722 * color.getBlue()) / 255.0;
+        return theme.pressedBackground(color);
     }
 
     private static boolean isDigit(String text)

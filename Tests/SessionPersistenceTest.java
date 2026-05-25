@@ -75,6 +75,26 @@ public class SessionPersistenceTest
     }
 
     @Test
+    void sessionPersistence_ShouldUseDefaults_WhenFileIsMissing()
+    {
+        // Arrange
+        SessionPersistence persistence = new SessionPersistence(tempDir.resolve("missing-session.properties"));
+
+        // Act
+        RechnerSession loaded = persistence.lade();
+
+        // Assert
+        assertEquals(RechnerSession.VERSION, loaded.getVersion());
+        assertEquals(RechnerModus.STANDARD, loaded.getAktiverModus());
+        assertEquals("", loaded.getAusdruck());
+        assertEquals("", loaded.getVerlauf());
+        assertEquals(List.of(), loaded.getHistoryEintraege());
+        assertEquals(WinkelModus.DEG, loaded.getWinkelModus());
+        assertEquals(ThemeType.DARK, loaded.getThemeType());
+        assertEquals(ZahlenFormatModus.AUTO, loaded.getZahlenFormatModus());
+    }
+
+    @Test
     void sessionPersistence_ShouldFallbackPerField_WhenValuesAreBroken() throws Exception
     {
         // Arrange

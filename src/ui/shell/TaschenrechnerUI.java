@@ -1,8 +1,6 @@
 package ui.shell;
 
-import common.history.DateiVerlaufRepository;
 import common.history.VerlaufEintrag;
-import common.history.VerlaufService;
 import common.state.RechnerModus;
 import modes.graph.ui.GraphPanel;
 import modes.komplex.ui.KomplexPanel;
@@ -20,9 +18,6 @@ import ui.settings.AppSettings;
 import ui.theme.ThemeManager;
 import ui.theme.ThemeType;
 import ui.settings.SettingsDialog;
-import ui.settings.SettingsPersistence;
-import ui.session.RechnerSession;
-import ui.session.SessionPersistence;
 import ui.units.EinheitenSidePanelHost;
 
 import javax.swing.*;
@@ -36,12 +31,10 @@ import java.util.Map;
 public class TaschenrechnerUI extends JFrame
 {
     private final ThemeManager themeManager = new ThemeManager();
-    private final SettingsPersistence settingsPersistence = new SettingsPersistence();
-    private final SessionPersistence sessionPersistence = new SessionPersistence();
-    private AppSettings appSettings = settingsPersistence.lade();
+    private final ShellPersistenceService persistenceService = new ShellPersistenceService();
+    private AppSettings appSettings = persistenceService.ladeSettings();
     private final RechnerService rechner = new RechnerService();
     private final WissenschaftlichOperationen wissenschaftlichOperationen = new WissenschaftlichOperationen(rechner.getAusdruckEditor());
-    private final VerlaufService verlaufService = new VerlaufService(new DateiVerlaufRepository());
 
     private RechnerModus aktuellerModus = appSettings.getStartModus();
 
@@ -174,7 +167,7 @@ public class TaschenrechnerUI extends JFrame
         globalActionBarPanel.setAngleModeListener(e -> {
             rechner.winkelModusUmschalten();
             appSettings.setWinkelModus(rechner.getWinkelModus());
-            settingsPersistence.speichere(appSettings);
+            persistenceService.speichereSettings(appSettings);
             aktualisiereGraphWinkelmodus();
             globalActionBarPanel.setAngleModeText(rechner.getWinkelModus().name());
             refreshWithExtraInfo(rechner.getWinkelModus().name());
@@ -191,6 +184,7 @@ public class TaschenrechnerUI extends JFrame
                 this::ladeSession
         ));
         historyPanel.setClearHistoryListener(e -> speichereVerlauf());
+        historyPanel.setFavoriteChangedListener(e -> speichereVerlauf());
         historyPanel.setEntryDoubleClickListener(this::useHistoryEntryResult);
         displayPanel.setPasteListener(this::pasteDisplayText);
     }
@@ -199,7 +193,7 @@ public class TaschenrechnerUI extends JFrame
     {
         aktuellerModus = modus;
         appSettings.setStartModus(modus);
-        settingsPersistence.speichere(appSettings);
+        persistenceService.speichereSettings(appSettings);
 
         modeBarPanel.setSelectedMode(modus, themeManager.getCurrentTheme());
         modeContentHostPanel.showMode(modus);
@@ -283,7 +277,7 @@ public class TaschenrechnerUI extends JFrame
     {
         boolean historySettingChanged = appSettings.isHistoryEnabled() != settings.isHistoryEnabled();
         appSettings = settings.copy();
-        settingsPersistence.speichere(appSettings);
+        persistenceService.speichereSettings(appSettings);
         applySettingsToServices();
         themeManager.setTheme(appSettings.getThemeType());
         if (historySettingChanged)
@@ -356,37 +350,29 @@ public class TaschenrechnerUI extends JFrame
     {
         if (entry == null || entry.isBlank()) return;
 
-        VerlaufEintrag verlaufEintrag = verlaufService.erstelleEintragAusText(entry, aktuellerModus);
+        VerlaufEintrag verlaufEintrag = persistenceService.erstelleVerlaufEintrag(entry, aktuellerModus);
         historyPanel.addStructuredEntry(verlaufEintrag);
         speichereVerlauf();
     }
 
     private void ladeVerlauf()
     {
-        historyPanel.setAllStructuredEntries(appSettings.isHistoryEnabled()
-                ? verlaufService.ladeStrukturierteEintraege(RechnerModus.STANDARD)
-                : java.util.List.of());
+        historyPanel.setAllStructuredEntries(persistenceService.ladeVerlauf(appSettings));
     }
 
     private void speichereVerlauf()
     {
-        if (appSettings.isHistoryEnabled())
-        {
-            verlaufService.speichereStrukturierteEintraege(historyPanel.getAllStructuredEntries());
-        }
+        persistenceService.speichereVerlauf(appSettings, historyPanel.getAllStructuredEntries());
     }
 
     private void speichereFenstergroesse()
     {
-        appSettings.setFensterBreite(getWidth());
-        appSettings.setFensterHoehe(getHeight());
-        settingsPersistence.speichere(appSettings);
+        persistenceService.speichereFenstergroesse(appSettings, getWidth(), getHeight());
     }
 
     private void speichereSession()
     {
-        sessionPersistence.speichere(new RechnerSession(
-                RechnerSession.VERSION,
+        persistenceService.speichereSession(new ShellSessionData(
                 aktuellerModus,
                 rechner.getAusdruckText(),
                 rechner.getVerlauf(),
@@ -401,25 +387,25 @@ public class TaschenrechnerUI extends JFrame
 
     private void ladeSession()
     {
-        RechnerSession session = sessionPersistence.lade();
+        ShellSessionData session = persistenceService.ladeSession();
 
-        appSettings.setThemeType(session.getThemeType());
-        appSettings.setStartModus(session.getAktiverModus());
-        appSettings.setWinkelModus(session.getWinkelModus());
-        appSettings.setZahlenFormatModus(session.getZahlenFormatModus());
-        appSettings.setNachkommastellen(session.getNachkommastellen());
-        settingsPersistence.speichere(appSettings);
+        appSettings.setThemeType(session.themeType());
+        appSettings.setStartModus(session.aktiverModus());
+        appSettings.setWinkelModus(session.winkelModus());
+        appSettings.setZahlenFormatModus(session.zahlenFormatModus());
+        appSettings.setNachkommastellen(session.nachkommastellen());
+        persistenceService.speichereSettings(appSettings);
 
-        rechner.setWinkelModus(session.getWinkelModus());
-        rechner.setZahlenFormatModus(session.getZahlenFormatModus());
-        rechner.setNachkommastellen(session.getNachkommastellen());
-        rechner.setAusdruckText(session.getAusdruck());
-        rechner.setVerlauf(session.getVerlauf());
-        rechner.setSpeicherWert(session.getSpeicherWert());
+        rechner.setWinkelModus(session.winkelModus());
+        rechner.setZahlenFormatModus(session.zahlenFormatModus());
+        rechner.setNachkommastellen(session.nachkommastellen());
+        rechner.setAusdruckText(session.ausdruck());
+        rechner.setVerlauf(session.verlauf());
+        rechner.setSpeicherWert(session.speicherWert());
 
-        historyPanel.setAllEntries(session.getHistoryEintraege());
-        themeManager.setTheme(session.getThemeType());
-        setAktuellerModus(session.getAktiverModus());
+        historyPanel.setAllEntries(session.historyEintraege());
+        themeManager.setTheme(session.themeType());
+        setAktuellerModus(session.aktiverModus());
         applyCurrentTheme();
         refresh();
     }

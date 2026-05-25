@@ -49,7 +49,7 @@ public class CustomTheme implements AppTheme
     @Override
     public Color secondaryDisplayForeground()
     {
-        return blend(colors.displayForeground(), colors.displayBackground(), 0.68);
+        return blend(colors.displayBackground(), colors.displayForeground(), 0.68);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class CustomTheme implements AppTheme
     @Override
     public Color historyForeground()
     {
-        return contrastFor(colors.panelBackground());
+        return contrastForeground(colors.panelBackground());
     }
 
     @Override
@@ -73,13 +73,13 @@ public class CustomTheme implements AppTheme
     @Override
     public Color historySearchBackground()
     {
-        return blend(colors.panelBackground(), Color.BLACK, 0.82);
+        return blend(colors.panelBackground(), Color.BLACK, 0.18);
     }
 
     @Override
     public Color placeholderForeground()
     {
-        return blend(contrastFor(colors.panelBackground()), colors.panelBackground(), 0.55);
+        return blend(colors.panelBackground(), contrastForeground(colors.panelBackground()), 0.55);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class CustomTheme implements AppTheme
     @Override
     public Color modeBorder()
     {
-        return blend(colors.accentBackground(), colors.panelBackground(), 0.55);
+        return blend(colors.panelBackground(), colors.accentBackground(), 0.55);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class CustomTheme implements AppTheme
     @Override
     public Color numberButtonForeground()
     {
-        return contrastFor(colors.numberButtonBackground());
+        return contrastForeground(colors.numberButtonBackground());
     }
 
     @Override
@@ -127,7 +127,7 @@ public class CustomTheme implements AppTheme
     @Override
     public Color operatorButtonForeground()
     {
-        return contrastFor(colors.operatorButtonBackground());
+        return contrastForeground(colors.operatorButtonBackground());
     }
 
     @Override
@@ -139,7 +139,7 @@ public class CustomTheme implements AppTheme
     @Override
     public Color functionButtonForeground()
     {
-        return contrastFor(colors.functionButtonBackground());
+        return contrastForeground(colors.functionButtonBackground());
     }
 
     @Override
@@ -151,7 +151,7 @@ public class CustomTheme implements AppTheme
     @Override
     public Color specialButtonForeground()
     {
-        return contrastFor(colors.accentBackground());
+        return contrastForeground(colors.accentBackground());
     }
 
     @Override
@@ -163,7 +163,7 @@ public class CustomTheme implements AppTheme
     @Override
     public Color toggleButtonForeground()
     {
-        return contrastFor(colors.accentBackground());
+        return contrastForeground(colors.accentBackground());
     }
 
     @Override
@@ -184,20 +184,4 @@ public class CustomTheme implements AppTheme
         return fallback.secondaryDisplayFont();
     }
 
-    private Color contrastFor(Color color)
-    {
-        double luminance = (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255.0;
-        return luminance > 0.58 ? Color.BLACK : Color.WHITE;
-    }
-
-    private Color blend(Color foreground, Color background, double foregroundWeight)
-    {
-        double fg = Math.max(0.0, Math.min(1.0, foregroundWeight));
-        double bg = 1.0 - fg;
-        return new Color(
-                (int) Math.round(foreground.getRed() * fg + background.getRed() * bg),
-                (int) Math.round(foreground.getGreen() * fg + background.getGreen() * bg),
-                (int) Math.round(foreground.getBlue() * fg + background.getBlue() * bg)
-        );
-    }
 }
