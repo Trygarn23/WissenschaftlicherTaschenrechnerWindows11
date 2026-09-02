@@ -27,10 +27,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,22 +46,34 @@ public class GraphPanel extends JPanel implements ModePanel
     private final GraphCanvasPanel canvasPanel = new GraphCanvasPanel(state, evaluator);
 
     private final JLabel statusLabel = new JLabel("Bereit");
+    private final JLabel analysisTitleLabel = new JLabel("Kurvendiskussion");
+    private final JLabel functionValueHeaderLabel = new JLabel("f(x)");
+    private final JLabel firstDerivativeHeaderLabel = new JLabel("f'(x)");
+    private final JLabel secondDerivativeHeaderLabel = new JLabel("f''(x)");
     private final JTextArea analysisArea = new JTextArea();
     private final JSpinner tableStepSpinner = new JSpinner(new SpinnerNumberModel(1.0, 0.25, 10.0, 0.25));
+    private final JPanel expressionRows = new JPanel(new GridLayout(0, 1, 0, 8));
+    private final JScrollPane functionScrollPane = new JScrollPane(expressionRows);
     private final List<JLabel> xLabels = new ArrayList<>();
     private final List<JLabel> valueLabels = new ArrayList<>();
     private final List<JTextField> expressionFields = new ArrayList<>();
     private final List<JCheckBox> visibleChecks = new ArrayList<>();
+    private final List<JButton> functionButtons = new ArrayList<>();
+    private final List<JButton> removeButtons = new ArrayList<>();
 
     private AppTheme theme;
     private WinkelModus winkelModus = WinkelModus.DEG;
+    private double tableCenterX;
 
     public GraphPanel()
     {
         setLayout(new BorderLayout(12, 0));
         setOpaque(true);
         setBorder(new EmptyBorder(0, 0, 0, 0));
+        evaluator.setFunktionen(state.getFunktionen());
         canvasPanel.setViewportChangedListener(this::updateAnalysis);
+        canvasPanel.setFunctionSelectionListener(this::selectFunction);
+        canvasPanel.setPointSelectionListener(this::useAnalysisPoint);
 
         add(buildSidebar(), BorderLayout.WEST);
         add(canvasPanel, BorderLayout.CENTER);
@@ -97,54 +112,70 @@ public class GraphPanel extends JPanel implements ModePanel
         analysisArea.setForeground(theme.displayForeground());
         analysisArea.setBorder(ModernButtonStyler.cardBorder(theme));
         tableStepSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        functionScrollPane.setBorder(BorderFactory.createLineBorder(theme.cardBorder()));
+        functionScrollPane.getViewport().setBackground(theme.panelBackground());
         applyThemeToChildren(this);
+        updateFunctionSelectionStyles();
 
         repaint();
     }
 
     private JPanel buildSidebar()
     {
-        JPanel sidebar = new JPanel(new BorderLayout(0, 14));
+        JPanel sidebar = new JPanel(new BorderLayout(0, 10));
         sidebar.setOpaque(false);
         sidebar.setPreferredSize(new Dimension(300, 0));
 
-        JPanel form = new JPanel(new BorderLayout(0, 10));
+        JPanel form = new JPanel(new BorderLayout(0, 6));
         form.setOpaque(false);
 
         JLabel title = new JLabel("Funktionen");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        title.setFont(new Font("Segoe UI", Font.BOLD, 19));
 
-        JPanel expressionRows = new JPanel(new GridLayout(0, 1, 0, 8));
+        JPanel titleRow = new JPanel(new BorderLayout(8, 0));
+        titleRow.setOpaque(false);
+        titleRow.add(title, BorderLayout.WEST);
+        JButton addFunctionButton = createCompactButton(
+                "+ Funktion",
+                "Noch eine Funktion hinzufügen",
+                this::addFunction
+        );
+        titleRow.add(addFunctionButton, BorderLayout.EAST);
+
         expressionRows.setOpaque(false);
-        for (int i = 0; i < state.getFunktionen().size(); i++)
-        {
-            expressionRows.add(buildFunctionRow(i));
-        }
+        rebuildFunctionRows();
 
-        form.add(title, BorderLayout.NORTH);
-        form.add(expressionRows, BorderLayout.CENTER);
+        functionScrollPane.setBorder(BorderFactory.createEmptyBorder());
+        functionScrollPane.setOpaque(false);
+        functionScrollPane.getViewport().setOpaque(false);
+        functionScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        functionScrollPane.getVerticalScrollBar().setUnitIncrement(18);
+        functionScrollPane.setPreferredSize(new Dimension(300, 126));
+
+        form.add(titleRow, BorderLayout.NORTH);
+        form.add(functionScrollPane, BorderLayout.CENTER);
         form.add(statusLabel, BorderLayout.SOUTH);
 
-        JPanel controls = new JPanel(new GridLayout(0, 2, 8, 8));
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         controls.setOpaque(false);
-        controls.add(createButton("Zeichnen", this::plot));
-        controls.add(createButton("Zurücksetzen", () -> {
+        controls.add(createCompactButton("Zeichnen", "Funktionen neu zeichnen", this::plot));
+        controls.add(createCompactButton("Reset", "Graphansicht zurücksetzen", () -> {
             state.resetAnsicht();
             updateAnalysis();
             canvasPanel.repaint();
         }));
-        controls.add(createButton("Zoom +", () -> {
+        controls.add(createCompactButton("+", "In den Graphen hineinzoomen", () -> {
             state.zoom(0.75);
             updateAnalysis();
             canvasPanel.repaint();
         }));
-        controls.add(createButton("Zoom -", () -> {
+        controls.add(createCompactButton("−", "Aus dem Graphen herauszoomen", () -> {
             state.zoom(1.35);
             updateAnalysis();
             canvasPanel.repaint();
         }));
 
-        JPanel north = new JPanel(new BorderLayout(0, 18));
+        JPanel north = new JPanel(new BorderLayout(0, 10));
         north.setOpaque(false);
         north.add(form, BorderLayout.NORTH);
         north.add(controls, BorderLayout.CENTER);
@@ -156,7 +187,7 @@ public class GraphPanel extends JPanel implements ModePanel
 
     private JPanel buildBottomPanel()
     {
-        JPanel bottom = new JPanel(new BorderLayout(0, 12));
+        JPanel bottom = new JPanel(new BorderLayout(0, 8));
         bottom.setOpaque(false);
         bottom.add(buildMiniTable(), BorderLayout.NORTH);
         bottom.add(buildAnalysisPanel(), BorderLayout.CENTER);
@@ -177,9 +208,9 @@ public class GraphPanel extends JPanel implements ModePanel
         JPanel table = new JPanel(new GridLayout(0, 4, 8, 6));
         table.setOpaque(false);
         table.add(new JLabel("x"));
-        table.add(new JLabel("f(x)"));
-        table.add(new JLabel("f'(x)"));
-        table.add(new JLabel("f''(x)"));
+        table.add(functionValueHeaderLabel);
+        table.add(firstDerivativeHeaderLabel);
+        table.add(secondDerivativeHeaderLabel);
         for (int row = -2; row <= 2; row++)
         {
             JLabel xLabel = new JLabel(" ");
@@ -203,8 +234,7 @@ public class GraphPanel extends JPanel implements ModePanel
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setOpaque(false);
 
-        JLabel title = new JLabel("Kurvendiskussion");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        analysisTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         analysisArea.setEditable(false);
         analysisArea.setFocusable(false);
@@ -216,7 +246,7 @@ public class GraphPanel extends JPanel implements ModePanel
         scrollPane.setOpaque(false);
         scrollPane.getViewport().setOpaque(false);
 
-        panel.add(title, BorderLayout.NORTH);
+        panel.add(analysisTitleLabel, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
         return panel;
     }
@@ -230,21 +260,43 @@ public class GraphPanel extends JPanel implements ModePanel
         return button;
     }
 
+    private JButton createCompactButton(String text, String tooltip, Runnable action)
+    {
+        JButton button = createButton(text, action);
+        button.putClientProperty("compactGraphControl", Boolean.TRUE);
+        button.setToolTipText(tooltip);
+        button.setMargin(new java.awt.Insets(3, 8, 3, 8));
+        return button;
+    }
+
     private JPanel buildFunctionRow(int index)
     {
         JPanel row = new JPanel(new BorderLayout(8, 0));
         row.setOpaque(false);
 
-        JLabel swatch = new JLabel(state.getFunktion(index).getName());
+        JButton swatch = new JButton(state.getFunktion(index).getName());
         swatch.setHorizontalAlignment(JLabel.CENTER);
         swatch.setOpaque(true);
-        swatch.setPreferredSize(new Dimension(28, 42));
+        swatch.setPreferredSize(new Dimension(28, 36));
         swatch.setBackground(state.getFunktion(index).getFarbe());
         swatch.setForeground(Color.WHITE);
         swatch.putClientProperty("graphSwatch", Boolean.TRUE);
+        swatch.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        swatch.setToolTipText("Kurvendiskussion für diese Funktion anzeigen");
+        swatch.addActionListener(e -> selectFunction(index));
+        functionButtons.add(swatch);
 
         JTextField field = new JTextField(state.getFunktion(index).getAusdruck());
+        field.setToolTipText("Andere Funktionen gehen als f(x) oder kurz als f");
         field.addActionListener(e -> plot());
+        field.addFocusListener(new FocusAdapter()
+        {
+            @Override
+            public void focusGained(FocusEvent e)
+            {
+                selectFunction(index);
+            }
+        });
         expressionFields.add(field);
 
         JCheckBox visible = new JCheckBox();
@@ -256,21 +308,133 @@ public class GraphPanel extends JPanel implements ModePanel
         });
         visibleChecks.add(visible);
 
+        JButton remove = new JButton("×");
+        remove.setFocusable(false);
+        remove.putClientProperty("compactGraphControl", Boolean.TRUE);
+        remove.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        remove.setToolTipText("Funktion entfernen");
+        remove.addActionListener(e -> removeFunction(index));
+        removeButtons.add(remove);
+
+        JPanel rowActions = new JPanel(new BorderLayout(4, 0));
+        rowActions.setOpaque(false);
+        rowActions.add(visible, BorderLayout.WEST);
+        rowActions.add(remove, BorderLayout.EAST);
+
         row.add(swatch, BorderLayout.WEST);
         row.add(field, BorderLayout.CENTER);
-        row.add(visible, BorderLayout.EAST);
+        row.add(rowActions, BorderLayout.EAST);
         return row;
+    }
+
+    private void rebuildFunctionRows()
+    {
+        expressionFields.clear();
+        visibleChecks.clear();
+        functionButtons.clear();
+        removeButtons.clear();
+        expressionRows.removeAll();
+
+        for (int index = 0; index < state.getFunktionen().size(); index++)
+        {
+            expressionRows.add(buildFunctionRow(index));
+        }
+
+        expressionRows.revalidate();
+        expressionRows.repaint();
+        updateFunctionSelectionStyles();
+    }
+
+    private void addFunction()
+    {
+        syncFunctionsFromUi();
+        state.fuegeFunktionHinzu("x");
+        rebuildFunctionRows();
+        if (theme != null)
+        {
+            applyTheme(theme);
+        }
+        plot();
+        expressionFields.get(state.getAktiveFunktionIndex()).requestFocusInWindow();
+    }
+
+    private void removeFunction(int index)
+    {
+        syncFunctionsFromUi();
+        if (!state.entferneFunktion(index))
+        {
+            setStatus("Eine Funktion muss bleiben", false);
+            return;
+        }
+
+        rebuildFunctionRows();
+        if (theme != null)
+        {
+            applyTheme(theme);
+        }
+        plot();
+    }
+
+    private void selectFunction(int index)
+    {
+        syncFunctionsFromUi();
+        state.setAktiveFunktion(index);
+        updateFunctionSelectionStyles();
+        updateTableHeaders();
+        plot();
+    }
+
+    private void updateFunctionSelectionStyles()
+    {
+        for (int index = 0; index < functionButtons.size(); index++)
+        {
+            JButton button = functionButtons.get(index);
+            Color farbe = state.getFunktion(index).getFarbe();
+            boolean aktiv = index == state.getAktiveFunktionIndex();
+            Color rahmen = theme == null
+                    ? (aktiv ? Color.WHITE : farbe.darker())
+                    : (aktiv ? theme.focusBorder() : theme.cardBorder());
+            button.setBackground(farbe);
+            button.setForeground(theme == null ? Color.WHITE : theme.contrastForeground(farbe));
+            button.setBorder(BorderFactory.createLineBorder(rahmen, aktiv ? 3 : 1));
+        }
+
+        boolean kannEntfernen = state.getFunktionen().size() > 1;
+        for (JButton removeButton : removeButtons)
+        {
+            removeButton.setEnabled(kannEntfernen);
+        }
+    }
+
+    private void updateTableHeaders()
+    {
+        String name = state.getAktiveFunktion().getName();
+        functionValueHeaderLabel.setText(name + "(x)");
+        firstDerivativeHeaderLabel.setText(name + "'(x)");
+        secondDerivativeHeaderLabel.setText(name + "''(x)");
+        analysisTitleLabel.setText("Kurvendiskussion · " + name + "(x)");
+    }
+
+    private void useAnalysisPoint(GraphPunkt punkt)
+    {
+        tableCenterX = punkt.getX();
+        updateMiniTable();
+        setStatus("Punkt " + formatPoint(punkt) + " in die Wertetabelle übernommen", true);
     }
 
     private void plot()
     {
         syncFunctionsFromUi();
 
-        String ausdruck = state.getHauptfunktion().getAusdruck();
+        updateTableHeaders();
+        updateFunctionSelectionStyles();
+        String ausdruck = state.getAktiveFunktion().getAusdruck();
         if (ausdruck.isBlank())
         {
             setStatus("Bitte Funktion eingeben", false);
             analysisArea.setText("Gib mir eine Funktion, ich mal dir was.");
+            canvasPanel.setKurvendiskussionResult(null);
+            canvasPanel.repaint();
             return;
         }
 
@@ -278,10 +442,12 @@ public class GraphPanel extends JPanel implements ModePanel
         {
             setStatus("Ausdruck kann nicht gezeichnet werden", false);
             analysisArea.setText("Kurvendiskussion nicht möglich.");
+            canvasPanel.setKurvendiskussionResult(null);
+            canvasPanel.repaint();
             return;
         }
 
-        setStatus("Zeichne " + state.getHauptfunktion().getName() + "(x) = " + ausdruck, true);
+        setStatus("Zeichne " + state.getAktiveFunktion().getName() + "(x) = " + ausdruck, true);
         updateMiniTable();
         updateAnalysis();
         canvasPanel.pulseRefresh();
@@ -295,6 +461,7 @@ public class GraphPanel extends JPanel implements ModePanel
             state.getFunktion(i).setAusdruck(expressionFields.get(i).getText().trim());
             state.getFunktion(i).setSichtbar(visibleChecks.get(i).isSelected());
         }
+        evaluator.setFunktionen(state.getFunktionen());
     }
 
     private void setStatus(String text, boolean ok)
@@ -313,7 +480,7 @@ public class GraphPanel extends JPanel implements ModePanel
             int row = i / 3;
             int column = i % 3;
             double step = (Double) tableStepSpinner.getValue();
-            double x = (row - 2) * step;
+            double x = tableCenterX + (row - 2) * step;
             if (column == 0)
             {
                 xLabels.get(row).setText(format(x));
@@ -322,9 +489,9 @@ public class GraphPanel extends JPanel implements ModePanel
             {
                 double y = switch (column)
                 {
-                    case 0 -> evaluator.auswerten(state.getHauptfunktion().getAusdruck(), x, winkelModus);
-                    case 1 -> evaluator.ersteAbleitung(state.getHauptfunktion().getAusdruck(), x, winkelModus);
-                    case 2 -> evaluator.zweiteAbleitung(state.getHauptfunktion().getAusdruck(), x, winkelModus);
+                    case 0 -> evaluator.auswerten(state.getAktiveFunktion().getAusdruck(), x, winkelModus);
+                    case 1 -> evaluator.ersteAbleitung(state.getAktiveFunktion().getAusdruck(), x, winkelModus);
+                    case 2 -> evaluator.zweiteAbleitung(state.getAktiveFunktion().getAusdruck(), x, winkelModus);
                     default -> Double.NaN;
                 };
                 valueLabels.get(i).setText(Double.isFinite(y) ? format(y) : "undef.");
@@ -341,7 +508,7 @@ public class GraphPanel extends JPanel implements ModePanel
         try
         {
             KurvendiskussionResult result = kurvendiskussionService.analysiere(
-                    state.getHauptfunktion().getAusdruck(),
+                    state.getAktiveFunktion().getAusdruck(),
                     state.getXMin(),
                     state.getXMax(),
                     winkelModus
@@ -364,24 +531,41 @@ public class GraphPanel extends JPanel implements ModePanel
                 + "Nullstellen: " + formatPoints(result.getNullstellen()) + "\n"
                 + "Extrema: " + formatPoints(result.getExtremstellen()) + "\n"
                 + "Wendestellen: " + formatPoints(result.getWendestellen()) + "\n"
-                + "Schnitt f/g: " + formatPoints(intersections()) + "\n"
+                + "Schnitt mit anderen: " + formatPoints(intersections()) + "\n"
                 + "Hinweis: numerische Näherung im sichtbaren x-Bereich.";
     }
 
     private List<GraphPunkt> intersections()
     {
-        if (state.getFunktionen().size() < 2 || !state.getFunktion(0).isSichtbar() || !state.getFunktion(1).isSichtbar())
+        if (state.getFunktionen().size() < 2 || !state.getAktiveFunktion().isSichtbar())
         {
             return List.of();
         }
 
-        return intersectionService.findeSchnittpunkte(
-                state.getFunktion(0).getAusdruck(),
-                state.getFunktion(1).getAusdruck(),
-                state.getXMin(),
-                state.getXMax(),
-                winkelModus
-        );
+        List<GraphPunkt> punkte = new ArrayList<>();
+        for (int index = 0; index < state.getFunktionen().size(); index++)
+        {
+            if (index == state.getAktiveFunktionIndex() || !state.getFunktion(index).isSichtbar())
+            {
+                continue;
+            }
+
+            try
+            {
+                punkte.addAll(intersectionService.findeSchnittpunkte(
+                        state.getAktiveFunktion().getAusdruck(),
+                        state.getFunktion(index).getAusdruck(),
+                        state.getXMin(),
+                        state.getXMax(),
+                        winkelModus
+                ));
+            }
+            catch (RuntimeException ignored)
+            {
+                // Eine ungültige Nebenfunktion soll die aktive Kurvendiskussion nicht blockieren.
+            }
+        }
+        return punkte;
     }
 
     private String formatPoints(List<GraphPunkt> punkte)
@@ -441,7 +625,14 @@ public class GraphPanel extends JPanel implements ModePanel
         }
         else if (component instanceof JButton button)
         {
-            ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
+            if (!Boolean.TRUE.equals(button.getClientProperty("graphSwatch")))
+            {
+                ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
+                if (Boolean.TRUE.equals(button.getClientProperty("compactGraphControl")))
+                {
+                    styleCompactGraphButton(button);
+                }
+            }
         }
         else if (component instanceof JPanel panel && panel != this)
         {
@@ -457,5 +648,14 @@ public class GraphPanel extends JPanel implements ModePanel
         }
 
         statusLabel.setForeground(theme.secondaryDisplayForeground());
+    }
+
+    private void styleCompactGraphButton(JButton button)
+    {
+        button.setFont(theme.buttonFont().deriveFont(12f));
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(theme.cardBorder(), 1, true),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
     }
 }

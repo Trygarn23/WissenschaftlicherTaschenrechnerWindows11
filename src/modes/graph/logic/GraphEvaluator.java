@@ -2,16 +2,29 @@ package modes.graph.logic;
 
 import common.parser.AusdruckParser;
 import common.state.WinkelModus;
+import modes.graph.model.FunktionsDefinition;
 
+import java.util.List;
 import java.util.Map;
 
 public class GraphEvaluator
 {
     private static final double DEFAULT_H = 1e-4;
+    private final GraphFunktionsResolver funktionsResolver = new GraphFunktionsResolver();
+    private List<FunktionsDefinition> funktionen = List.of();
+
+    public void setFunktionen(List<FunktionsDefinition> funktionen)
+    {
+        this.funktionen = funktionen == null ? List.of() : funktionen;
+    }
 
     public double auswerten(String ausdruck, double x, WinkelModus winkelModus)
     {
-        return AusdruckParser.auswerten(ausdruck, 0.0, winkelModus, Map.of("x", x));
+        if (funktionen.isEmpty())
+        {
+            return AusdruckParser.auswerten(ausdruck, 0.0, winkelModus, Map.of("x", x));
+        }
+        return funktionsResolver.auswerten(ausdruck, x, winkelModus, funktionen);
     }
 
     public double ersteAbleitung(String ausdruck, double x, WinkelModus winkelModus)

@@ -243,9 +243,13 @@
 - [x] Tokenizer für Brüche und so anpassen, dass er (..)/(..) versteht oder ../(..).
 - [ ] Graph-Kurvendiskussion später mit symbolischen Ergebnissen anreichern, numerische Näherung bleibt Fallback.
 - [ ] Graphmodus später für Statistik-Regressionen wiederverwenden.
-- [ ] Mauszeiger im Graphen zeigt die aktuellen x- und y-Werte.
+- [x] Mauszeiger im Graphen zeigt die aktuellen x- und y-Werte. → 0.5 Sekunden kein Bewegen → Hover Feld?
 - [ ] Funktionslisten speichern und später wieder öffnen.
-- [ ] Wichtigen Punkt im Graphen anklicken und seine Werte übernehmen.
+- [x] Wichtigen Punkt im Graphen anklicken und seine Werte übernehmen. → Rechtsclick
+- [x] Mehrere Funktionen hinzufügbar machen
+- [x] Kurvendiskussion für Graphen durch anclicken machen, Automatisch erster Graph
+- [x] GraphenBuchstaben ineinander nutzen können: f(x) = 2x ; g(x) = x^2 + f(x) ; ...
+- [x] Scrolling bzw UI etwas überarbeiten → Zeichnen knöpfe etwas kleiner und generell etwas verbessern
 
 ---
 
