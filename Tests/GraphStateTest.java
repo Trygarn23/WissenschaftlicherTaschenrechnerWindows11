@@ -55,4 +55,44 @@ public class GraphStateTest
         assertEquals(-12.0, state.getYMin());
         assertEquals(8.0, state.getYMax());
     }
+
+    @Test
+    void funktionen_ShouldBeAddableSelectableAndRemovable()
+    {
+        // Arrange
+        GraphState state = new GraphState();
+
+        // Act
+        state.fuegeFunktionHinzu("x^3");
+
+        // Assert
+        assertEquals(3, state.getFunktionen().size());
+        assertEquals("h", state.getAktiveFunktion().getName());
+        assertEquals("x^3", state.getAktiveFunktion().getAusdruck());
+
+        // Act
+        state.setAktiveFunktion(1);
+        boolean entfernt = state.entferneFunktion(0);
+
+        // Assert
+        assertTrue(entfernt);
+        assertEquals("g", state.getAktiveFunktion().getName());
+        assertEquals(0, state.getAktiveFunktionIndex());
+    }
+
+    @Test
+    void entferneFunktion_ShouldKeepAtLeastOneFunction()
+    {
+        // Arrange
+        GraphState state = new GraphState();
+
+        // Act
+        assertTrue(state.entferneFunktion(1));
+        boolean entfernt = state.entferneFunktion(0);
+
+        // Assert
+        assertFalse(entfernt);
+        assertEquals(1, state.getFunktionen().size());
+        assertEquals("f", state.getAktiveFunktion().getName());
+    }
 }
