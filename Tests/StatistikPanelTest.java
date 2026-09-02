@@ -27,7 +27,7 @@ public class StatistikPanelTest
         assertNotNull(findButton(panel, "Text auswerten"));
         assertNotNull(findButton(panel, "Tabelle auswerten"));
         assertNotNull(findButton(panel, "Beispiel"));
-        assertNotNull(findButton(panel, "Clear"));
+        assertNotNull(findButton(panel, "Leeren"));
     }
 
     @Test

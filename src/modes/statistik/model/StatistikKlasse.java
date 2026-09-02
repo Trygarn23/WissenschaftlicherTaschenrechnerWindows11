@@ -6,7 +6,7 @@ public record StatistikKlasse(double von, double bis, int anzahl)
     {
         if (!Double.isFinite(von) || !Double.isFinite(bis) || bis < von)
         {
-            throw new IllegalArgumentException("Ungueltige Klassengrenzen.");
+            throw new IllegalArgumentException("Ungültige Klassengrenzen.");
         }
 
         if (anzahl < 0)

@@ -3,7 +3,11 @@ package modes.matrix.ui;
 import modes.matrix.formatting.MatrixFormatter;
 import modes.matrix.logic.MatrixRechnerService;
 import modes.matrix.model.Matrix;
+import common.state.RechnerModus;
+import ui.animation.AnimationSupport;
 import ui.theme.AppTheme;
+import ui.theme.ModernButtonStyler;
+import ui.shell.ModePanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -11,7 +15,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MatrixPanel extends JPanel
+public class MatrixPanel extends JPanel implements ModePanel
 {
     private static final Integer[] GROESSEN = {1, 2, 3};
 
@@ -50,6 +54,12 @@ public class MatrixPanel extends JPanel
         rebuildMatrices();
     }
 
+    @Override
+    public RechnerModus getRechnerModus()
+    {
+        return RechnerModus.MATRIX;
+    }
+
     public void applyTheme(AppTheme theme)
     {
         this.theme = theme;
@@ -68,20 +78,14 @@ public class MatrixPanel extends JPanel
         for (JComboBox<Integer> box : sizeBoxes)
         {
             box.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-            box.setBackground(theme.toggleButtonBackground());
-            box.setForeground(theme.toggleButtonForeground());
+            box.setBackground(theme.inputBackground());
+            box.setForeground(theme.displayForeground());
             box.setFocusable(false);
         }
 
         for (JButton button : buttons)
         {
-            button.setFont(theme.buttonFont());
-            button.setBackground(theme.toggleButtonBackground());
-            button.setForeground(theme.toggleButtonForeground());
-            button.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
-            button.setBorderPainted(false);
-            button.setFocusPainted(false);
-            button.setOpaque(true);
+            ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
         }
     }
 
@@ -110,7 +114,7 @@ public class MatrixPanel extends JPanel
         controls.add(createButton("det A", () -> showScalar(service.determinante(readA()), "Determinante A")));
         controls.add(createButton("det B", () -> showScalar(service.determinante(readB()), "Determinante B")));
         controls.add(wrapScalarInput());
-        controls.add(createButton("Clear", this::clearMatrices));
+        controls.add(createButton("Leeren", this::clearMatrices));
 
         panel.add(matrices, BorderLayout.CENTER);
         panel.add(controls, BorderLayout.SOUTH);
@@ -274,12 +278,14 @@ public class MatrixPanel extends JPanel
     {
         resultArea.setText(formatter.formatiere(matrix));
         statusLabel.setText(status + " erfolgreich");
+        pulseResult(false);
     }
 
     private void showScalar(double value, String status)
     {
         resultArea.setText(formatter.formatiereDouble(value));
         statusLabel.setText(status + " berechnet");
+        pulseResult(false);
     }
 
     private void clearMatrices()
@@ -300,6 +306,15 @@ public class MatrixPanel extends JPanel
             statusLabel.setForeground(theme.dangerBackground());
         }
         resultArea.setText("Fehler");
+        pulseResult(true);
+    }
+
+    private void pulseResult(boolean error)
+    {
+        if (theme != null)
+        {
+            AnimationSupport.pulseBackground(resultArea, error ? theme.errorPulseColor() : theme.successPulseColor(), 200);
+        }
     }
 
     private void styleField(JTextField field)
@@ -309,13 +324,8 @@ public class MatrixPanel extends JPanel
             return;
         }
         field.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        field.setBackground(theme.historySearchBackground());
-        field.setForeground(theme.displayForeground());
+        ModernButtonStyler.styleInput(field, theme);
         field.setCaretColor(theme.displayForeground());
-        field.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(theme.modeBorder(), 1),
-                new EmptyBorder(8, 10, 8, 10)
-        ));
     }
 
     private void applyThemeRecursively(Component component)

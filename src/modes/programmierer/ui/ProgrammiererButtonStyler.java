@@ -113,6 +113,6 @@ final class ProgrammiererButtonStyler
 
     private static boolean isSpecial(String text)
     {
-        return "CLR".equals(text) || "â†".equals(text) || "=".equals(text) || "Â±".equals(text);
+        return "CLR".equals(text) || "←".equals(text) || "=".equals(text) || "±".equals(text);
     }
 }

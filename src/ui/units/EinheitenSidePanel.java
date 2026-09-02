@@ -4,6 +4,7 @@ import common.units.Einheit;
 import common.units.EinheitKategorie;
 import common.units.EinheitenService;
 import ui.theme.AppTheme;
+import ui.theme.ModernButtonStyler;
 import ui.theme.themes.DarkTheme;
 
 import javax.swing.BorderFactory;
@@ -75,6 +76,7 @@ public class EinheitenSidePanel extends JPanel
         resultLabel.setBackground(theme.displayBackground());
         resultLabel.setOpaque(true);
         resultLabel.setFont(theme.displayFont().deriveFont(28f));
+        resultLabel.setBorder(ModernButtonStyler.cardBorder(theme));
         detailLabel.setForeground(theme.secondaryDisplayForeground());
         statusLabel.setForeground(theme.secondaryDisplayForeground());
         for (JLabel label : fieldLabels)
@@ -94,7 +96,7 @@ public class EinheitenSidePanel extends JPanel
     {
         JPanel header = new JPanel(new BorderLayout(8, 0));
         header.setOpaque(false);
-        closeButton.setToolTipText("Einheiten schliessen");
+        closeButton.setToolTipText("Einheiten schließen");
         header.add(titleLabel, BorderLayout.WEST);
         header.add(closeButton, BorderLayout.EAST);
         return header;
@@ -245,8 +247,8 @@ public class EinheitenSidePanel extends JPanel
         catch (Exception e)
         {
             resultLabel.setText("Fehler");
-            detailLabel.setText("Keine gueltige Umrechnung");
-            statusLabel.setText(e.getMessage() == null ? "Ungueltiger Wert" : e.getMessage());
+            detailLabel.setText("Keine gültige Umrechnung");
+            statusLabel.setText(e.getMessage() == null ? "Ungültiger Wert" : e.getMessage());
         }
     }
 
@@ -258,7 +260,7 @@ public class EinheitenSidePanel extends JPanel
     private void styleCombo(JComboBox<?> comboBox)
     {
         comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        comboBox.setBackground(theme.historySearchBackground());
+        comboBox.setBackground(theme.inputBackground());
         comboBox.setForeground(theme.displayForeground());
         comboBox.setFocusable(false);
     }
@@ -266,21 +268,12 @@ public class EinheitenSidePanel extends JPanel
     private void styleField(JTextField field)
     {
         field.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        field.setBackground(theme.historySearchBackground());
-        field.setForeground(theme.displayForeground());
+        ModernButtonStyler.styleInput(field, theme);
         field.setCaretColor(theme.displayForeground());
-        field.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
     }
 
     private void styleButton(JButton button)
     {
-        button.setFont(theme.buttonFont());
-        button.setBackground(theme.toggleButtonBackground());
-        button.setForeground(theme.toggleButtonForeground());
-        button.setBorder(BorderFactory.createEmptyBorder(9, 12, 9, 12));
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setOpaque(true);
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
     }
 }

@@ -49,6 +49,7 @@ public class ThemeManager
             case LIGHT -> new LightTheme();
             case NEON -> new NeonTheme();
             case MATRIX -> new MatrixTheme();
+            case AZUBI_MODERN -> new AzubiModernTheme();
             case WIN95 -> new Win95Theme();
             case WIN11 -> new Win11Theme();
             case CUSTOM -> new CustomTheme(customThemePersistence.lade());

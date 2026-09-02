@@ -2,13 +2,13 @@ package ui.shell;
 
 import common.state.RechnerModus;
 
-final class ModeVisibilityPolicy
+public final class ModeVisibilityPolicy
 {
     private ModeVisibilityPolicy()
     {
     }
 
-    static boolean sollHistoryAnzeigen(RechnerModus modus)
+    public static boolean sollHistoryAnzeigen(RechnerModus modus)
     {
         return switch (modus)
         {
@@ -17,7 +17,7 @@ final class ModeVisibilityPolicy
         };
     }
 
-    static boolean sollGlobalesDisplayAnzeigen(RechnerModus modus)
+    public static boolean sollGlobalesDisplayAnzeigen(RechnerModus modus)
     {
         return modus != RechnerModus.PROGRAMMIERER
                 && modus != RechnerModus.GRAPH
@@ -25,7 +25,7 @@ final class ModeVisibilityPolicy
                 && modus != RechnerModus.STATISTIK;
     }
 
-    static boolean sindStandardShortcutsAktiv(RechnerModus modus)
+    public static boolean sindStandardShortcutsAktiv(RechnerModus modus)
     {
         return modus == RechnerModus.STANDARD || modus == RechnerModus.WISSENSCHAFTLICH;
     }

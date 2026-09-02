@@ -3,7 +3,9 @@ package ui.history;
 import common.history.VerlaufEintrag;
 import common.history.VerlaufTextMapper;
 import common.state.RechnerModus;
+import ui.animation.AnimationSupport;
 import ui.theme.AppTheme;
+import ui.theme.ModernButtonStyler;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -22,9 +24,10 @@ public class HistoryPanel extends JPanel
 
     private final JTextField historySearchField = new JTextField();
     private final JButton favoriteButton = new JButton("\u2606");
-    private final JButton clearHistoryBtn = new JButton("Clear");
+    private final JButton clearHistoryBtn = new JButton("Leeren");
     private final JList<VerlaufEintrag> historyList = new JList<>(filteredHistoryModel);
     private final JScrollPane historyScroll = new JScrollPane(historyList);
+    private final JLabel emptyLabel = new JLabel("Noch nix gerechnet. Mutig.");
 
     private ActionListener clearHistoryListener;
     private ActionListener favoriteChangedListener;
@@ -48,6 +51,7 @@ public class HistoryPanel extends JPanel
         historyList.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         historyList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         historyList.setFocusable(false);
+        historyList.setFixedCellHeight(58);
         historyList.setCellRenderer(new HistoryEntryRenderer(
                 () -> historySearchField.getText(),
                 () -> currentTheme,
@@ -56,6 +60,8 @@ public class HistoryPanel extends JPanel
 
         historyScroll.setBorder(null);
         historyScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        emptyLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        emptyLabel.setBorder(BorderFactory.createEmptyBorder(12, 10, 12, 10));
 
         configureSearchField();
 
@@ -84,6 +90,7 @@ public class HistoryPanel extends JPanel
 
         add(historyTop, BorderLayout.NORTH);
         add(historyScroll, BorderLayout.CENTER);
+        add(emptyLabel, BorderLayout.SOUTH);
     }
 
     private void configureSearchField()
@@ -285,6 +292,10 @@ public class HistoryPanel extends JPanel
 
         allHistoryModel.addElement(entry);
         applyFilter();
+        if (currentTheme != null)
+        {
+            AnimationSupport.pulseBackground(historyList, currentTheme.softAccentBackground(), 180);
+        }
     }
 
     public void clearEntries()
@@ -305,20 +316,13 @@ public class HistoryPanel extends JPanel
 
         historyScroll.getViewport().setBackground(theme.historyBackground());
 
-        favoriteButton.setBackground(theme.toggleButtonBackground());
-        favoriteButton.setForeground(theme.toggleButtonForeground());
-        favoriteButton.setBorderPainted(false);
-        favoriteButton.setOpaque(true);
-        favoriteButton.setFont(theme.buttonFont());
+        ModernButtonStyler.styleButton(favoriteButton, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
+        ModernButtonStyler.styleButton(clearHistoryBtn, theme, theme.specialButtonBackground(), theme.specialButtonForeground());
 
-        clearHistoryBtn.setBackground(theme.specialButtonBackground());
-        clearHistoryBtn.setForeground(theme.specialButtonForeground());
-        clearHistoryBtn.setBorderPainted(false);
-        clearHistoryBtn.setOpaque(true);
-        clearHistoryBtn.setFont(theme.buttonFont());
-
-        historySearchField.setBackground(theme.historySearchBackground());
+        ModernButtonStyler.styleInput(historySearchField, theme);
         historySearchField.setCaretColor(theme.historyForeground());
+        emptyLabel.setForeground(theme.placeholderForeground());
+        emptyLabel.setFont(theme.secondaryDisplayFont().deriveFont(Font.PLAIN, 13f));
 
         if (SEARCH_PLACEHOLDER.equals(historySearchField.getText()))
         {
@@ -382,6 +386,11 @@ public class HistoryPanel extends JPanel
         {
             favoriteChangedListener.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "favoriteChanged"));
         }
+
+        if (currentTheme != null)
+        {
+            AnimationSupport.pulseBackground(favoriteButton, currentTheme.successPulseColor(), 180);
+        }
     }
 
     private int findEntryIndex(VerlaufEintrag selected)
@@ -414,37 +423,23 @@ public class HistoryPanel extends JPanel
         return (entry.isFavorit() ? "\u2605 " : "\u2606 ") + entry.toDisplayText();
     }
 
-    private boolean matchesFilter(VerlaufEintrag entry)
-    {
-        String q = historySearchField.getText();
-        if (q == null)
-        {
-            return true;
-        }
-
-        q = q.trim();
-        if (q.isEmpty() || SEARCH_PLACEHOLDER.equals(q))
-        {
-            return true;
-        }
-
-        return entry.matchesSuchtext(q);
-    }
-
     private void applyFilter()
     {
         filteredHistoryModel.clear();
 
+        List<VerlaufEintrag> entries = new ArrayList<>();
         for (int i = 0; i < allHistoryModel.size(); i++)
         {
-            VerlaufEintrag entry = allHistoryModel.getElementAt(i);
-            if (matchesFilter(entry))
-            {
-                filteredHistoryModel.addElement(entry);
-            }
+            entries.add(allHistoryModel.getElementAt(i));
+        }
+
+        for (VerlaufEintrag entry : HistoryFilter.filter(entries, historySearchField.getText(), SEARCH_PLACEHOLDER))
+        {
+            filteredHistoryModel.addElement(entry);
         }
 
         int last = filteredHistoryModel.size() - 1;
+        emptyLabel.setVisible(allHistoryModel.isEmpty());
         if (last >= 0)
         {
             historyList.ensureIndexIsVisible(last);

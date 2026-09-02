@@ -159,7 +159,7 @@ public final class Matrix
     {
         if (zeilen != spalten)
         {
-            throw new IllegalArgumentException("Spur ist nur fÃ¼r quadratische Matrizen definiert.");
+            throw new IllegalArgumentException("Spur ist nur für quadratische Matrizen definiert.");
         }
 
         double summe = 0.0;

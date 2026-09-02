@@ -1,5 +1,6 @@
 package modes.graph.ui;
 
+import common.state.RechnerModus;
 import common.state.WinkelModus;
 import modes.graph.logic.GraphEvaluator;
 import modes.graph.logic.GraphIntersectionService;
@@ -8,6 +9,8 @@ import modes.graph.model.GraphPunkt;
 import modes.graph.model.GraphState;
 import modes.graph.model.KurvendiskussionResult;
 import ui.theme.AppTheme;
+import ui.theme.ModernButtonStyler;
+import ui.shell.ModePanel;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -31,7 +34,7 @@ import java.awt.Container;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GraphPanel extends JPanel
+public class GraphPanel extends JPanel implements ModePanel
 {
     private final GraphState state = new GraphState();
     private final GraphEvaluator evaluator = new GraphEvaluator();
@@ -69,6 +72,12 @@ public class GraphPanel extends JPanel
         plot();
     }
 
+    @Override
+    public RechnerModus getRechnerModus()
+    {
+        return RechnerModus.GRAPH;
+    }
+
     public void applyTheme(AppTheme theme)
     {
         this.theme = theme;
@@ -78,20 +87,15 @@ public class GraphPanel extends JPanel
         for (JTextField expressionField : expressionFields)
         {
             expressionField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-            expressionField.setBackground(theme.historySearchBackground());
-            expressionField.setForeground(theme.displayForeground());
+            ModernButtonStyler.styleInput(expressionField, theme);
             expressionField.setCaretColor(theme.displayForeground());
-            expressionField.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(theme.modeBorder(), 1),
-                    new EmptyBorder(10, 12, 10, 12)
-            ));
         }
 
         statusLabel.setForeground(theme.secondaryDisplayForeground());
         analysisArea.setFont(new Font("Consolas", Font.PLAIN, 12));
-        analysisArea.setBackground(theme.historySearchBackground());
+        analysisArea.setBackground(theme.cardBackground());
         analysisArea.setForeground(theme.displayForeground());
-        analysisArea.setBorder(new EmptyBorder(8, 8, 8, 8));
+        analysisArea.setBorder(ModernButtonStyler.cardBorder(theme));
         tableStepSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         applyThemeToChildren(this);
 
@@ -123,8 +127,8 @@ public class GraphPanel extends JPanel
 
         JPanel controls = new JPanel(new GridLayout(0, 2, 8, 8));
         controls.setOpaque(false);
-        controls.add(createButton("Plot", this::plot));
-        controls.add(createButton("Reset", () -> {
+        controls.add(createButton("Zeichnen", this::plot));
+        controls.add(createButton("Zurücksetzen", () -> {
             state.resetAnsicht();
             updateAnalysis();
             canvasPanel.repaint();
@@ -266,7 +270,7 @@ public class GraphPanel extends JPanel
         if (ausdruck.isBlank())
         {
             setStatus("Bitte Funktion eingeben", false);
-            analysisArea.setText("Kurvendiskussion wartet auf eine Funktion.");
+            analysisArea.setText("Gib mir eine Funktion, ich mal dir was.");
             return;
         }
 
@@ -280,6 +284,7 @@ public class GraphPanel extends JPanel
         setStatus("Zeichne " + state.getHauptfunktion().getName() + "(x) = " + ausdruck, true);
         updateMiniTable();
         updateAnalysis();
+        canvasPanel.pulseRefresh();
         canvasPanel.repaint();
     }
 
@@ -436,13 +441,7 @@ public class GraphPanel extends JPanel
         }
         else if (component instanceof JButton button)
         {
-            button.setFont(theme.buttonFont());
-            button.setBackground(theme.toggleButtonBackground());
-            button.setForeground(theme.toggleButtonForeground());
-            button.setBorder(BorderFactory.createEmptyBorder(9, 12, 9, 12));
-            button.setBorderPainted(false);
-            button.setFocusPainted(false);
-            button.setOpaque(true);
+            ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
         }
         else if (component instanceof JPanel panel && panel != this)
         {

@@ -40,6 +40,61 @@ public interface AppTheme
     Color toggleButtonBackground();
     Color toggleButtonForeground();
 
+    default Color cardBackground()
+    {
+        return blend(panelBackground(), displayBackground(), 0.55);
+    }
+
+    default Color cardBorder()
+    {
+        return blend(panelBackground(), displayForeground(), 0.20);
+    }
+
+    default Color inputBackground()
+    {
+        return historySearchBackground();
+    }
+
+    default Color inputBorder()
+    {
+        return blend(inputBackground(), displayForeground(), 0.20);
+    }
+
+    default Color focusBorder()
+    {
+        return modeButtonActiveBackground();
+    }
+
+    default Color softAccentBackground()
+    {
+        return blend(panelBackground(), modeButtonActiveBackground(), 0.20);
+    }
+
+    default Color dangerSoftBackground()
+    {
+        return blend(panelBackground(), dangerBackground(), 0.22);
+    }
+
+    default Color successPulseColor()
+    {
+        return blend(panelBackground(), graphNullstelleColor(), 0.35);
+    }
+
+    default Color errorPulseColor()
+    {
+        return blend(panelBackground(), dangerBackground(), 0.35);
+    }
+
+    default Color menuHoverBackground()
+    {
+        return hoverBackground(popupOptionBackground());
+    }
+
+    default Color menuActiveBackground()
+    {
+        return popupSelectedBackground();
+    }
+
     default Color disabledButtonBackground()
     {
         return blend(functionButtonBackground(), panelBackground(), 0.65);

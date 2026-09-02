@@ -4,6 +4,8 @@ import modes.programmierer.formatting.ProgrammiererFormatter;
 import modes.programmierer.logic.ProgrammiererLogik;
 import modes.programmierer.model.Basis;
 import modes.programmierer.model.Wortbreite;
+import common.state.RechnerModus;
+import ui.shell.ModePanel;
 import ui.theme.AppTheme;
 
 import javax.swing.*;
@@ -12,7 +14,7 @@ import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
-public class ProgrammiererPanel extends JPanel
+public class ProgrammiererPanel extends JPanel implements ModePanel
 {
     private final ProgrammiererLogik logik = new ProgrammiererLogik();
     private final ProgrammiererFormatter formatter = new ProgrammiererFormatter();
@@ -143,5 +145,11 @@ public class ProgrammiererPanel extends JPanel
 
         revalidate();
         repaint();
+    }
+
+    @Override
+    public RechnerModus getRechnerModus()
+    {
+        return RechnerModus.PROGRAMMIERER;
     }
 }

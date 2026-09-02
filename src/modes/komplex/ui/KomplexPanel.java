@@ -1,11 +1,14 @@
 package modes.komplex.ui;
 
+import common.state.RechnerModus;
 import modes.komplex.formatting.KomplexFormatter;
 import modes.komplex.logic.KomplexRechnerService;
 import modes.komplex.model.KomplexDarstellung;
 import modes.komplex.model.KomplexState;
 import modes.komplex.model.KomplexeZahl;
 import ui.theme.AppTheme;
+import ui.theme.ModernButtonStyler;
+import ui.shell.ModePanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -14,7 +17,7 @@ import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KomplexPanel extends JPanel
+public class KomplexPanel extends JPanel implements ModePanel
 {
     private final KomplexState state = new KomplexState();
     private final KomplexRechnerService service = new KomplexRechnerService();
@@ -44,6 +47,12 @@ public class KomplexPanel extends JPanel
         refresh();
     }
 
+    @Override
+    public RechnerModus getRechnerModus()
+    {
+        return RechnerModus.KOMPLEX;
+    }
+
     public void applyTheme(AppTheme theme)
     {
         this.theme = theme;
@@ -52,28 +61,17 @@ public class KomplexPanel extends JPanel
         for (JTextField field : fields)
         {
             field.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-            field.setBackground(theme.historySearchBackground());
-            field.setForeground(theme.displayForeground());
+            ModernButtonStyler.styleInput(field, theme);
             field.setCaretColor(theme.displayForeground());
-            field.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(theme.modeBorder(), 1),
-                    new EmptyBorder(9, 10, 9, 10)
-            ));
         }
 
         darstellungBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        darstellungBox.setBackground(theme.toggleButtonBackground());
-        darstellungBox.setForeground(theme.toggleButtonForeground());
+        darstellungBox.setBackground(theme.inputBackground());
+        darstellungBox.setForeground(theme.displayForeground());
 
         for (JButton button : buttons)
         {
-            button.setFont(theme.buttonFont());
-            button.setBackground(theme.toggleButtonBackground());
-            button.setForeground(theme.toggleButtonForeground());
-            button.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
-            button.setBorderPainted(false);
-            button.setFocusPainted(false);
-            button.setOpaque(true);
+            ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
         }
 
         applyThemeToChildren(this);
@@ -100,7 +98,7 @@ public class KomplexPanel extends JPanel
         controls.add(createButton("×", () -> calculateBinary(service::multipliziere, "Multiplikation")));
         controls.add(createButton("÷", () -> calculateBinary(service::dividiere, "Division")));
         controls.add(createButton("conj z1", () -> calculateUnary(service::konjugiert, "Konjugation")));
-        controls.add(createButton("Copy", this::copyResult));
+        controls.add(createButton("Kopieren", this::copyResult));
 
         darstellungBox.addActionListener(e -> {
             state.setDarstellung((KomplexDarstellung) darstellungBox.getSelectedItem());

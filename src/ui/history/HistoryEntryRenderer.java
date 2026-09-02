@@ -45,7 +45,7 @@ final class HistoryEntryRenderer extends DefaultListCellRenderer
         }
 
         label.setBorder(pad);
-        label.setBackground(isSelected ? historySelectionBackground() : historyBackground());
+        label.setBackground(isSelected ? historySelectionBackground() : rowBackground(index));
         label.setForeground(historyForeground());
         label.setOpaque(true);
         return label;
@@ -87,6 +87,16 @@ final class HistoryEntryRenderer extends DefaultListCellRenderer
     {
         AppTheme theme = themeSupplier.get();
         return theme != null ? theme.historySelectionBackground() : new Color(70, 70, 70);
+    }
+
+    private Color rowBackground(int index)
+    {
+        AppTheme theme = themeSupplier.get();
+        if (theme == null)
+        {
+            return historyBackground();
+        }
+        return index % 2 == 0 ? theme.cardBackground() : theme.historyBackground();
     }
 
     private String favoritePrefix(VerlaufEintrag eintrag)

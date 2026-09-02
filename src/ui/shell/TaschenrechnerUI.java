@@ -163,6 +163,7 @@ public class TaschenrechnerUI extends JFrame
     private void wireShellEvents()
     {
         modeBarPanel.setModeListener(this::setAktuellerModus);
+        modeBarPanel.setUnitsListener(einheitenSidePanelHost::toggle);
 
         globalActionBarPanel.setAngleModeListener(e -> {
             rechner.winkelModusUmschalten();
@@ -174,7 +175,6 @@ public class TaschenrechnerUI extends JFrame
         });
 
         globalActionBarPanel.setThemeSelectionListener(this::setTheme);
-        globalActionBarPanel.setUnitsListener(e -> einheitenSidePanelHost.toggle());
         globalActionBarPanel.setSettingsListener(e -> SettingsDialog.showDialog(
                 this,
                 theme(),
@@ -196,11 +196,19 @@ public class TaschenrechnerUI extends JFrame
         persistenceService.speichereSettings(appSettings);
 
         modeBarPanel.setSelectedMode(modus, themeManager.getCurrentTheme());
-        modeContentHostPanel.showMode(modus);
+        modeContentHostPanel.showMode(modus, theme());
 
-        displayPanel.setVisible(ModeVisibilityPolicy.sollGlobalesDisplayAnzeigen(modus));
-        historyPanel.setVisible(ModeVisibilityPolicy.sollHistoryAnzeigen(modus));
-        if (!ModeVisibilityPolicy.sollHistoryAnzeigen(modus) && keyboardShortcutBinder != null)
+        ModePanel modePanel = modePanels.get(modus) instanceof ModePanel panel ? panel : null;
+        boolean zeigtDisplay = modePanel == null
+                ? ModeVisibilityPolicy.sollGlobalesDisplayAnzeigen(modus)
+                : modePanel.zeigtGlobalesDisplay();
+        boolean zeigtHistory = modePanel == null
+                ? ModeVisibilityPolicy.sollHistoryAnzeigen(modus)
+                : modePanel.zeigtHistory();
+
+        displayPanel.setVisible(zeigtDisplay);
+        historyPanel.setVisible(zeigtHistory);
+        if (!zeigtHistory && keyboardShortcutBinder != null)
         {
             keyboardShortcutBinder.defocusSearchIfNeeded();
         }
@@ -212,7 +220,10 @@ public class TaschenrechnerUI extends JFrame
 
     private boolean sindStandardShortcutsAktiv()
     {
-        return ModeVisibilityPolicy.sindStandardShortcutsAktiv(aktuellerModus);
+        ModePanel modePanel = modePanels.get(aktuellerModus) instanceof ModePanel panel ? panel : null;
+        return modePanel == null
+                ? ModeVisibilityPolicy.sindStandardShortcutsAktiv(aktuellerModus)
+                : modePanel.nutztStandardShortcuts();
     }
 
     private void useHistoryEntryResult(String entry)
@@ -299,7 +310,7 @@ public class TaschenrechnerUI extends JFrame
     private void aktualisiereGraphWinkelmodus()
     {
         JPanel graphPanel = modePanels.get(RechnerModus.GRAPH);
-        if (graphPanel instanceof GraphPanel panel)
+        if (graphPanel instanceof ModePanel panel)
         {
             panel.setWinkelModus(rechner.getWinkelModus());
         }
@@ -337,12 +348,14 @@ public class TaschenrechnerUI extends JFrame
         if (ergebnis.isErfolgreich())
         {
             displayPanel.setSecondaryText(ergebnis.getVerlaufText());
+            displayPanel.pulseSuccess();
             addHistoryEntry(ergebnis.getVerlaufText());
             updateStatus();
             return;
         }
 
         displayPanel.setSecondaryText(ergebnis.getFehlerMeldung());
+        displayPanel.pulseError();
         updateStatus();
     }
 

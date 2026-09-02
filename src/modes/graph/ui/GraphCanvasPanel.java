@@ -6,8 +6,10 @@ import modes.graph.model.FunktionsDefinition;
 import modes.graph.model.GraphPunkt;
 import modes.graph.model.GraphState;
 import modes.graph.model.KurvendiskussionResult;
+import ui.animation.AnimationSupport;
 import ui.theme.AppTheme;
 
+import java.awt.AlphaComposite;
 import javax.swing.JPanel;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -30,6 +32,7 @@ public class GraphCanvasPanel extends JPanel
     private WinkelModus winkelModus = WinkelModus.DEG;
     private KurvendiskussionResult kurvendiskussionResult;
     private Point letzterDragPunkt;
+    private double refreshPulse;
     private Runnable viewportChangedListener = () -> {};
 
     public GraphCanvasPanel(GraphState state, GraphEvaluator evaluator)
@@ -71,6 +74,19 @@ public class GraphCanvasPanel extends JPanel
         repaint();
     }
 
+    public void pulseRefresh()
+    {
+        AnimationSupport.animate(220,
+                progress -> {
+                    refreshPulse = Math.sin(progress * Math.PI);
+                    repaint();
+                },
+                () -> {
+                    refreshPulse = 0.0;
+                    repaint();
+                });
+    }
+
     @Override
     protected void paintComponent(Graphics graphics)
     {
@@ -87,6 +103,7 @@ public class GraphCanvasPanel extends JPanel
 
         g.setColor(background);
         g.fillRect(0, 0, getWidth(), getHeight());
+        zeichneRefreshPulse(g, activeTheme);
 
         zeichneRaster(g, grid, secondary);
         zeichneAchsen(g, foreground);
@@ -95,6 +112,20 @@ public class GraphCanvasPanel extends JPanel
         zeichneBereich(g, secondary);
 
         g.dispose();
+    }
+
+    private void zeichneRefreshPulse(Graphics2D g, AppTheme activeTheme)
+    {
+        if (activeTheme == null || refreshPulse <= 0.0)
+        {
+            return;
+        }
+
+        Graphics2D pulseGraphics = (Graphics2D) g.create();
+        pulseGraphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) (0.16 * refreshPulse)));
+        pulseGraphics.setColor(activeTheme.successPulseColor());
+        pulseGraphics.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
+        pulseGraphics.dispose();
     }
 
     private void zeichneRaster(Graphics2D g, Color grid, Color labels)

@@ -19,7 +19,7 @@ public class StandardPanelTest
         // Assert
         assertEquals(4, layout.getColumns());
         assertEquals(24, panel.getComponentCount());
-        assertEquals(6, layout.getHgap());
-        assertEquals(6, layout.getVgap());
+        assertEquals(8, layout.getHgap());
+        assertEquals(8, layout.getVgap());
     }
 }

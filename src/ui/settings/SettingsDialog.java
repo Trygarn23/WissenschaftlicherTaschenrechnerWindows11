@@ -3,7 +3,9 @@ package ui.settings;
 import common.formatting.ZahlenFormatModus;
 import common.state.RechnerModus;
 import common.state.WinkelModus;
+import ui.animation.AnimationSupport;
 import ui.theme.AppTheme;
+import ui.theme.ModernButtonStyler;
 import ui.theme.ThemeType;
 import ui.theme.custom.CustomThemeColors;
 import ui.theme.custom.CustomThemePersistence;
@@ -76,6 +78,15 @@ public final class SettingsDialog extends JDialog
         title.setFont(new Font("Segoe UI", Font.BOLD, 22));
         title.setForeground(theme.displayForeground());
 
+        JLabel hint = new JLabel("Optik ist Geschmackssache. Außer Neon. Neon ist eine Entscheidung.");
+        hint.setFont(theme.secondaryDisplayFont().deriveFont(Font.PLAIN, 13f));
+        hint.setForeground(theme.secondaryDisplayForeground());
+
+        JPanel header = new JPanel(new BorderLayout(0, 4));
+        header.setOpaque(false);
+        header.add(title, BorderLayout.NORTH);
+        header.add(hint, BorderLayout.SOUTH);
+
         JPanel settingsGrid = new JPanel(new GridLayout(0, 1, 0, 10));
         settingsGrid.setOpaque(false);
         settingsGrid.add(createComboRow("Theme", ThemeType.values(), workingSettings.getThemeType(),
@@ -92,7 +103,7 @@ public final class SettingsDialog extends JDialog
         settingsGrid.add(createSessionRow());
         settingsGrid.add(createValueRow("Version", AppSettings.VERSION));
 
-        content.add(title, BorderLayout.NORTH);
+        content.add(header, BorderLayout.NORTH);
         content.add(settingsGrid, BorderLayout.CENTER);
         content.add(createFooter(), BorderLayout.SOUTH);
         return content;
@@ -112,7 +123,10 @@ public final class SettingsDialog extends JDialog
         styleButton(cancelButton);
 
         JButton applyButton = new JButton("Anwenden");
-        applyButton.addActionListener(e -> publish());
+        applyButton.addActionListener(e -> {
+            publish();
+            AnimationSupport.pulseBackground(applyButton, theme.successPulseColor(), 180);
+        });
         styleButton(applyButton);
 
         JButton saveButton = new JButton("Speichern");
@@ -161,14 +175,23 @@ public final class SettingsDialog extends JDialog
     {
         JPanel section = new JPanel(new BorderLayout(0, 10));
         section.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(theme.modeBorder(), 1),
+                BorderFactory.createLineBorder(theme.cardBorder(), 1, true),
                 new EmptyBorder(10, 12, 12, 12)
         ));
-        section.setBackground(theme.panelBackground());
+        section.setBackground(theme.cardBackground());
 
         JLabel title = new JLabel("Custom Theme");
         title.setFont(new Font("Segoe UI", Font.BOLD, 14));
         title.setForeground(theme.displayForeground());
+
+        JLabel hint = new JLabel("Farben selber mischen: offiziell erlaubt, optisch auf eigene Gefahr.");
+        hint.setFont(theme.secondaryDisplayFont().deriveFont(Font.PLAIN, 12f));
+        hint.setForeground(theme.secondaryDisplayForeground());
+
+        JPanel header = new JPanel(new BorderLayout(0, 3));
+        header.setOpaque(false);
+        header.add(title, BorderLayout.NORTH);
+        header.add(hint, BorderLayout.SOUTH);
 
         JPanel colorsGrid = new JPanel(new GridLayout(0, 2, 8, 8));
         colorsGrid.setOpaque(false);
@@ -187,7 +210,7 @@ public final class SettingsDialog extends JDialog
         colorsGrid.add(createColorButton("Akzent/Toggle", customThemeColors.accentBackground(),
                 color -> customThemeColors = customThemeColors.withAccentBackground(color)));
 
-        section.add(title, BorderLayout.NORTH);
+        section.add(header, BorderLayout.NORTH);
         section.add(colorsGrid, BorderLayout.CENTER);
         return section;
     }
@@ -214,12 +237,7 @@ public final class SettingsDialog extends JDialog
     private void styleColorButton(JButton button, Color color)
     {
         button.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        button.setBackground(color);
-        button.setForeground(contrastFor(color));
-        button.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
-        button.setFocusPainted(false);
-        button.setOpaque(true);
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        ModernButtonStyler.styleButton(button, theme, color, contrastFor(color));
     }
 
     private Color contrastFor(Color color)
@@ -273,10 +291,10 @@ public final class SettingsDialog extends JDialog
     {
         JPanel row = new JPanel(new BorderLayout(12, 0));
         row.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(theme.modeBorder(), 1),
+                BorderFactory.createLineBorder(theme.cardBorder(), 1, true),
                 new EmptyBorder(9, 12, 9, 12)
         ));
-        row.setBackground(theme.panelBackground());
+        row.setBackground(theme.cardBackground());
 
         JLabel nameLabel = new JLabel(name);
         nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -315,13 +333,6 @@ public final class SettingsDialog extends JDialog
 
     private void styleButton(JButton button)
     {
-        button.setFont(theme.buttonFont());
-        button.setBackground(theme.toggleButtonBackground());
-        button.setForeground(theme.toggleButtonForeground());
-        button.setBorder(BorderFactory.createEmptyBorder(9, 16, 9, 16));
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setOpaque(true);
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
     }
 }

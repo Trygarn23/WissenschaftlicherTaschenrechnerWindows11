@@ -1,6 +1,9 @@
 package modes.wissenschaftlich.ui;
 
+import common.state.RechnerModus;
+import ui.shell.ModePanel;
 import ui.theme.AppTheme;
+import ui.theme.CalculatorButtonStyler;
 import ui.tooltips.ButtonTooltips;
 
 import javax.swing.*;
@@ -11,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class WissenschaftlichPanel extends JPanel
+public class WissenschaftlichPanel extends JPanel implements ModePanel
 {
     private static final String[] BUTTONS = {
             "f(x)", "floor", "ceil", "mod", "rand",
@@ -39,7 +42,7 @@ public class WissenschaftlichPanel extends JPanel
 
     public WissenschaftlichPanel()
     {
-        setLayout(new GridLayout(9, 5, 6, 6));
+        setLayout(new GridLayout(9, 5, 8, 8));
         setOpaque(true);
 
         for (String text : BUTTONS)
@@ -60,9 +63,16 @@ public class WissenschaftlichPanel extends JPanel
         this.functionSelectionListener = listener;
     }
 
+    @Override
+    public RechnerModus getRechnerModus()
+    {
+        return RechnerModus.WISSENSCHAFTLICH;
+    }
+
     public void applyTheme(AppTheme theme)
     {
         setBackground(theme.panelBackground());
+        CalculatorButtonStyler.stylePanel(this, theme);
 
         if (functionPopupMenu != null)
         {

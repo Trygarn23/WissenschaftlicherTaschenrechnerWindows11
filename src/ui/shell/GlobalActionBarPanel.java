@@ -1,11 +1,20 @@
 package ui.shell;
 
 import ui.theme.AppTheme;
+import ui.theme.ModernButtonStyler;
 import ui.theme.ThemeType;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -15,8 +24,7 @@ public class GlobalActionBarPanel extends JPanel
     private final JLabel titleLabel = new JLabel("Taschenrechner");
     private final JButton angleModeButton = new JButton("DEG");
     private final JButton themeButton = new JButton("Theme");
-    private final JButton unitsButton = new JButton("Einheiten");
-    private final JButton settingsButton = new JButton("⚙");
+    private final JButton settingsButton = new JButton("Einstellungen");
 
     private final JPopupMenu themePopupMenu = new JPopupMenu();
     private final Map<ThemeType, JButton> themeOptionButtons = new LinkedHashMap<>();
@@ -35,10 +43,8 @@ public class GlobalActionBarPanel extends JPanel
 
         angleModeButton.setFocusable(false);
         themeButton.setFocusable(false);
-        unitsButton.setFocusable(false);
-        unitsButton.setToolTipText("Einheitenumrechnung oeffnen");
         settingsButton.setFocusable(false);
-        settingsButton.setToolTipText("Einstellungen öffnen");
+        settingsButton.setToolTipText("Einstellungen oeffnen");
 
         buildThemePopup();
 
@@ -46,7 +52,6 @@ public class GlobalActionBarPanel extends JPanel
 
         actionsPanel.add(angleModeButton);
         actionsPanel.add(themeButton);
-        actionsPanel.add(unitsButton);
         actionsPanel.add(settingsButton);
 
         add(titleLabel, BorderLayout.WEST);
@@ -58,7 +63,7 @@ public class GlobalActionBarPanel extends JPanel
         JPanel popupContent = new JPanel(new BorderLayout(0, 10));
         popupContent.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JLabel popupTitle = new JLabel("Theme auswählen");
+        JLabel popupTitle = new JLabel("Theme auswaehlen");
         popupTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         JPanel themeGrid = new JPanel(new GridLayout(0, 2, 8, 8));
@@ -68,6 +73,7 @@ public class GlobalActionBarPanel extends JPanel
         addThemeOption(themeGrid, ThemeType.LIGHT, "Light");
         addThemeOption(themeGrid, ThemeType.NEON, "Neon");
         addThemeOption(themeGrid, ThemeType.MATRIX, "Matrix");
+        addThemeOption(themeGrid, ThemeType.AZUBI_MODERN, "Azubi Modern");
         addThemeOption(themeGrid, ThemeType.WIN95, "Win95");
         addThemeOption(themeGrid, ThemeType.WIN11, "Win11");
         addThemeOption(themeGrid, ThemeType.CUSTOM, "Custom");
@@ -82,11 +88,6 @@ public class GlobalActionBarPanel extends JPanel
     {
         JButton optionButton = new JButton(label);
         optionButton.setFocusable(false);
-        optionButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        optionButton.setBorderPainted(false);
-        optionButton.setOpaque(true);
-        optionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        optionButton.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
 
         optionButton.addActionListener(e -> {
             themePopupMenu.setVisible(false);
@@ -125,11 +126,6 @@ public class GlobalActionBarPanel extends JPanel
         settingsButton.addActionListener(listener);
     }
 
-    public void setUnitsListener(java.awt.event.ActionListener listener)
-    {
-        unitsButton.addActionListener(listener);
-    }
-
     public void highlightSelectedTheme(ThemeType selectedTheme)
     {
         for (Map.Entry<ThemeType, JButton> entry : themeOptionButtons.entrySet())
@@ -141,7 +137,8 @@ public class GlobalActionBarPanel extends JPanel
             {
                 button.setBackground(currentTheme == null ? button.getBackground() : currentTheme.popupSelectedBackground());
                 button.setForeground(currentTheme == null ? button.getForeground() : currentTheme.popupSelectedForeground());
-            } else
+            }
+            else
             {
                 button.setBackground(currentTheme == null ? button.getBackground() : currentTheme.popupOptionBackground());
                 button.setForeground(currentTheme == null ? button.getForeground() : currentTheme.popupOptionForeground());
@@ -156,41 +153,24 @@ public class GlobalActionBarPanel extends JPanel
 
         titleLabel.setForeground(theme.displayForeground());
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        themePopupMenu.setBorder(BorderFactory.createLineBorder(theme.modeBorder(), 1));
+        themePopupMenu.setBorder(javax.swing.BorderFactory.createLineBorder(theme.modeBorder(), 1));
         applyThemeToPopup(themePopupMenu, theme);
 
         styleActionButton(angleModeButton, theme);
         styleActionButton(themeButton, theme);
-        styleActionButton(unitsButton, theme);
-        styleIconButton(settingsButton, theme);
+        styleActionButton(settingsButton, theme);
     }
 
     private void styleActionButton(JButton button, AppTheme theme)
     {
-        button.setFont(theme.buttonFont());
-        button.setBackground(theme.toggleButtonBackground());
-        button.setForeground(theme.toggleButtonForeground());
-        button.setBorderPainted(false);
-        button.setOpaque(true);
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        button.setBorder(BorderFactory.createEmptyBorder(8, 14, 8, 14));
-    }
-
-    private void styleIconButton(JButton button, AppTheme theme)
-    {
-        styleActionButton(button, theme);
-        button.setFont(new Font("Segoe UI Symbol", Font.BOLD, 18));
-        button.setMargin(new Insets(0, 0, 0, 0));
-        button.setPreferredSize(new Dimension(42, 42));
-        button.setMinimumSize(new Dimension(42, 42));
+        ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
     }
 
     private void applyThemeToPopup(Component component, AppTheme theme)
     {
         if (component instanceof JButton button)
         {
-            button.setBackground(theme.popupOptionBackground());
-            button.setForeground(theme.popupOptionForeground());
+            ModernButtonStyler.styleButton(button, theme, theme.popupOptionBackground(), theme.popupOptionForeground());
         }
         else if (component instanceof JLabel label)
         {

@@ -19,23 +19,22 @@
 - [x] Display-Schriftgröße bei sehr langen Ausdrücken dynamisch weiter verbessern.
 - [ ] Display bei sehr kleinen Fenstergrößen stabilisieren.
 - [ ] Display bei hoher DPI / Windows-Skalierung stabilisieren.
-- [ ] High-DPI-Checkliste für Windows-Skalierung 100%, 125%, 150%, 200% erstellen.
+- [ ] High-DPI-Checkliste für Windows-Skalierung 100 %, 125%, 150%, 200% erstellen.
 - [x] Statusanzeige bei Moduswechsel sofort aktualisieren.
 - [x] Statusanzeige bei Speicheränderung sofort aktualisieren.
 - [x] Statusanzeige bei Winkelmoduswechsel sofort aktualisieren.
 - [x] History/Suche bei ausgeblendeten Modi nicht per Tastatur fokussierbar machen.
 - [ ] `ESC`-Verhalten festlegen: Suche defokussieren, Eingabe löschen oder Fenster schließen.
 - [ ] Einheitliche Benennung im UI festlegen: `CLR`, `C`, `CE`, `←`, `Backspace`.
-- [ ] Kleine UI-Politur: konsistente Innenabstände zwischen Display, Modebar, Buttons und History.
-- [ ] Kleine UI-Politur: Button-Hover-Zustände in allen Themes angleichen.
-- [ ] Kleine UI-Politur: aktive Mode-Bar-Auswahl in allen Themes angleichen.
-- [ ] Kleine UI-Politur: Fokusrahmen / Tastaturfokus sichtbar aber nicht störend gestalten.
 - [ ] Tastaturbedienung für jeden Modus vereinheitlichen.
 - [ ] Fokusreihenfolge pro Modus festlegen.
 - [ ] Accessibility verbessern: Kontrast, Screenreader-Namen, Tooltips, Fokusrahmen.
 - [ ] Fehlertexte vereinheitlichen: kurz, fachlich korrekt, hilfreich.
 - [ ] In-App-Hilfe planen, aber ohne nerviges Tutorial-Gedöns.
 - [ ] Performance bei langen Ausdrücken, vielen History-Einträgen und großen Matrizen messen.
+- [ ] Letzte Eingabe nach einem Absturz wieder anbieten, damit nicht alles einfach weg ist.
+- [ ] Einmal Rückgängig anbieten, wenn man aus Versehen den Ausdruck gelöscht hat.
+- [ ] Klammerpaare beim Tippen sichtbar zusammengehörig markieren.
 - [x] Fenstergröße nach Neustart optional speichern.
 - [x] Letzten aktiven Modus optional speichern.
 - [x] Letzten Winkelmodus optional speichern.
@@ -108,6 +107,9 @@
 - [x] Unit Tests nachgezogen: `10ˣ` mit leerem Ausdruck, Zahl und Klammer absichern.
 - [x] Unit Tests nachgezogen: `exp`, `ln`, `log` mit Ausdruck und letzter Zahl absichern.
 - [x] Wissenschaftliches `f(x)`-Popup per Tastatur erreichbar machen.
+- [ ] Nützliche Einheitenumrechnungen direkt aus einem Ergebnis starten.
+- [ ] Häufig genutzte Funktionen als Favoriten anheften.
+- [ ] Ergebnis bei Bedarf mit mehr Nachkommastellen anschauen, ohne die Einstellung dauerhaft umzubauen.
 - [ ] Wissenschaftliches `f(x)`-Popup optisch in allen Themes angleichen.
 - [ ] Wissenschaftliches Panel bei kleiner Fenstergröße stabilisieren.
 
@@ -241,6 +243,9 @@
 - [x] Tokenizer für Brüche und so anpassen, dass er (..)/(..) versteht oder ../(..).
 - [ ] Graph-Kurvendiskussion später mit symbolischen Ergebnissen anreichern, numerische Näherung bleibt Fallback.
 - [ ] Graphmodus später für Statistik-Regressionen wiederverwenden.
+- [ ] Mauszeiger im Graphen zeigt die aktuellen x- und y-Werte.
+- [ ] Funktionslisten speichern und später wieder öffnen.
+- [ ] Wichtigen Punkt im Graphen anklicken und seine Werte übernehmen.
 
 ---
 
@@ -289,6 +294,7 @@
 - [x] Matrixmultiplikation mit Dimensionsprüfung planen.
 - [x] Determinante für 2x2 und 3x3 starten, größere Matrizen später über Gauß.
 - [ ] Inverse Matrix über Gauß-Jordan planen.
+- [ ] Bei Gauß-Jordan auf Wunsch die einzelnen Rechenschritte mitzeigen.
 - [x] Rang, Transponieren und Spur umsetzen.
 - [ ] Lineare Gleichungssysteme `Ax = b` als späteres Overkill-Feature planen.
 - [x] Matrixformatierung planen: kompakte Anzeige, Copy/Paste als Tabellenformat, CSV-kompatibel.
@@ -304,6 +310,54 @@
 - [x] Regressionsfunktionen planen: linear, quadratisch optional später.
 - [x] Diagramme planen: Histogramm, Boxplot, Streudiagramm.
 - [x] Statistikmodus sauber von Graphmodus trennen.
+- [ ] Statistikdaten als Tabelle wieder herauskopieren.
+- [ ] Auffällige Ausreißer in Statistikdaten sichtbar markieren.
+- [ ] Regression mit Gleichung und Gütemaß verständlich anzeigen.
+
+---
+
+## Gleichungsmodus
+- [ ] Gleichungsmodus als ruhigen Helfer planen: lineare und quadratische Gleichungen zuerst, kein vollwertiges CAS.
+- [ ] Eingabeform festlegen: klassische Form `ax + b = c`, Koeffizientenfelder oder beides.
+- [ ] Lineare Gleichungen mit einer Variable lösen.
+- [ ] Quadratische Gleichungen mit reellen und komplexen Lösungen lösen.
+- [ ] Ergebnis mit kurzem Rechenweg anzeigen, aber nicht den Bildschirm volltexten.
+- [ ] Fehlerfälle menschlich formulieren: keine Lösung, unendlich viele Lösungen, ungültige Eingabe.
+- [ ] Gleichungsmodus vom normalen Parser wiederverwenden, ohne Parser-Sonderfälle quer durchs Projekt zu ziehen.
+- [ ] Unit Tests nachziehen: lineare Gleichungen, quadratische Gleichungen, Sonderfälle.
+
+---
+
+## Bruchmodus
+- [ ] Bruchmodus planen für exakte Rechnungen mit Brüchen statt gerundeten Dezimalzahlen.
+- [ ] Bruchmodell bauen: Zähler, Nenner, Kürzen, Vorzeichen normalisieren.
+- [ ] Grundrechenarten für Brüche implementieren: Addition, Subtraktion, Multiplikation, Division.
+- [ ] Gemischte Zahlen optional planen, aber nicht direkt erzwingen.
+- [ ] Dezimalzahl in Bruch umwandeln und Bruch als Dezimalzahl anzeigen.
+- [ ] Bruchmodus mit Standard/Wissenschaftlich verbinden: Ergebnis übernehmen, ohne beide Modi zu vermischen.
+- [ ] Unit Tests nachziehen: Kürzen, negative Brüche, Nenner 0, große Zahlen.
+
+---
+
+## Vektor-/Geometriemodus
+- [ ] Vektormodus klein starten: 2D- und 3D-Vektoren eingeben und anzeigen.
+- [ ] Vektoraddition, Subtraktion und Skalierung implementieren.
+- [ ] Skalarprodukt, Betrag und Winkel zwischen zwei Vektoren berechnen.
+- [ ] Kreuzprodukt nur für 3D ergänzen.
+- [ ] Einfache Geometrie-Helfer planen: Abstand zweier Punkte, Mittelpunkt, Steigung.
+- [ ] UI nicht überfrachten: Eingabefelder und Ergebnisbereich reichen am Anfang.
+- [ ] Unit Tests nachziehen: 2D/3D-Rechnungen, Nullvektor, Rundung.
+
+---
+
+## Finanzmodus
+- [ ] Finanzmodus als Alltagsrechner planen: Prozent, Rabatt, Steuer, Trinkgeld, Zinsen.
+- [ ] Einfache Zinsrechnung implementieren: Kapital, Zinssatz, Laufzeit, Endbetrag.
+- [ ] Prozentrechner mit klaren Fragen bauen: "Wie viel sind x Prozent von y?" und "x ist wie viel Prozent von y?".
+- [ ] Rabatt-/Mehrwertsteuer-Helfer ergänzen.
+- [ ] Monatsrate/Kreditrechner optional planen, aber erst nach den einfachen Fällen.
+- [ ] Ergebnisse nachvollziehbar anzeigen, damit es nicht wie eine schwarze Box wirkt.
+- [ ] Unit Tests nachziehen: Prozentfälle, Zinsen, Rundung auf Geldbeträge.
 
 ---
 
@@ -355,19 +409,50 @@
 - [ ] Verlaufseinträge löschen: einzeln.
 - [ ] Verlaufseinträge löschen: alle.
 - [ ] Verlaufseinträge löschen: nur aktueller Modus.
+- [ ] Vor dem endgültigen Löschen kurz nachfragen.
+- [ ] Gerade gelöschte Verlaufseinträge für diesen Moment zurückholen.
+- [ ] Gleiche Rechnungen im Verlauf auf Wunsch zusammenfassen.
 - [ ] Verlauf nach Modus filtern.
 - [ ] Verlauf nach Favoriten filtern.
 - [ ] Verlauf exportieren als `.txt`.
 - [ ] Verlauf exportieren als `.csv`.
 - [ ] Verlauf exportieren als `.json` optional planen.
 - [ ] Verlauf importieren optional planen.
-- [ ] Doppelklick-Verhalten bei strukturierten Einträgen neu implementieren.
-- [ ] History bei Standard/Wissenschaftlich sichtbar lassen.
-- [ ] History bei Programmierer/Graph/Komplex bewusst ausblenden oder modusspezifisch machen.
+- [x] Doppelklick-Verhalten bei strukturierten Einträgen neu implementieren.
+- [x] History bei Standard/Wissenschaftlich sichtbar lassen.
+- [x] History bei Programmierer/Graph/Komplex bewusst ausblenden oder modusspezifisch machen.
 - [x] Unit Tests nachziehen: Verlaufsladen alter Dateien absichern.
 - [x] Unit Tests nachgezogen: Verlaufsspeichern strukturierter Einträge absichern.
 - [x] Unit Tests nachziehen: Favoriten absichern.
 - [ ] Unit Tests nachziehen: Export absichern.
+
+---
+
+## UI/UX
+- [x] Freundliches modernes Theme `Azubi Modern` ergänzen.
+- [x] Gemeinsamen `ModernButtonStyler` für rundere Buttons, Hover, Pressed und Fokus einführen.
+- [x] Display, History und Settings auf moderne Card-/Input-Rollen umstellen.
+- [x] Graph, Matrix, Statistik, Komplex und Einheiten-SidePanel mit modernen Button-/Input-Rollen angleichen.
+- [x] Dezente humorvolle Leer-/Hinweistexte ergänzen, ohne die Bedienung zu stören.
+- [x] Obere Modusleiste auf Hauptmodi reduzieren: Standard, Wissenschaftlich, PRG, Graph, Komplex.
+- [x] Weitere-Modi-Menü für Matrix, Statistik und Einheiten ergänzen.
+- [x] Separaten Einheiten-Button aus der oberen Aktionsleiste entfernen.
+- [ ] Modernisierung manuell in allen Themes und Modi in IntelliJ durchklicken.
+- [ ] Kleine UI-Politur: Scrollbereiche und Tabellen optisch weiter angleichen.
+- [ ] Kompakte Ansicht für kleine Fenster anbieten.
+
+---
+
+## Animationen
+- [x] Kleine Swing-Animationsbasis mit `javax.swing.Timer` ergänzen.
+- [x] Button-Hover, Pressed und Klick-Feedback sanft animieren.
+- [x] Display-Ergebnis und Fehlerzustände kurz visuell hervorheben.
+- [x] Moduswechsel über aktiven Button und Fade-Overlay weicher wirken lassen.
+- [x] History-Einträge und Favorit-Umschaltung mit kurzem Feedback versehen.
+- [x] Graph-, Matrix- und Statistik-Ergebnisbereiche dezent hervorheben.
+- [ ] Option zum Reduzieren von Animationen prüfen.
+- [ ] Einstellung „weniger Bewegung“ wirklich umsetzen, sobald klar ist, welche Animationen bleiben dürfen.
+- [ ] Animationen manuell auf langsamen Geräten prüfen.
 
 ---
 
@@ -413,9 +498,32 @@
 - [x] `RechnerZustand` stärker kapseln und direkte `StringBuilder`-Zugriffe reduzieren.
 - [x] Unit Tests nachziehen: `BerechnungsService` stärker über Ergebnisobjekte statt Strings absichern.
 - [ ] Fehlerbehandlung vereinheitlichen.
-- [ ] Einheitliches `ModePanel`-Konzept planen: Jeder Modus bekommt klare Methoden für Theme, Fokus, Reset und optionale History.
+- [x] Einheitliches `ModePanel`-Konzept einführen: Jeder Modus bekommt klare Methoden für Modus, Theme, Sichtbarkeit und Winkelmodus.
+
+### Großes MVP-Refactoring
+- [x] Das große MVP-Refactoring planen, ohne die jetzige Modul-Struktur über den Haufen zu werfen.
+- [ ] Die einzelnen Rechner-Modi bleiben ihre eigenen kleinen Welten und bekommen nur intern eine klare MVP-Aufteilung.
+- [ ] Die Rollen simpel halten: Model kennt die Daten, View zeigt den Kram an und der Presenter kümmert sich um den Ablauf.
+- [ ] Den Komplexmodus als erstes Versuchskaninchen umbauen, weil dort Model, State, Service und Formatter schon vorhanden sind.
+- [ ] Nach dem ersten Umbau ehrlich prüfen: Ist der Code wirklich einfacher geworden oder haben wir nur mehr Dateien gebaut?
+- [ ] Nur weitermachen, wenn der MVP-Aufbau beim Komplexmodus übersichtlicher und leichter testbar ist.
+- [ ] Swing-Panels nach und nach abspecken: anzeigen, Eingaben annehmen und Klicks weitergeben sollte dort möglichst reichen.
+- [ ] Berechnungen, Zustandsänderungen und längere Abläufe aus den Panels in den Presenter oder passende Services verschieben.
+- [ ] Presenter ohne `JButton`, `JPanel` und sonstiges Swing-Zeug halten, damit man sie ohne echtes Fenster testen kann.
+- [ ] Services und States von außen übergeben, statt sie irgendwo versteckt im Panel mit `new` zu erstellen.
+- [ ] Keine Monster-Presenter bauen, die am Ende wieder alles können und nur anders heißen.
+- [ ] Keine leeren Interfaces oder Mini-Klassen nur deshalb anlegen, weil MVP auf dem Papier danach aussieht.
+- [ ] Standard und Wissenschaftlich gemeinsam betrachten, weil beide viel Rechnerlogik und dasselbe Display teilen.
+- [ ] Danach Matrix, Statistik, Graph und PRG Stück für Stück umbauen – nicht alles in einem riesigen Rundumschlag.
+- [ ] `TaschenrechnerUI` am Ende möglichst nur noch die Bauteile zusammenstecken lassen.
+- [ ] Moduswechsel, Settings, Session und History in eine kleine Shell-Steuerung verschieben, wenn es dadurch wirklich ruhiger wird.
+- [ ] Für jeden Presenter verständliche Unit Tests schreiben; die vorhandenen Paneltests bleiben als Sicherheitsnetz bestehen.
+- [ ] Alten Misch-Code erst entfernen, wenn der jeweilige Modus nach dem Umbau genauso funktioniert wie vorher.
+- [ ] Eine kurze Architektur-Seite schreiben: Wo gehört neuer Code hin und wie sieht ein einfacher MVP-Modus bei uns aus?
+
 - [ ] Gemeinsames `ModeState`-Konzept entwerfen, ohne Spezialzustände wie Graph/Komplex/PRG in `RechnerZustand` zu quetschen.
 - [ ] Theme-Duplikation reduzieren, z. B. über `ThemePalette` oder Basisklasse.
+- [x] Gemeinsame Button-Rollenzuordnung in `CalculatorButtonStyler` bündeln und für Standard/Wissenschaftlich/Shell nutzen.
 - [ ] Theme-System um semantische Rollen erweitern: Display, Function, Operator, Danger, Accent, Disabled, Grid, Canvas.
 - [x] Theme Default-Rollen für Disabled, Hover, Pressed, Danger, Grid, Canvas und Popup ergänzen.
 - [x] Action-Bar-Popup und Graph-Canvas auf semantische Theme-Rollen umstellen.
@@ -430,6 +538,7 @@
 - [x] Ausdruck-/Clipboard-Normalisierung aus `AusdruckEditor` auslagern.
 - [x] `AusdruckEditor` Term- und Zahlenpositionslogik in package-private Helper auslagern.
 - [x] Legacy-Verlaufstext-Mapping aus `HistoryPanel` nach `common.history` verschieben.
+- [x] History-Suche in eine reine `HistoryFilter`-Hilfe auslagern.
 - [x] Hardcoded Start-Hintergrund aus `ProgrammiererPanel` entfernen.
 - [x] `ProgrammiererPanel` nach Funktionalitätsabschluss aufteilen.
 - [ ] Build-System sauber entscheiden: Maven oder Gradle, danach Unit Tests mit einem Standardbefehl ausführbar machen.
@@ -445,6 +554,8 @@
 - [x] Funktionalität geben
 - [x] Settings-Dialog: Änderungen optional mit Speichern/Abbrechen statt Sofortübernahme anbieten.
 - [ ] Settings-Datei versionieren, falls später neue Felder dazukommen.
+- [ ] Einstellungen mit einem Klick auf einen sicheren Standard zurücksetzen.
+- [ ] Bei neuen Einstellungen kurz erklären, was sie verändern.
 - [x] Einstellungen-Dialog planen.
 - [x] Einstellungen persistent speichern.
 - [x] Einstellungen für Präzision ergänzen.
@@ -464,6 +575,9 @@
 - [x] Session laden mit Migrations-/Kompatibilitätsprüfung.
 - [ ] Export/Screenshot des Rechners optional planen.
 - [ ] Export planen: Verlauf als TXT/CSV/JSON, Graph als PNG, Matrix als CSV.
+- [ ] Start ohne IntelliJ für andere Menschen wirklich testen.
+- [ ] Portable Version mit allen nötigen Dateien vorbereiten.
+- [ ] Kleine Release-Checkliste schreiben: testen, Version erhöhen, Changelog, Paket bauen.
 - [ ] Druck-/Report-Ansicht optional planen.
 - [ ] Lokale Projektdateien für komplexere Arbeiten planen, z. B. Graphen + Tabellen + Notizen.
 - [ ] Lokalisierung Deutsch/Englisch optional planen.

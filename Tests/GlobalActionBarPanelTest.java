@@ -6,54 +6,54 @@ import java.awt.Component;
 import java.awt.Container;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class GlobalActionBarPanelTest
 {
     @Test
     void actionBar_ShouldShowSettingsButton()
     {
-        // Arrange
         GlobalActionBarPanel panel = new GlobalActionBarPanel();
 
-        // Act
-        JButton settingsButton = findButton(panel, "⚙");
+        JButton settingsButton = findButton(panel, "Einstellungen");
 
-        // Assert
-        assertEquals("Einstellungen öffnen", settingsButton.getToolTipText());
+        assertEquals("Einstellungen oeffnen", settingsButton.getToolTipText());
     }
 
     @Test
     void actionBar_ShouldInvokeSettingsListener_WhenSettingsButtonIsClicked()
     {
-        // Arrange
         GlobalActionBarPanel panel = new GlobalActionBarPanel();
         AtomicBoolean invoked = new AtomicBoolean(false);
         panel.setSettingsListener(e -> invoked.set(true));
 
-        // Act
-        findButton(panel, "⚙").doClick();
+        findButton(panel, "Einstellungen").doClick();
 
-        // Assert
         assertTrue(invoked.get());
     }
 
     @Test
-    void actionBar_ShouldInvokeUnitsListener_WhenUnitsButtonIsClicked()
+    void actionBar_ShouldNotExposeUnitsButton_AsTopLevelAction()
     {
-        // Arrange
         GlobalActionBarPanel panel = new GlobalActionBarPanel();
-        AtomicBoolean invoked = new AtomicBoolean(false);
-        panel.setUnitsListener(e -> invoked.set(true));
 
-        // Act
-        findButton(panel, "Einheiten").doClick();
-
-        // Assert
-        assertTrue(invoked.get());
+        assertNull(findOptionalButton(panel, "Einheiten"));
     }
 
     private JButton findButton(Container container, String text)
+    {
+        JButton result = findOptionalButton(container, text);
+        if (result == null)
+        {
+            fail("Button not found: " + text);
+        }
+        return result;
+    }
+
+    private JButton findOptionalButton(Container container, String text)
     {
         for (Component component : container.getComponents())
         {
@@ -64,17 +64,14 @@ public class GlobalActionBarPanelTest
 
             if (component instanceof Container child)
             {
-                try
+                JButton result = findOptionalButton(child, text);
+                if (result != null)
                 {
-                    return findButton(child, text);
-                }
-                catch (AssertionError ignored)
-                {
+                    return result;
                 }
             }
         }
 
-        fail("Button not found: " + text);
         return null;
     }
 }

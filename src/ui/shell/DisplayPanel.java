@@ -1,6 +1,8 @@
 package ui.shell;
 
 import ui.theme.AppTheme;
+import ui.theme.ModernButtonStyler;
+import ui.animation.AnimationSupport;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -22,6 +24,7 @@ public class DisplayPanel extends JPanel
     private final JTextPane recDisplay = new JTextPane();
     private final JTextPane mainDisplay = new JTextPane();
     private final JLabel statusLabel = new JLabel("Modus: Standard | Winkel: DEG | Speicher: leer");
+    private final JPanel displayArea = new JPanel(new BorderLayout(0, 4));
 
     private Consumer<String> pasteListener;
     private AppTheme currentTheme;
@@ -44,7 +47,6 @@ public class DisplayPanel extends JPanel
 
         mainDisplay.setText("0");
 
-        JPanel displayArea = new JPanel(new BorderLayout(0, 4));
         displayArea.setOpaque(true);
         displayArea.setBorder(new EmptyBorder(10, 12, 8, 12));
         displayArea.add(recDisplay, BorderLayout.NORTH);
@@ -150,8 +152,8 @@ public class DisplayPanel extends JPanel
     {
         this.currentTheme = theme;
 
-        Component displayArea = getComponent(0);
         displayArea.setBackground(theme.displayBackground());
+        displayArea.setBorder(ModernButtonStyler.cardBorder(theme));
 
         recDisplay.setBackground(theme.displayBackground());
         recDisplay.setForeground(theme.secondaryDisplayForeground());
@@ -163,6 +165,22 @@ public class DisplayPanel extends JPanel
         statusLabel.setForeground(theme.secondaryDisplayForeground());
         statusLabel.setFont(theme.secondaryDisplayFont().deriveFont(Font.PLAIN, 13f));
         updateMainDisplayFont();
+    }
+
+    public void pulseSuccess()
+    {
+        if (currentTheme != null)
+        {
+            AnimationSupport.pulseBackground(displayArea, currentTheme.successPulseColor(), 220);
+        }
+    }
+
+    public void pulseError()
+    {
+        if (currentTheme != null)
+        {
+            AnimationSupport.pulseBackground(displayArea, currentTheme.errorPulseColor(), 240);
+        }
     }
 
     public int getMainFontSize()

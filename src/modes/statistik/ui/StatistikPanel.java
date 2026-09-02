@@ -1,12 +1,16 @@
 package modes.statistik.ui;
 
+import common.state.RechnerModus;
 import modes.statistik.formatting.StatistikFormatter;
 import modes.statistik.logic.StatistikRechnerService;
 import modes.statistik.model.StatistikDatenpunkt;
 import modes.statistik.model.StatistikDiagrammTyp;
 import modes.statistik.model.StatistikErgebnis;
 import modes.statistik.model.StatistikState;
+import ui.animation.AnimationSupport;
 import ui.theme.AppTheme;
+import ui.theme.ModernButtonStyler;
+import ui.shell.ModePanel;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -28,7 +32,7 @@ import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StatistikPanel extends JPanel
+public class StatistikPanel extends JPanel implements ModePanel
 {
     private static final String[] TABLE_COLUMNS = {"x", "y", "Gewicht"};
 
@@ -61,19 +65,26 @@ public class StatistikPanel extends JPanel
         fuelleBeispielTabelle();
     }
 
+    @Override
+    public RechnerModus getRechnerModus()
+    {
+        return RechnerModus.STATISTIK;
+    }
+
     public void applyTheme(AppTheme theme)
     {
         this.theme = theme;
         setBackground(theme.windowBackground());
         applyThemeRecursively(this);
 
-        textInput.setBackground(theme.historySearchBackground());
+        textInput.setBackground(theme.inputBackground());
         textInput.setForeground(theme.displayForeground());
         textInput.setCaretColor(theme.displayForeground());
+        textInput.setBorder(ModernButtonStyler.cardBorder(theme));
         resultArea.setBackground(theme.displayBackground());
         resultArea.setForeground(theme.displayForeground());
         resultArea.setCaretColor(theme.displayForeground());
-        dataTable.setBackground(theme.historySearchBackground());
+        dataTable.setBackground(theme.inputBackground());
         dataTable.setForeground(theme.displayForeground());
         dataTable.setGridColor(theme.modeBorder());
         dataTable.getTableHeader().setBackground(theme.toggleButtonBackground());
@@ -88,20 +99,13 @@ public class StatistikPanel extends JPanel
         for (JTextField field : fields)
         {
             field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            field.setBackground(theme.historySearchBackground());
-            field.setForeground(theme.displayForeground());
+            ModernButtonStyler.styleInput(field, theme);
             field.setCaretColor(theme.displayForeground());
         }
 
         for (JButton button : buttons)
         {
-            button.setFont(theme.buttonFont());
-            button.setBackground(theme.toggleButtonBackground());
-            button.setForeground(theme.toggleButtonForeground());
-            button.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
-            button.setBorderPainted(false);
-            button.setFocusPainted(false);
-            button.setOpaque(true);
+            ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
         }
     }
 
@@ -122,7 +126,7 @@ public class StatistikPanel extends JPanel
         controls.add(createButton("Text auswerten", this::werteTextAus));
         controls.add(createButton("Tabelle auswerten", this::werteTabelleAus));
         controls.add(createButton("Beispiel", this::beispiel));
-        controls.add(createButton("Clear", this::clear));
+        controls.add(createButton("Leeren", this::clear));
         controls.add(wrapField("Klassen", klassenField));
         controls.add(sortierenBox);
 
@@ -232,6 +236,7 @@ public class StatistikPanel extends JPanel
         resultArea.setText(formatter.formatiereErgebnis(aktuellesErgebnis));
         diagrammPanel.setErgebnis(aktuellesErgebnis);
         statusLabel.setText(status + " | n = " + aktuellesErgebnis.getAnzahl());
+        pulseResult(false);
     }
 
     private int parseKlassenAnzahl()
@@ -363,10 +368,20 @@ public class StatistikPanel extends JPanel
         catch (Exception e)
         {
             statusLabel.setText(e.getMessage() == null || e.getMessage().isBlank()
-                    ? "Ungueltige Statistikdaten"
+                    ? "Ungültige Statistikdaten"
                     : e.getMessage());
             resultArea.setText("Fehler");
             diagrammPanel.setErgebnis(null);
+            pulseResult(true);
+        }
+    }
+
+    private void pulseResult(boolean error)
+    {
+        if (theme != null)
+        {
+            AnimationSupport.pulseBackground(resultArea, error ? theme.errorPulseColor() : theme.successPulseColor(), 200);
+            AnimationSupport.pulseBackground(diagrammPanel, error ? theme.errorPulseColor() : theme.softAccentBackground(), 200);
         }
     }
 

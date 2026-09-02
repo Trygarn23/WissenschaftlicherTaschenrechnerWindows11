@@ -122,7 +122,7 @@ class ProgrammiererTastenPanel extends JPanel
             String text = entry.getKey();
             JButton button = entry.getValue();
 
-            if (text.matches("[0-9A-F]") || button == unsignedButton || "Â±".equals(text))
+            if (text.matches("[0-9A-F]") || button == unsignedButton || "±".equals(text))
             {
                 continue;
             }
