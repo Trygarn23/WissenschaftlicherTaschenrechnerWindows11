@@ -1,5 +1,6 @@
 package modes.matrix.ui;
 
+import common.formatting.ZahlenEingabe;
 import modes.matrix.formatting.MatrixFormatter;
 import modes.matrix.logic.MatrixRechnerService;
 import modes.matrix.model.Matrix;
@@ -253,7 +254,7 @@ public class MatrixPanel extends JPanel implements ModePanel
 
     private double parse(JTextField field)
     {
-        return Double.parseDouble(field.getText().trim().replace(',', '.'));
+        return ZahlenEingabe.lese(field.getText());
     }
 
     private int selected(JComboBox<Integer> box)
@@ -268,7 +269,7 @@ public class MatrixPanel extends JPanel implements ModePanel
         {
             action.run();
         }
-        catch (Exception e)
+        catch (IllegalArgumentException | ArithmeticException e)
         {
             showError(e.getMessage());
         }

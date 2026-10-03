@@ -31,13 +31,13 @@ public final class EinheitenKatalog
         add(EinheitKategorie.LAENGE, "Meter", "m", 1.0);
         add(EinheitKategorie.LAENGE, "Kilometer", "km", 1000.0);
         add(EinheitKategorie.LAENGE, "Zoll", "in", 0.0254);
-        add(EinheitKategorie.LAENGE, "Fuss", "ft", 0.3048);
+        add(EinheitKategorie.LAENGE, "Fuß", "ft", 0.3048);
         add(EinheitKategorie.LAENGE, "Meile", "mi", 1609.344);
 
         add(EinheitKategorie.FLAECHE, "Quadratmeter", "m^2", 1.0);
         add(EinheitKategorie.FLAECHE, "Quadratkilometer", "km^2", 1_000_000.0);
         add(EinheitKategorie.FLAECHE, "Hektar", "ha", 10_000.0);
-        add(EinheitKategorie.FLAECHE, "Quadratfuss", "ft^2", 0.09290304);
+        add(EinheitKategorie.FLAECHE, "Quadratfuß", "ft^2", 0.09290304);
 
         add(EinheitKategorie.VOLUMEN, "Milliliter", "ml", 0.001);
         add(EinheitKategorie.VOLUMEN, "Liter", "l", 1.0);

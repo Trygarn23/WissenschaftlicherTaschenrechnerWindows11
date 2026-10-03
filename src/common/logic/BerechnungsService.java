@@ -47,8 +47,9 @@ public class BerechnungsService
         {
             return fehler(mappeParserFehler(e.getFehler()));
         }
-        catch (Exception e)
+        catch (IllegalArgumentException e)
         {
+            // z. B. NumberFormatException bei Zahlen wie "1.2.3"
             return fehler(BerechnungsFehler.SYNTAX);
         }
     }
@@ -64,7 +65,7 @@ public class BerechnungsService
             double wert = AusdruckParser.auswerten(zustand.getAusdruckText(), zustand.getLetzteAntwort(), zustand.getWinkelModus());
             return Double.isFinite(wert) ? wert : 0.0;
         }
-        catch (Exception e)
+        catch (IllegalArgumentException e)
         {
             return 0.0;
         }

@@ -1,5 +1,6 @@
 package ui.units;
 
+import common.formatting.ZahlenEingabe;
 import common.units.Einheit;
 import common.units.EinheitKategorie;
 import common.units.EinheitenService;
@@ -244,7 +245,7 @@ public class EinheitenSidePanel extends JPanel
             detailLabel.setText(von + " -> " + nach);
             statusLabel.setText("Live umgerechnet");
         }
-        catch (Exception e)
+        catch (IllegalArgumentException e)
         {
             resultLabel.setText("Fehler");
             detailLabel.setText("Keine gültige Umrechnung");
@@ -254,7 +255,7 @@ public class EinheitenSidePanel extends JPanel
 
     private double parseZahl(String text)
     {
-        return Double.parseDouble(text.trim().replace(',', '.'));
+        return ZahlenEingabe.lese(text);
     }
 
     private void styleCombo(JComboBox<?> comboBox)

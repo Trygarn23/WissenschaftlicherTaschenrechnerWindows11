@@ -6,12 +6,12 @@ public record StatistikDatenpunkt(double x, double y, double gewicht)
     {
         if (!Double.isFinite(x) || !Double.isFinite(y) || !Double.isFinite(gewicht))
         {
-            throw new IllegalArgumentException("Statistikdaten muessen endlich sein.");
+            throw new IllegalArgumentException("Statistikdaten müssen endlich sein.");
         }
 
         if (gewicht <= 0.0)
         {
-            throw new IllegalArgumentException("Gewicht muss groesser als 0 sein.");
+            throw new IllegalArgumentException("Gewicht muss größer als 0 sein.");
         }
     }
 

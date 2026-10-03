@@ -30,12 +30,12 @@ public class EinheitenService
     {
         if (von == null || nach == null)
         {
-            throw new IllegalArgumentException("Start- und Zieleinheit muessen gesetzt sein.");
+            throw new IllegalArgumentException("Start- und Zieleinheit müssen gesetzt sein.");
         }
 
         if (von.kategorie() != nach.kategorie())
         {
-            throw new IllegalArgumentException("Einheiten muessen zur gleichen Kategorie gehoeren.");
+            throw new IllegalArgumentException("Einheiten müssen zur gleichen Kategorie gehören.");
         }
 
         if (!Double.isFinite(wert))

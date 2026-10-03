@@ -1,5 +1,6 @@
 package modes.statistik.ui;
 
+import common.formatting.ZahlenEingabe;
 import common.state.RechnerModus;
 import modes.statistik.formatting.StatistikFormatter;
 import modes.statistik.logic.StatistikRechnerService;
@@ -296,7 +297,7 @@ public class StatistikPanel extends JPanel implements ModePanel
 
     private double parseZahl(String text)
     {
-        return Double.parseDouble(text.trim().replace(',', '.'));
+        return ZahlenEingabe.lese(text);
     }
 
     private void beispiel()
@@ -365,7 +366,7 @@ public class StatistikPanel extends JPanel implements ModePanel
         {
             action.run();
         }
-        catch (Exception e)
+        catch (IllegalArgumentException | ArithmeticException e)
         {
             statusLabel.setText(e.getMessage() == null || e.getMessage().isBlank()
                     ? "Ungültige Statistikdaten"

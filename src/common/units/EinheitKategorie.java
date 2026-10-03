@@ -2,8 +2,8 @@ package common.units;
 
 public enum EinheitKategorie
 {
-    LAENGE("Laenge"),
-    FLAECHE("Flaeche"),
+    LAENGE("Länge"),
+    FLAECHE("Fläche"),
     VOLUMEN("Volumen"),
     MASSE("Masse"),
     ZEIT("Zeit"),

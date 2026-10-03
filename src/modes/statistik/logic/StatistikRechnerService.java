@@ -1,5 +1,6 @@
 package modes.statistik.logic;
 
+import common.formatting.ZahlenEingabe;
 import modes.statistik.model.StatistikDatenpunkt;
 import modes.statistik.model.StatistikErgebnis;
 import modes.statistik.model.StatistikKlasse;
@@ -43,7 +44,7 @@ public class StatistikRechnerService
     {
         if (datenpunkte == null || datenpunkte.isEmpty())
         {
-            throw new IllegalArgumentException("Mindestens ein Datenwert wird benoetigt.");
+            throw new IllegalArgumentException("Mindestens ein Datenwert wird benötigt.");
         }
 
         List<StatistikDatenpunkt> daten = List.copyOf(datenpunkte);
@@ -148,7 +149,7 @@ public class StatistikRechnerService
 
     private double parseZahl(String text)
     {
-        return Double.parseDouble(text.trim().replace(',', '.'));
+        return ZahlenEingabe.lese(text);
     }
 
     private double quantil(List<Double> werte, double p)

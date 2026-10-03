@@ -12,8 +12,10 @@ import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.function.Consumer;
 
 public class DisplayPanel extends JPanel
@@ -242,7 +244,7 @@ public class DisplayPanel extends JPanel
                 pasteListener.accept(text);
             }
         }
-        catch (Exception ignored)
+        catch (UnsupportedFlavorException | IOException | IllegalStateException ignored)
         {
             Toolkit.getDefaultToolkit().beep();
         }

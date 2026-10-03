@@ -1,5 +1,6 @@
 package modes.komplex.ui;
 
+import common.formatting.ZahlenEingabe;
 import common.state.RechnerModus;
 import modes.komplex.formatting.KomplexFormatter;
 import modes.komplex.logic.KomplexRechnerService;
@@ -16,6 +17,8 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BinaryOperator;
+import java.util.function.UnaryOperator;
 
 public class KomplexPanel extends JPanel implements ModePanel
 {
@@ -169,7 +172,7 @@ public class KomplexPanel extends JPanel implements ModePanel
         return button;
     }
 
-    private void calculateBinary(ComplexOperation operation, String status)
+    private void calculateBinary(BinaryOperator<KomplexeZahl> operation, String status)
     {
         try
         {
@@ -178,25 +181,15 @@ public class KomplexPanel extends JPanel implements ModePanel
             state.setStatus(status);
             refresh();
         }
-        catch (Exception e)
+        catch (IllegalArgumentException | ArithmeticException e)
         {
             showError(e.getMessage());
         }
     }
 
-    private void calculateUnary(ComplexUnaryOperation operation, String status)
+    private void calculateUnary(UnaryOperator<KomplexeZahl> operation, String status)
     {
-        try
-        {
-            readInputs();
-            state.setErgebnis(operation.apply(state.getErsteZahl()));
-            state.setStatus(status);
-            refresh();
-        }
-        catch (Exception e)
-        {
-            showError(e.getMessage());
-        }
+        calculateBinary((erste, zweite) -> operation.apply(erste), status);
     }
 
     private void readInputs()
@@ -207,7 +200,7 @@ public class KomplexPanel extends JPanel implements ModePanel
 
     private double parse(JTextField field)
     {
-        return Double.parseDouble(field.getText().trim().replace(',', '.'));
+        return ZahlenEingabe.lese(field.getText());
     }
 
     private void refresh()
@@ -263,17 +256,5 @@ public class KomplexPanel extends JPanel implements ModePanel
                 applyThemeToChildren(child);
             }
         }
-    }
-
-    @FunctionalInterface
-    private interface ComplexOperation
-    {
-        KomplexeZahl apply(KomplexeZahl a, KomplexeZahl b);
-    }
-
-    @FunctionalInterface
-    private interface ComplexUnaryOperation
-    {
-        KomplexeZahl apply(KomplexeZahl zahl);
     }
 }
