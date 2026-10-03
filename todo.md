@@ -37,6 +37,10 @@
 - [ ] Letzte Eingabe nach einem Absturz wieder anbieten, damit nicht alles einfach weg ist.
 - [ ] Einmal Rückgängig anbieten, wenn man aus Versehen den Ausdruck gelöscht hat.
 - [ ] Klammerpaare beim Tippen sichtbar zusammengehörig markieren.
+- [ ] Stern-Button im Verlauf zeigt nur ein Kästchen → Segoe UI kennt `☆` nicht, andere Schrift nehmen oder das Icon selber malen.
+- [ ] Suchfeld im Verlauf ist zu schmal, da steht nur „Such“ → Spalte breiter machen oder mitwachsen lassen.
+- [ ] Live-Vorschau im Display: Ergebnis schon beim Tippen grau anzeigen, z. B. „= 42“ → `aktuellerWertOder0()` gibt's eh schon.
+- [ ] Anzeigen, wie viele Klammern noch offen sind, z. B. „2 offen“ → als kleiner Zwischenschritt, bevor die Klammerpaare markiert werden.
 - [x] Fenstergröße nach Neustart optional speichern.
 - [x] Letzten aktiven Modus optional speichern.
 - [x] Letzten Winkelmodus optional speichern.
@@ -114,6 +118,11 @@
 - [ ] Ergebnis bei Bedarf mit mehr Nachkommastellen anschauen, ohne die Einstellung dauerhaft umzubauen.
 - [ ] Wissenschaftliches `f(x)`-Popup optisch in allen Themes angleichen.
 - [ ] Wissenschaftliches Panel bei kleiner Fenstergröße stabilisieren.
+- [ ] S⇔D-Taste wie beim Casio: Ergebnis exakt anzeigen, z. B. 0,333… → 1/3 oder 1,414… → √2.
+- [ ] `nCr` und `nPr` ergänzen.
+- [ ] ggT, kgV und Primfaktorzerlegung ergänzen.
+- [ ] Variablen A–F zum Speichern (STO/RCL), weil ein M-Speicher auf Dauer echt wenig ist.
+- [ ] `2nd`-Taste wie beim TI überlegen: sin ↔ asin, x² ↔ √x usw. → könnte das `f(x)`-Popup ersetzen?
 
 ---
 
@@ -190,6 +199,9 @@
 - [x] PRG-Disabled-Zustände pro Theme lesbar machen.
 - [x] PRG-Hover-/Pressed-Zustände pro Theme angleichen.
 - [x] Unit Tests nachziehen: Themewechsel verändert den Programmierermodus sichtbar.
+- [ ] Bit-Leiste mit 64 klickbaren Kästchen, ein Klick kippt das Bit.
+- [ ] Wert zusätzlich als ASCII-/Unicode-Zeichen anzeigen.
+- [ ] IEEE-754-Ansicht: Wie sieht die Zahl intern als `float`/`double` aus? → Vorzeichen, Exponent, Mantisse.
 
 ---
 
@@ -252,6 +264,9 @@
 - [x] Kurvendiskussion für Graphen durch anclicken machen, Automatisch erster Graph
 - [x] GraphenBuchstaben ineinander nutzen können: f(x) = 2x ; g(x) = x^2 + f(x) ; ...
 - [x] Scrolling bzw UI etwas überarbeiten → Zeichnen knöpfe etwas kleiner und generell etwas verbessern
+- [ ] Schieberegler für Parameter: f(x) = a·x², a am Regler ziehen und die Kurve wackelt live mit.
+- [ ] Tangente an einem angeklickten Punkt einzeichnen.
+- [ ] Fläche unter der Kurve berechnen (Integral, numerisch reicht) und schraffiert anzeigen.
 
 ---
 
@@ -288,6 +303,7 @@
 - [x] Kopieren des Ergebnisses als Text unterstützen.
 - [x] Unit Tests nachgezogen: Rundung und Formatierung absichern.
 - [x] Unit Tests nachgezogen: Sonderfälle absichern: rein reell, rein imaginär, null.
+- [ ] Gaußsche Zahlenebene: z1, z2 und das Ergebnis als Pfeile zeichnen.
 
 ---
 
@@ -319,6 +335,7 @@
 - [ ] Statistikdaten als Tabelle wieder herauskopieren.
 - [ ] Auffällige Ausreißer in Statistikdaten sichtbar markieren.
 - [ ] Regression mit Gleichung und Gütemaß verständlich anzeigen.
+- [ ] Normalverteilung und Binomialverteilung als kleine Rechner → typischer Abi-Kram.
 
 ---
 
@@ -364,6 +381,34 @@
 - [ ] Monatsrate/Kreditrechner optional planen, aber erst nach den einfachen Fällen.
 - [ ] Ergebnisse nachvollziehbar anzeigen, damit es nicht wie eine schwarze Box wirkt.
 - [ ] Unit Tests nachziehen: Prozentfälle, Zinsen, Rundung auf Geldbeträge.
+
+---
+
+## IT-/Netzwerkmodus
+- [ ] Subnetzrechner für IPv4: IP + CIDR rein, Netzadresse, Broadcast und Anzahl Hosts raus.
+- [ ] Subnetting: Netz in x gleich große Teilnetze aufteilen → Lernfeld Netzwerke / AP1 lässt grüßen.
+- [ ] Subnetzmaske zwischen `/24` und `255.255.255.0` hin und her umrechnen.
+- [ ] IP-Adresse binär anzeigen, damit man sieht, wo Netz- und Hostteil anfangen.
+- [ ] IPv6 erstmal nur kürzen/ausschreiben, alles andere später.
+- [ ] Unit Tests nachziehen: typische Prüfungsaufgaben, `/31`, `/32`, ungültige IPs.
+
+---
+
+## Logikmodus
+- [ ] Ausdruck wie `A ∧ (B ∨ ¬C)` eingeben und die Wahrheitstabelle ausspucken lassen.
+- [ ] Eingabe auch mit `&&`, `||`, `!` bzw. AND/OR/NOT erlauben, damit man nicht nach Sonderzeichen suchen muss.
+- [ ] KV-Diagramm optional planen, aber erst wenn die Wahrheitstabelle sauber läuft.
+- [ ] Unit Tests nachziehen: Klammern, Vorrang, Variablen A–D.
+
+---
+
+## Datums-/Zeitrechner
+- [ ] Tage zwischen zwei Daten ausrechnen.
+- [ ] Datum + n Tage / Wochen / Monate.
+- [ ] Wochentag zu einem Datum anzeigen.
+- [ ] Arbeitstage zählen, Wochenende raus → Feiertage optional später.
+- [ ] Stunden und Minuten zusammenrechnen, z. B. für das Berichtsheft.
+- [ ] Unit Tests nachziehen: Schaltjahre, Monatsende, Jahreswechsel.
 
 ---
 
@@ -446,6 +491,12 @@
 - [ ] Modernisierung manuell in allen Themes und Modi in IntelliJ durchklicken.
 - [ ] Kleine UI-Politur: Scrollbereiche und Tabellen optisch weiter angleichen.
 - [ ] Kompakte Ansicht für kleine Fenster anbieten.
+- [ ] Verlauf ein-/ausklappbar machen, die Tasten sind eh riesig und der Verlauf winzig.
+- [ ] Befehlssuche mit Strg+K: Modus, Theme, Funktion oder Konstante tippen, Enter, fertig → Aktionen haben jetzt eh eindeutige Namen.
+- [x] Moduswechsel per Strg+1 bis Strg+9. → Strg+1–7 Modi, Strg+8 Einheiten, F1 bzw. Button „Tastenkürzel“ zeigt alle Kürzel an.
+- [ ] Zuletzt genutzte Modi in der Modusleiste weiter nach vorne holen.
+- [ ] Im Display irgendwo in den Ausdruck klicken und mittendrin weitertippen, statt nur hinten anhängen/löschen.
+- [ ] Mini-Rechner: kleines Fenster, das immer im Vordergrund bleibt → z. B. neben IntelliJ.
 
 ---
 
@@ -593,6 +644,9 @@
 - [ ] GitHub Releases vorbereiten.
 - [ ] Changelog führen.
 - [x] Version im UI anzeigen.
+- [ ] Prüfungsmodus: nur Standard + Wissenschaftlich, Verlauf und Graph gesperrt, und man sieht direkt, dass er an ist.
+- [ ] Rechner-Statistik als Spaß-Feature: „Deine Lieblingsfunktion: sin (42×)“ xD
+- [ ] GitHub Actions: Tests bei jedem Push automatisch laufen lassen → geht erst nach Maven/Gradle.
 
 ## Legende
 - [x] fertig

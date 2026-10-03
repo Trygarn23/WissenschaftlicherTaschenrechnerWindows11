@@ -1,15 +1,18 @@
 package ui.shell;
 
+import common.state.RechnerModus;
 import ui.history.HistoryPanel;
 import ui.shortcuts.Tastenkuerzel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 public class KeyboardShortcutBinder
 {
@@ -67,6 +70,42 @@ public class KeyboardShortcutBinder
         }
 
         bind(im, am, KeyEvent.VK_ESCAPE, "escapePress", closeAction);
+    }
+
+    /**
+     * Strg+1 … Strg+8 und F1 funktionieren in jedem Modus, auch wenn die Rechnertasten gerade aus sind
+     * oder das Suchfeld den Fokus hat.
+     */
+    public void setupGlobaleTasten(Consumer<RechnerModus> modusWechsel, Runnable einheitenUmschalten, Runnable hilfeOeffnen)
+    {
+        InputMap im = rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = rootPane.getActionMap();
+
+        for (RechnerModus modus : RechnerModus.values())
+        {
+            bindStrgZahl(im, am, Tastenkuerzel.modusNummer(modus), "modus" + modus.name(), () -> modusWechsel.accept(modus));
+        }
+        bindStrgZahl(im, am, Tastenkuerzel.einheitenNummer(), "einheitenUmschalten", einheitenUmschalten);
+        bindImmer(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), "tastenkuerzelHilfe", hilfeOeffnen);
+    }
+
+    private void bindStrgZahl(InputMap im, ActionMap am, int nummer, String name, Runnable action)
+    {
+        bindImmer(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_0 + nummer, InputEvent.CTRL_DOWN_MASK), name, action);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0 + nummer, InputEvent.CTRL_DOWN_MASK), name);
+    }
+
+    private void bindImmer(InputMap im, ActionMap am, KeyStroke ks, String name, Runnable action)
+    {
+        im.put(ks, name);
+        am.put(name, new AbstractAction()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                action.run();
+            }
+        });
     }
 
     private void bind(InputMap im, ActionMap am, int tastenCode, String name, Runnable action)

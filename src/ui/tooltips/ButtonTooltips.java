@@ -94,9 +94,7 @@ public final class ButtonTooltips
         }
 
         String normalizedKey = "f(x) ▼".equals(key) ? "f(x)" : key;
-        String description = normalizedKey.matches("\\d")
-                ? "Gibt die Ziffer " + key + " ein"
-                : DESCRIPTIONS.get(normalizedKey);
+        String description = beschreibungFor(normalizedKey);
 
         if (description == null)
         {
@@ -110,6 +108,16 @@ public final class ButtonTooltips
         }
 
         return description + " (Taste: " + shortcut + ")";
+    }
+
+    /** Nur die Beschreibung ohne Tastenkürzel, z. B. für die Tastenkürzel-Übersicht. */
+    public static String beschreibungFor(String key)
+    {
+        if (key == null)
+        {
+            return null;
+        }
+        return key.matches("\\d") ? "Gibt die Ziffer " + key + " ein" : DESCRIPTIONS.get(key);
     }
 
     private static String shortcutFor(String key)

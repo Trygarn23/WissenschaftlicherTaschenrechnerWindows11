@@ -1,6 +1,7 @@
 package ui.shell;
 
 import common.state.RechnerModus;
+import ui.shortcuts.Tastenkuerzel;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 
@@ -60,6 +61,8 @@ public class ModeBarPanel extends JPanel
     {
         JButton button = new JButton(modus.getLabel());
         button.setFocusable(false);
+        button.setToolTipText("Wechselt zu " + modus.getLabel()
+                + " (" + Tastenkuerzel.strgText(Tastenkuerzel.modusNummer(modus)) + ")");
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         button.addActionListener(e -> openMode(modus));
         return button;
@@ -78,6 +81,7 @@ public class ModeBarPanel extends JPanel
         }
 
         einheitenButton.setFocusable(false);
+        einheitenButton.setToolTipText("Einheiten ein-/ausblenden (" + Tastenkuerzel.strgText(Tastenkuerzel.einheitenNummer()) + ")");
         einheitenButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         einheitenButton.addActionListener(e -> {
             weitereMenu.setVisible(false);

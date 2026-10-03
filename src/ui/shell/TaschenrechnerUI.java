@@ -18,6 +18,7 @@ import ui.settings.AppSettings;
 import ui.theme.ThemeManager;
 import ui.theme.ThemeType;
 import ui.settings.SettingsDialog;
+import ui.shortcuts.TastenkuerzelDialog;
 import ui.units.EinheitenSidePanelHost;
 
 import javax.swing.*;
@@ -70,6 +71,7 @@ public class TaschenrechnerUI extends JFrame
         );
         keyboardShortcutBinder.setupKeyboard();
         keyboardShortcutBinder.setupSearchFieldKeyForwarding();
+        keyboardShortcutBinder.setupGlobaleTasten(this::setAktuellerModus, einheitenSidePanelHost::toggle, this::zeigeTastenkuerzel);
 
         ladeVerlauf();
         refresh();
@@ -181,6 +183,7 @@ public class TaschenrechnerUI extends JFrame
                 this::speichereSession,
                 this::ladeSession
         ));
+        globalActionBarPanel.setShortcutsListener(e -> zeigeTastenkuerzel());
         historyPanel.setClearHistoryListener(e -> speichereVerlauf());
         historyPanel.setFavoriteChangedListener(e -> speichereVerlauf());
         historyPanel.setEntryDoubleClickListener(this::useHistoryEntryResult);
@@ -214,6 +217,11 @@ public class TaschenrechnerUI extends JFrame
         updateStatus();
         revalidate();
         repaint();
+    }
+
+    private void zeigeTastenkuerzel()
+    {
+        TastenkuerzelDialog.showDialog(this, theme());
     }
 
     private boolean sindStandardShortcutsAktiv()

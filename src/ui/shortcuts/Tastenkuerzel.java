@@ -1,5 +1,7 @@
 package ui.shortcuts;
 
+import common.state.RechnerModus;
+
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.Optional;
@@ -22,6 +24,7 @@ public enum Tastenkuerzel
 
     /** Wird nicht von der Shell gebunden, sondern vom Programmierer-Panel selbst. */
     public static final String PROGRAMMIERER_CLR_TEXT = "Esc";
+    public static final String HILFE_TEXT = "F1";
 
     private final String aktion;
     private final String anzeigeText;
@@ -57,5 +60,22 @@ public enum Tastenkuerzel
     public static String ziffernText(String ziffer)
     {
         return ziffer + " oder Num " + ziffer;
+    }
+
+    /** Strg+1 … Strg+7 folgen der Reihenfolge in {@link RechnerModus}. */
+    public static int modusNummer(RechnerModus modus)
+    {
+        return modus.ordinal() + 1;
+    }
+
+    /** Die Einheiten hängen direkt hinter dem letzten Modus. */
+    public static int einheitenNummer()
+    {
+        return RechnerModus.values().length + 1;
+    }
+
+    public static String strgText(int nummer)
+    {
+        return "Strg+" + nummer;
     }
 }

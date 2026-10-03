@@ -25,6 +25,7 @@ public class GlobalActionBarPanel extends JPanel
     private final JButton angleModeButton = new JButton("DEG");
     private final JButton themeButton = new JButton("Theme");
     private final JButton settingsButton = new JButton("Einstellungen");
+    private final JButton shortcutsButton = new JButton("Tastenkürzel");
 
     private final JPopupMenu themePopupMenu = new JPopupMenu();
     private final Map<ThemeType, JButton> themeOptionButtons = new LinkedHashMap<>();
@@ -44,12 +45,15 @@ public class GlobalActionBarPanel extends JPanel
         angleModeButton.setFocusable(false);
         themeButton.setFocusable(false);
         settingsButton.setFocusable(false);
+        shortcutsButton.setFocusable(false);
+        shortcutsButton.setToolTipText("Alle Tastenkürzel anzeigen (F1)");
         settingsButton.setToolTipText("Einstellungen oeffnen");
 
         buildThemePopup();
 
         themeButton.addActionListener(e -> themePopupMenu.show(themeButton, 0, themeButton.getHeight()));
 
+        actionsPanel.add(shortcutsButton);
         actionsPanel.add(angleModeButton);
         actionsPanel.add(themeButton);
         actionsPanel.add(settingsButton);
@@ -126,6 +130,11 @@ public class GlobalActionBarPanel extends JPanel
         settingsButton.addActionListener(listener);
     }
 
+    public void setShortcutsListener(java.awt.event.ActionListener listener)
+    {
+        shortcutsButton.addActionListener(listener);
+    }
+
     public void highlightSelectedTheme(ThemeType selectedTheme)
     {
         for (Map.Entry<ThemeType, JButton> entry : themeOptionButtons.entrySet())
@@ -159,6 +168,7 @@ public class GlobalActionBarPanel extends JPanel
         styleActionButton(angleModeButton, theme);
         styleActionButton(themeButton, theme);
         styleActionButton(settingsButton, theme);
+        styleActionButton(shortcutsButton, theme);
     }
 
     private void styleActionButton(JButton button, AppTheme theme)
