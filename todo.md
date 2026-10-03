@@ -604,6 +604,38 @@
 
 ---
 
+## Clean Code / Struktur
+Ergänzt die Punkte aus Refactoring und MVP oben, nicht doppelt abarbeiten.
+
+### Eine Quelle der Wahrheit
+- [ ] Theme wird gerade an drei Stellen gespeichert: `theme.txt`, Settings und Session → auf eine Stelle reduzieren, am besten die Settings.
+- [ ] Die 5 Dateipfade (`user.home` + Dateiname) an einer Stelle sammeln, z. B. `AppDateien`.
+- [ ] Statt 5 einzelner Dotfiles im Benutzerordner einen eigenen Ordner `~/.wissenschaftlicher_taschenrechner/` nutzen → alte Dateien beim ersten Start einmal rüberziehen.
+- [ ] `ThemePersistence` bekommt den Pfad wie die anderen Persistence-Klassen per Konstruktor → dann ist sie auch testbar.
+
+### Duplikate (DRY)
+- [ ] `DecimalFormat`-Setup ist in Komplex-, Matrix-, Statistik- und Einheiten-Formatter fast gleich → eine gemeinsame Hilfe in `common.formatting`.
+- [ ] 45x `new Font("Segoe UI", ...)` quer durchs Projekt → Schriften zentral anbieten, z. B. über das Theme oder eine kleine `AppFonts`-Klasse.
+- [ ] `showError`/`pulseResult` gibt's fast gleich in Komplex, Matrix und Statistik → gemeinsames Status-Bauteil für Erfolg/Fehler.
+- [ ] `applyThemeToChildren` in Graph und Komplex mit `ShellThemeApplier` zusammenlegen.
+
+### Lesbarkeit
+- [ ] Flag-Argumente auflösen: `setStatus(text, true)` oder `pulseResult(true)` versteht man ohne Reinschauen nicht → lieber `zeigeErfolg(...)` und `zeigeFehler(...)`.
+- [ ] `RechnerService` reicht ca. 15 Methoden 1:1 an `AusdruckEditor` durch → prüfen, ob die Zwischenschicht noch was bringt (Middle Man).
+- [ ] Namensregel festhalten: UI-Klassen englisch, Logik/Model deutsch → kurz in `docs/architektur.md` schreiben, damit es nicht wieder durcheinander geht.
+- [ ] Letzte UI-Texte ohne Umlaute fixen: „Einstellungen oeffnen“, „Theme auswaehlen“.
+
+### Kleinere Klassen
+- [ ] `GraphCanvasPanel` (~660 Zeilen): Zeichnen von Raster, Achsen, Kurven und Markern in einen eigenen `GraphZeichner` auslagern → das Panel kümmert sich nur noch um Maus und Zustand.
+- [ ] Graph: 10x `catch (RuntimeException)` → `GraphEvaluator` liefert bei ungültigen Stellen lieber `NaN` oder einen eigenen Fehler, dann reichen gezielte catches.
+- [ ] `ProgrammiererLogik` (~420 Zeilen) anschauen: Basis-Umrechnung, Bit-Operationen und Eingabe trennen?
+
+### Tests
+- [ ] `...ForTest()`-Methoden aus dem Produktionscode raus (aktuell 8 Stück in `HistoryPanel`, `ModeBarPanel`, `ModeContentHostPanel`) → lieber über das echte Verhalten testen.
+- [ ] Testklassen in Packages einsortieren wie unter `src`, statt 43 Klassen direkt im Testordner → passt gut zum Umzug nach `src/test/java`.
+
+---
+
 ## Settings
 - [x] Setting Menü hinzufügen
 - [x] Setting Button richtig anzeigen
