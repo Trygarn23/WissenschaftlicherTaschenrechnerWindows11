@@ -1,6 +1,7 @@
 package modes.graph.ui;
 
 import common.state.WinkelModus;
+import modes.graph.formatting.GraphFormatter;
 import modes.graph.logic.GraphEvaluator;
 import modes.graph.model.FunktionsDefinition;
 import modes.graph.model.GraphPunkt;
@@ -36,7 +37,16 @@ import java.util.function.IntConsumer;
 
 public class GraphCanvasPanel extends JPanel
 {
+    private static final int HOVER_VERZOEGERUNG_MS = 500;
+    /** Maximaler Abstand in Pixeln, bis zu dem ein Klick noch eine Funktionskurve trifft. */
+    private static final double KLICK_TOLERANZ_KURVE_PX = 11.0;
+    /** Maximaler Abstand in Pixeln, bis zu dem ein Rechtsklick noch einen Analysepunkt trifft. */
+    private static final double KLICK_TOLERANZ_PUNKT_PX = 15.0;
+    private static final double ZOOM_FAKTOR_REIN = 0.85;
+    private static final double ZOOM_FAKTOR_RAUS = 1.15;
+
     private final GraphEvaluator evaluator;
+    private final GraphFormatter formatter = new GraphFormatter();
     private GraphState state;
     private AppTheme theme;
     private WinkelModus winkelModus = WinkelModus.DEG;
@@ -56,12 +66,12 @@ public class GraphCanvasPanel extends JPanel
         this.evaluator = evaluator;
         setOpaque(true);
         setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-        hoverTimer = new Timer(500, e -> {
+        hoverTimer = new Timer(HOVER_VERZOEGERUNG_MS, e -> {
             hoverSichtbar = hoverPunkt != null;
             repaint();
         });
         hoverTimer.setRepeats(false);
-        setupMouseInteraction();
+        registriereMaussteuerung();
     }
 
     public void setState(GraphState state)
@@ -129,7 +139,7 @@ public class GraphCanvasPanel extends JPanel
         Color background = activeTheme == null ? new Color(18, 18, 18) : activeTheme.canvasBackground();
         Color foreground = activeTheme == null ? Color.WHITE : activeTheme.displayForeground();
         Color secondary = activeTheme == null ? new Color(150, 150, 150) : activeTheme.secondaryDisplayForeground();
-        Color grid = activeTheme == null ? blend(background, foreground, 0.18) : activeTheme.gridColor();
+        Color grid = activeTheme == null ? mische(background, foreground, 0.18) : activeTheme.gridColor();
 
         g.setColor(background);
         g.fillRect(0, 0, getWidth(), getHeight());
@@ -169,18 +179,18 @@ public class GraphCanvasPanel extends JPanel
 
         for (double x = Math.ceil(state.getXMin() / xStep) * xStep; x <= state.getXMax(); x += xStep)
         {
-            int px = worldToScreenX(x);
+            int px = zuBildschirmX(x);
             g.drawLine(px, 0, px, getHeight());
-            zeichneLabel(g, labels, format(x), px + 4, Math.min(getHeight() - 6, worldToScreenY(0) + 16));
+            zeichneLabel(g, labels, formatter.formatiereAchsenwert(x), px + 4, Math.min(getHeight() - 6, zuBildschirmY(0) + 16));
         }
 
         for (double y = Math.ceil(state.getYMin() / yStep) * yStep; y <= state.getYMax(); y += yStep)
         {
-            int py = worldToScreenY(y);
+            int py = zuBildschirmY(y);
             g.drawLine(0, py, getWidth(), py);
             if (Math.abs(y) > 1e-9)
             {
-                zeichneLabel(g, labels, format(y), Math.max(4, worldToScreenX(0) + 6), py - 4);
+                zeichneLabel(g, labels, formatter.formatiereAchsenwert(y), Math.max(4, zuBildschirmX(0) + 6), py - 4);
             }
         }
     }
@@ -192,13 +202,13 @@ public class GraphCanvasPanel extends JPanel
 
         if (state.getYMin() <= 0.0 && state.getYMax() >= 0.0)
         {
-            int y = worldToScreenY(0.0);
+            int y = zuBildschirmY(0.0);
             g.drawLine(0, y, getWidth(), y);
         }
 
         if (state.getXMin() <= 0.0 && state.getXMax() >= 0.0)
         {
-            int x = worldToScreenX(0.0);
+            int x = zuBildschirmX(0.0);
             g.drawLine(x, 0, x, getHeight());
         }
     }
@@ -219,7 +229,7 @@ public class GraphCanvasPanel extends JPanel
 
             for (int px = 0; px < getWidth(); px++)
             {
-                double x = screenToWorldX(px);
+                double x = zuWeltX(px);
 
                 try
                 {
@@ -230,7 +240,7 @@ public class GraphCanvasPanel extends JPanel
                         continue;
                     }
 
-                    int py = worldToScreenY(y);
+                    int py = zuBildschirmY(y);
                     if (pathGestartet && Math.abs(py - letzterY) > getHeight() * 2)
                     {
                         pathGestartet = false;
@@ -274,17 +284,17 @@ public class GraphCanvasPanel extends JPanel
         g.drawString(text, x, y);
     }
 
-    private int worldToScreenX(double x)
+    private int zuBildschirmX(double x)
     {
         return (int) Math.round((x - state.getXMin()) / (state.getXMax() - state.getXMin()) * getWidth());
     }
 
-    private int worldToScreenY(double y)
+    private int zuBildschirmY(double y)
     {
         return (int) Math.round((state.getYMax() - y) / (state.getYMax() - state.getYMin()) * getHeight());
     }
 
-    private double screenToWorldX(int x)
+    private double zuWeltX(int x)
     {
         return state.getXMin() + (x / Math.max(1.0, getWidth() - 1.0)) * (state.getXMax() - state.getXMin());
     }
@@ -327,8 +337,8 @@ public class GraphCanvasPanel extends JPanel
             return;
         }
 
-        int x = worldToScreenX(punkt.getX());
-        int y = worldToScreenY(punkt.getY());
+        int x = zuBildschirmX(punkt.getX());
+        int y = zuBildschirmY(punkt.getY());
 
         g.setColor(background);
         g.fillOval(x - 7, y - 7, 14, 14);
@@ -347,7 +357,7 @@ public class GraphCanvasPanel extends JPanel
                 && punkt.getY() <= state.getYMax();
     }
 
-    private double screenToWorldY(int y)
+    private double zuWeltY(int y)
     {
         return state.getYMax() - (y / Math.max(1.0, getHeight() - 1.0)) * (state.getYMax() - state.getYMin());
     }
@@ -359,8 +369,8 @@ public class GraphCanvasPanel extends JPanel
             return;
         }
 
-        String text = "x = " + formatKoordinate(screenToWorldX(hoverPunkt.x))
-                + "   y = " + formatKoordinate(screenToWorldY(hoverPunkt.y));
+        String text = "x = " + formatter.formatiereZahl(zuWeltX(hoverPunkt.x))
+                + "   y = " + formatter.formatiereZahl(zuWeltY(hoverPunkt.y));
         FontMetrics metrics = g.getFontMetrics();
         int breite = metrics.stringWidth(text) + 20;
         int hoehe = metrics.getHeight() + 10;
@@ -384,109 +394,18 @@ public class GraphCanvasPanel extends JPanel
         g.drawString(text, x + 10, y + metrics.getAscent() + 5);
     }
 
-    private void setupMouseInteraction()
+    private void registriereMaussteuerung()
     {
-        MouseAdapter mouseAdapter = new MouseAdapter()
-        {
-            @Override
-            public void mousePressed(MouseEvent e)
-            {
-                verbergeHover();
-                if (e.isPopupTrigger())
-                {
-                    zeigePunktMenu(e);
-                    return;
-                }
-                if (SwingUtilities.isRightMouseButton(e))
-                {
-                    return;
-                }
-                letzterDragPunkt = e.getPoint();
-                setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-            }
+        Maussteuerung maussteuerung = new Maussteuerung();
+        addMouseListener(maussteuerung);
+        addMouseMotionListener(maussteuerung);
+        addMouseWheelListener(maussteuerung);
+    }
 
-            @Override
-            public void mouseReleased(MouseEvent e)
-            {
-                letzterDragPunkt = null;
-                setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-                if (e.isPopupTrigger())
-                {
-                    zeigePunktMenu(e);
-                }
-            }
-
-            @Override
-            public void mouseDragged(MouseEvent e)
-            {
-                verbergeHover();
-                if (letzterDragPunkt == null)
-                {
-                    return;
-                }
-
-                double vorherX = screenToWorldX(letzterDragPunkt.x);
-                double vorherY = screenToWorldY(letzterDragPunkt.y);
-                double jetztX = screenToWorldX(e.getX());
-                double jetztY = screenToWorldY(e.getY());
-
-                state.verschiebe(vorherX - jetztX, vorherY - jetztY);
-                letzterDragPunkt = e.getPoint();
-                viewportChangedListener.run();
-                repaint();
-            }
-
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e)
-            {
-                verbergeHover();
-                state.zoom(e.getPreciseWheelRotation() < 0 ? 0.85 : 1.15);
-                viewportChangedListener.run();
-                repaint();
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e)
-            {
-                hoverPunkt = e.getPoint();
-                hoverSichtbar = false;
-                hoverTimer.restart();
-                repaint();
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e)
-            {
-                verbergeHover();
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e)
-            {
-                if (!SwingUtilities.isLeftMouseButton(e))
-                {
-                    return;
-                }
-
-                if (e.getClickCount() == 2)
-                {
-                    state.resetAnsicht();
-                    viewportChangedListener.run();
-                    repaint();
-                    return;
-                }
-
-                int funktionIndex = findeFunktion(e.getPoint());
-                if (funktionIndex >= 0)
-                {
-                    functionSelectionListener.accept(funktionIndex);
-                }
-            }
-        };
-
-        addMouseListener(mouseAdapter);
-        addMouseMotionListener(mouseAdapter);
-        addMouseWheelListener(mouseAdapter);
+    private void ansichtGeaendert()
+    {
+        viewportChangedListener.run();
+        repaint();
     }
 
     private void verbergeHover()
@@ -499,9 +418,9 @@ public class GraphCanvasPanel extends JPanel
 
     private int findeFunktion(Point punkt)
     {
-        double x = screenToWorldX(punkt.x);
+        double x = zuWeltX(punkt.x);
         int besterIndex = -1;
-        double besterAbstand = 11.0;
+        double besterAbstand = KLICK_TOLERANZ_KURVE_PX;
 
         for (int index = 0; index < state.getFunktionen().size(); index++)
         {
@@ -519,7 +438,7 @@ public class GraphCanvasPanel extends JPanel
                     continue;
                 }
 
-                double abstand = Math.abs(worldToScreenY(y) - punkt.y);
+                double abstand = Math.abs(zuBildschirmY(y) - punkt.y);
                 if (abstand < besterAbstand)
                 {
                     besterAbstand = abstand;
@@ -547,7 +466,7 @@ public class GraphCanvasPanel extends JPanel
         uebernehmen.addActionListener(e -> pointSelectionListener.accept(punkt));
         JMenuItem kopieren = new JMenuItem("Punkt kopieren");
         kopieren.addActionListener(e -> kopierePunkt(punkt));
-        stylePopup(menu, uebernehmen, kopieren);
+        gestaltePopup(menu, uebernehmen, kopieren);
         menu.add(uebernehmen);
         menu.add(kopieren);
         menu.show(this, event.getX(), event.getY());
@@ -556,7 +475,7 @@ public class GraphCanvasPanel extends JPanel
     private GraphPunkt findeAnalysePunkt(Point mausPunkt)
     {
         GraphPunkt besterPunkt = null;
-        double besterAbstand = 15.0;
+        double besterAbstand = KLICK_TOLERANZ_PUNKT_PX;
         for (GraphPunkt punkt : analysePunkte())
         {
             if (punkt == null || !istSichtbar(punkt))
@@ -564,8 +483,8 @@ public class GraphCanvasPanel extends JPanel
                 continue;
             }
 
-            double deltaX = worldToScreenX(punkt.getX()) - mausPunkt.x;
-            double deltaY = worldToScreenY(punkt.getY()) - mausPunkt.y;
+            double deltaX = zuBildschirmX(punkt.getX()) - mausPunkt.x;
+            double deltaY = zuBildschirmY(punkt.getY()) - mausPunkt.y;
             double abstand = Math.hypot(deltaX, deltaY);
             if (abstand < besterAbstand)
             {
@@ -591,7 +510,7 @@ public class GraphCanvasPanel extends JPanel
         return punkte;
     }
 
-    private void stylePopup(JPopupMenu menu, JMenuItem... items)
+    private void gestaltePopup(JPopupMenu menu, JMenuItem... items)
     {
         if (theme == null)
         {
@@ -609,7 +528,7 @@ public class GraphCanvasPanel extends JPanel
 
     private void kopierePunkt(GraphPunkt punkt)
     {
-        String text = "(" + formatKoordinate(punkt.getX()) + " | " + formatKoordinate(punkt.getY()) + ")";
+        String text = formatter.formatierePunkt(punkt);
         try
         {
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
@@ -631,33 +550,7 @@ public class GraphCanvasPanel extends JPanel
         return 5.0 * power;
     }
 
-    private String format(double value)
-    {
-        if (Math.abs(value) < 1e-9)
-        {
-            return "0";
-        }
-        if (Math.abs(value - Math.rint(value)) < 1e-9)
-        {
-            return Long.toString(Math.round(value));
-        }
-        return String.format("%.1f", value);
-    }
-
-    private String formatKoordinate(double value)
-    {
-        if (Math.abs(value) < 1e-9)
-        {
-            return "0";
-        }
-        if (Math.abs(value - Math.rint(value)) < 1e-9)
-        {
-            return Long.toString(Math.round(value));
-        }
-        return String.format("%.3f", value).replaceAll("0+$", "").replaceAll("[,.]$", "");
-    }
-
-    private Color blend(Color a, Color b, double amount)
+    private Color mische(Color a, Color b, double amount)
     {
         double inverse = 1.0 - amount;
         return new Color(
@@ -665,5 +558,101 @@ public class GraphCanvasPanel extends JPanel
                 (int) (a.getGreen() * inverse + b.getGreen() * amount),
                 (int) (a.getBlue() * inverse + b.getBlue() * amount)
         );
+    }
+
+    /** Verschieben, Zoomen, Hover und Klicks auf der Zeichenfläche. */
+    private class Maussteuerung extends MouseAdapter
+    {
+        @Override
+        public void mousePressed(MouseEvent e)
+        {
+            verbergeHover();
+            if (e.isPopupTrigger())
+            {
+                zeigePunktMenu(e);
+                return;
+            }
+            if (SwingUtilities.isRightMouseButton(e))
+            {
+                return;
+            }
+            letzterDragPunkt = e.getPoint();
+            setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e)
+        {
+            letzterDragPunkt = null;
+            setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+            if (e.isPopupTrigger())
+            {
+                zeigePunktMenu(e);
+            }
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e)
+        {
+            verbergeHover();
+            if (letzterDragPunkt == null)
+            {
+                return;
+            }
+
+            double vorherX = zuWeltX(letzterDragPunkt.x);
+            double vorherY = zuWeltY(letzterDragPunkt.y);
+            double jetztX = zuWeltX(e.getX());
+            double jetztY = zuWeltY(e.getY());
+
+            state.verschiebe(vorherX - jetztX, vorherY - jetztY);
+            letzterDragPunkt = e.getPoint();
+            ansichtGeaendert();
+        }
+
+        @Override
+        public void mouseWheelMoved(MouseWheelEvent e)
+        {
+            verbergeHover();
+            state.zoom(e.getPreciseWheelRotation() < 0 ? ZOOM_FAKTOR_REIN : ZOOM_FAKTOR_RAUS);
+            ansichtGeaendert();
+        }
+
+        @Override
+        public void mouseMoved(MouseEvent e)
+        {
+            hoverPunkt = e.getPoint();
+            hoverSichtbar = false;
+            hoverTimer.restart();
+            repaint();
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e)
+        {
+            verbergeHover();
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e)
+        {
+            if (!SwingUtilities.isLeftMouseButton(e))
+            {
+                return;
+            }
+
+            if (e.getClickCount() == 2)
+            {
+                state.resetAnsicht();
+                ansichtGeaendert();
+                return;
+            }
+
+            int funktionIndex = findeFunktion(e.getPoint());
+            if (funktionIndex >= 0)
+            {
+                functionSelectionListener.accept(funktionIndex);
+            }
+        }
     }
 }

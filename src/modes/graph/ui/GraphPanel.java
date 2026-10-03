@@ -2,6 +2,7 @@ package modes.graph.ui;
 
 import common.state.RechnerModus;
 import common.state.WinkelModus;
+import modes.graph.formatting.GraphFormatter;
 import modes.graph.logic.GraphEvaluator;
 import modes.graph.logic.GraphIntersectionService;
 import modes.graph.logic.KurvendiskussionService;
@@ -44,6 +45,7 @@ public class GraphPanel extends JPanel implements ModePanel
     private final KurvendiskussionService kurvendiskussionService = new KurvendiskussionService(evaluator);
     private final GraphIntersectionService intersectionService = new GraphIntersectionService(evaluator);
     private final GraphCanvasPanel canvasPanel = new GraphCanvasPanel(state, evaluator);
+    private final GraphFormatter formatter = new GraphFormatter();
 
     private final JLabel statusLabel = new JLabel("Bereit");
     private final JLabel analysisTitleLabel = new JLabel("Kurvendiskussion");
@@ -419,7 +421,7 @@ public class GraphPanel extends JPanel implements ModePanel
     {
         tableCenterX = punkt.getX();
         updateMiniTable();
-        setStatus("Punkt " + formatPoint(punkt) + " in die Wertetabelle übernommen", true);
+        setStatus("Punkt " + formatter.formatierePunkt(punkt) + " in die Wertetabelle übernommen", true);
     }
 
     private void plot()
@@ -483,7 +485,7 @@ public class GraphPanel extends JPanel implements ModePanel
             double x = tableCenterX + (row - 2) * step;
             if (column == 0)
             {
-                xLabels.get(row).setText(format(x));
+                xLabels.get(row).setText(formatter.formatiereZahl(x));
             }
             try
             {
@@ -494,7 +496,7 @@ public class GraphPanel extends JPanel implements ModePanel
                     case 2 -> evaluator.zweiteAbleitung(state.getAktiveFunktion().getAusdruck(), x, winkelModus);
                     default -> Double.NaN;
                 };
-                valueLabels.get(i).setText(Double.isFinite(y) ? format(y) : "undef.");
+                valueLabels.get(i).setText(Double.isFinite(y) ? formatter.formatiereZahl(y) : "undef.");
             }
             catch (RuntimeException e)
             {
@@ -514,7 +516,7 @@ public class GraphPanel extends JPanel implements ModePanel
                     winkelModus
             );
 
-            analysisArea.setText(formatAnalysis(result));
+            analysisArea.setText(formatter.formatiereKurvendiskussion(result, intersections()));
             canvasPanel.setKurvendiskussionResult(result);
             analysisArea.setCaretPosition(0);
         }
@@ -523,16 +525,6 @@ public class GraphPanel extends JPanel implements ModePanel
             canvasPanel.setKurvendiskussionResult(null);
             analysisArea.setText("Kurvendiskussion nicht möglich.");
         }
-    }
-
-    private String formatAnalysis(KurvendiskussionResult result)
-    {
-        return "Y-Achse: " + formatPoint(result.getYAchsenSchnittpunkt()) + "\n"
-                + "Nullstellen: " + formatPoints(result.getNullstellen()) + "\n"
-                + "Extrema: " + formatPoints(result.getExtremstellen()) + "\n"
-                + "Wendestellen: " + formatPoints(result.getWendestellen()) + "\n"
-                + "Schnitt mit anderen: " + formatPoints(intersections()) + "\n"
-                + "Hinweis: numerische Näherung im sichtbaren x-Bereich.";
     }
 
     private List<GraphPunkt> intersections()
@@ -566,47 +558,6 @@ public class GraphPanel extends JPanel implements ModePanel
             }
         }
         return punkte;
-    }
-
-    private String formatPoints(List<GraphPunkt> punkte)
-    {
-        if (punkte.isEmpty())
-        {
-            return "keine gefunden";
-        }
-
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < punkte.size(); i++)
-        {
-            if (i > 0)
-            {
-                builder.append(", ");
-            }
-            builder.append(formatPoint(punkte.get(i)));
-        }
-        return builder.toString();
-    }
-
-    private String formatPoint(GraphPunkt punkt)
-    {
-        if (punkt == null)
-        {
-            return "nicht definiert";
-        }
-        return "(" + format(punkt.getX()) + " | " + format(punkt.getY()) + ")";
-    }
-
-    private String format(double value)
-    {
-        if (Math.abs(value) < 1e-9)
-        {
-            return "0";
-        }
-        if (Math.abs(value - Math.rint(value)) < 1e-9)
-        {
-            return Long.toString(Math.round(value));
-        }
-        return String.format("%.3f", value).replaceAll("0+$", "").replaceAll("[,.]$", "");
     }
 
     private void applyThemeToChildren(Component component)
