@@ -4,6 +4,7 @@ import common.history.VerlaufEintrag;
 import common.history.VerlaufTextMapper;
 import common.state.RechnerModus;
 import ui.animation.AnimationSupport;
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 
@@ -48,7 +49,7 @@ public class HistoryPanel extends JPanel
 
     private void buildUi()
     {
-        historyList.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        historyList.setFont(AppFonts.normal(14));
         historyList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         historyList.setFocusable(false);
         historyList.setFixedCellHeight(58);
@@ -95,7 +96,7 @@ public class HistoryPanel extends JPanel
 
     private void configureSearchField()
     {
-        historySearchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        historySearchField.setFont(AppFonts.normal(14));
         historySearchField.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
         historySearchField.setOpaque(true);
         showPlaceholder();
@@ -336,32 +337,6 @@ public class HistoryPanel extends JPanel
         repaint();
     }
 
-    void setSearchTextForTest(String text)
-    {
-        historySearchField.setForeground(getHistoryForeground());
-        historySearchField.setText(text == null ? "" : text);
-    }
-
-    int getVisibleEntryCountForTest()
-    {
-        return filteredHistoryModel.size();
-    }
-
-    String getVisibleEntryTextForTest(int index)
-    {
-        return rendererText(filteredHistoryModel.getElementAt(index));
-    }
-
-    void selectVisibleEntryForTest(int index)
-    {
-        historyList.setSelectedIndex(index);
-    }
-
-    void toggleSelectedFavoriteForTest()
-    {
-        toggleSelectedFavorite();
-    }
-
     private void toggleSelectedFavorite()
     {
         int selectedIndex = historyList.getSelectedIndex();
@@ -416,11 +391,6 @@ public class HistoryPanel extends JPanel
                 return;
             }
         }
-    }
-
-    private String rendererText(VerlaufEintrag entry)
-    {
-        return (entry.isFavorit() ? "\u2605 " : "\u2606 ") + entry.toDisplayText();
     }
 
     private void applyFilter()

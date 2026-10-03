@@ -2,6 +2,7 @@ package modes.programmierer.ui;
 
 import modes.programmierer.model.Basis;
 import modes.programmierer.model.Wortbreite;
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.themes.DarkTheme;
 import ui.tooltips.ButtonTooltips;
@@ -113,7 +114,7 @@ class ProgrammiererOptionsPanel extends JPanel
     {
         button.setFocusPainted(false);
         button.setBorderPainted(true);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        button.setFont(AppFonts.fett(16));
         button.setOpaque(true);
         button.setFocusable(false);
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));

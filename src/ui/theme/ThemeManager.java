@@ -5,9 +5,9 @@ import ui.theme.themes.*;
 import ui.theme.custom.CustomTheme;
 import ui.theme.custom.CustomThemePersistence;
 
+/** Hält das aktive Theme. Gespeichert wird die Auswahl nur in den Settings. */
 public class ThemeManager
 {
-    private final ThemePersistence themePersistence = new ThemePersistence();
     private final CustomThemePersistence customThemePersistence;
 
     private AppTheme currentTheme;
@@ -21,14 +21,13 @@ public class ThemeManager
     public ThemeManager(CustomThemePersistence customThemePersistence)
     {
         this.customThemePersistence = customThemePersistence == null ? new CustomThemePersistence() : customThemePersistence;
-        setTheme(themePersistence.ladeTheme(ThemeType.DARK));
+        setTheme(ThemeType.DARK);
     }
 
     public void setTheme(ThemeType type)
     {
         currentThemeType = type;
         currentTheme = createTheme(type);
-        themePersistence.speichereTheme(type);
     }
 
     public AppTheme getCurrentTheme()

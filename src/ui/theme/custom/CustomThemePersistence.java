@@ -1,23 +1,20 @@
 package ui.theme.custom;
 
+import common.persistence.AppDateien;
 import common.persistence.DateiPersistenz;
 
 import java.awt.Color;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
 public class CustomThemePersistence
 {
-    private static final Path STANDARD_DATEI =
-            Paths.get(System.getProperty("user.home"), ".wissenschaftlicher_taschenrechner_custom_theme.properties");
-
     private final Path datei;
 
     public CustomThemePersistence()
     {
-        this(STANDARD_DATEI);
+        this(AppDateien.customTheme());
     }
 
     public CustomThemePersistence(Path datei)

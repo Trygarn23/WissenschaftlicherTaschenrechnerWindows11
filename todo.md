@@ -605,34 +605,36 @@
 ---
 
 ## Clean Code / Struktur
-Ergänzt die Punkte aus Refactoring und MVP oben, nicht doppelt abarbeiten.
+Kleine Aufräumrunde, damit man sich im Code auch in einem halben Jahr noch zurechtfindet.
+Ergänzt die Punkte aus Refactoring und MVP oben.
 
-### Eine Quelle der Wahrheit
-- [ ] Theme wird gerade an drei Stellen gespeichert: `theme.txt`, Settings und Session → auf eine Stelle reduzieren, am besten die Settings.
-- [ ] Die 5 Dateipfade (`user.home` + Dateiname) an einer Stelle sammeln, z. B. `AppDateien`.
-- [ ] Statt 5 einzelner Dotfiles im Benutzerordner einen eigenen Ordner `~/.wissenschaftlicher_taschenrechner/` nutzen → alte Dateien beim ersten Start einmal rüberziehen.
-- [ ] `ThemePersistence` bekommt den Pfad wie die anderen Persistence-Klassen per Konstruktor → dann ist sie auch testbar.
+### Alles nur einmal speichern
+- [x] Das gewählte Theme wurde an drei Stellen gemerkt → jetzt nur noch in den Einstellungen, die doppelte `theme.txt` ist raus.
+- [x] Alle Speicherorte der App an einer Stelle sammeln → `AppDateien`.
+- [x] Eigener Ordner statt vieler einzelner Dateien im Benutzerordner → `~/.wissenschaftlicher_taschenrechner/`, alte Dateien ziehen beim ersten Start automatisch um.
+- [x] Theme-Speicher testbar machen → hat sich erledigt, weil es ihn nicht mehr gibt.
+- [ ] Ein paar Tests schreiben noch in den echten Benutzerordner (über den Einstellungen-Dialog) → Speicherort dort von außen reingeben, damit Tests nur in Testordnern rumspielen.
 
-### Duplikate (DRY)
-- [ ] `DecimalFormat`-Setup ist in Komplex-, Matrix-, Statistik- und Einheiten-Formatter fast gleich → eine gemeinsame Hilfe in `common.formatting`.
-- [ ] 45x `new Font("Segoe UI", ...)` quer durchs Projekt → Schriften zentral anbieten, z. B. über das Theme oder eine kleine `AppFonts`-Klasse.
-- [ ] `showError`/`pulseResult` gibt's fast gleich in Komplex, Matrix und Statistik → gemeinsames Status-Bauteil für Erfolg/Fehler.
-- [ ] `applyThemeToChildren` in Graph und Komplex mit `ShellThemeApplier` zusammenlegen.
+### Nicht alles doppelt schreiben
+- [x] Zahlen sehen in Komplex, Matrix, Statistik und Einheiten jetzt gleich aus → eine gemeinsame `ZahlenAnzeige`.
+- [x] Die Schriftart stand an fast 50 Stellen einzeln im Code → jetzt zentral über `AppFonts`.
+- [x] Erfolg- und Fehlermeldungen in der Statuszeile funktionieren in allen Modi gleich → `StatusAnzeige`. Nebenbei behoben: Nach einem Fehler blieb die Zeile rot, auch wenn danach alles geklappt hat.
+- [x] Theme-Färbung in Graph und Komplex mit der allgemeinen zusammenlegen → angeschaut, bewusst so gelassen: Der Graph hat zu viele Sonderfälle, das würde mehr verbiegen als helfen.
 
-### Lesbarkeit
-- [ ] Flag-Argumente auflösen: `setStatus(text, true)` oder `pulseResult(true)` versteht man ohne Reinschauen nicht → lieber `zeigeErfolg(...)` und `zeigeFehler(...)`.
-- [ ] `RechnerService` reicht ca. 15 Methoden 1:1 an `AusdruckEditor` durch → prüfen, ob die Zwischenschicht noch was bringt (Middle Man).
-- [ ] Namensregel festhalten: UI-Klassen englisch, Logik/Model deutsch → kurz in `docs/architektur.md` schreiben, damit es nicht wieder durcheinander geht.
-- [ ] Letzte UI-Texte ohne Umlaute fixen: „Einstellungen oeffnen“, „Theme auswaehlen“.
+### Leichter lesbar
+- [x] Methoden wie `setStatus(text, true)` versteht man nur mit Reinschauen → jetzt sprechend: `zeigeErfolg(...)` und `zeigeFehler(...)`.
+- [x] Prüfen, ob `RechnerService` nur Sachen durchreicht → bleibt, weil er als zentrale Anlaufstelle für Standard und Wissenschaftlich gewollt ist. Steht jetzt auch so in der Klasse.
+- [x] Namensregel aufschreiben: Oberfläche englisch, Rechenlogik deutsch → steht jetzt in der README.
+- [x] Letzte Texte ohne Umlaute gefixt: „Einstellungen öffnen“, „Theme auswählen“.
 
 ### Kleinere Klassen
-- [ ] `GraphCanvasPanel` (~660 Zeilen): Zeichnen von Raster, Achsen, Kurven und Markern in einen eigenen `GraphZeichner` auslagern → das Panel kümmert sich nur noch um Maus und Zustand.
-- [ ] Graph: 10x `catch (RuntimeException)` → `GraphEvaluator` liefert bei ungültigen Stellen lieber `NaN` oder einen eigenen Fehler, dann reichen gezielte catches.
-- [ ] `ProgrammiererLogik` (~420 Zeilen) anschauen: Basis-Umrechnung, Bit-Operationen und Eingabe trennen?
+- [x] Die Graph-Zeichenfläche war ein Riesenteil → Zeichnen ist jetzt im `GraphZeichner`, das Panel kümmert sich nur noch um Maus und Menüs (von ~660 auf ~380 Zeilen).
+- [x] Der Graph hat Fehler an zehn Stellen pauschal abgefangen → ungültige Stellen liefern jetzt einfach „keinen Wert“, die ganzen Fangnetze sind weg.
+- [x] Programmierer-Logik aufteilen? → angeschaut, bleibt zusammen: viele kleine Methoden, die alle zum selben Rechner gehören. Aufteilen wäre nur mehr Dateien.
 
 ### Tests
-- [ ] `...ForTest()`-Methoden aus dem Produktionscode raus (aktuell 8 Stück in `HistoryPanel`, `ModeBarPanel`, `ModeContentHostPanel`) → lieber über das echte Verhalten testen.
-- [ ] Testklassen in Packages einsortieren wie unter `src`, statt 43 Klassen direkt im Testordner → passt gut zum Umzug nach `src/test/java`.
+- [x] Keine Extra-Methoden nur für Tests mehr im echten Code → die Tests suchen sich Buttons und Listen jetzt selbst raus, wie ein Mensch, der draufklickt.
+- [x] Testklassen ordentlich in Ordner einsortieren, so wie im Programmcode → alle 43 umgezogen.
 
 ---
 

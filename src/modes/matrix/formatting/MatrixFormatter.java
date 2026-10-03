@@ -1,22 +1,10 @@
 package modes.matrix.formatting;
 
+import common.formatting.ZahlenAnzeige;
 import modes.matrix.model.Matrix;
-
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 
 public class MatrixFormatter
 {
-    private final DecimalFormat format;
-
-    public MatrixFormatter()
-    {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.GERMANY);
-        symbols.setDecimalSeparator(',');
-        format = new DecimalFormat("#,##0.##########", symbols);
-    }
-
     public String formatiere(Matrix matrix)
     {
         StringBuilder builder = new StringBuilder();
@@ -43,10 +31,6 @@ public class MatrixFormatter
 
     public String formatiereDouble(double wert)
     {
-        if (Math.abs(wert) < 1e-10)
-        {
-            return "0";
-        }
-        return format.format(wert);
+        return ZahlenAnzeige.formatiere(wert);
     }
 }

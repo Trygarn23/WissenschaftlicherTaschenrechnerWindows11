@@ -2,6 +2,7 @@ package modes.wissenschaftlich.ui;
 
 import common.state.RechnerModus;
 import ui.shell.ModePanel;
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.CalculatorButtonStyler;
 import ui.tooltips.ButtonTooltips;
@@ -124,7 +125,7 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
         functionPopupContent.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         functionPopupTitleLabel = new JLabel("Funktionen");
-        functionPopupTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        functionPopupTitleLabel.setFont(AppFonts.fett(14));
 
         JPanel buttonGrid = new JPanel(new GridLayout(3, 3, 6, 6));
         buttonGrid.setOpaque(false);
@@ -133,7 +134,7 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
         {
             JButton fnButton = new JButton(functionName);
             fnButton.setFocusable(false);
-            fnButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            fnButton.setFont(AppFonts.normal(13));
             fnButton.setBorderPainted(false);
             fnButton.setOpaque(true);
             ButtonTooltips.apply(fnButton, functionName);

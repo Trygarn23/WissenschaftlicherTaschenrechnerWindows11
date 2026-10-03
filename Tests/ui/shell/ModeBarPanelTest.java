@@ -2,8 +2,12 @@ package ui.shell;
 
 import common.state.RechnerModus;
 import org.junit.jupiter.api.Test;
+import testhilfen.SwingSuche;
 import ui.theme.themes.AzubiModernTheme;
 
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
+import javax.swing.JPopupMenu;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,10 +22,9 @@ class ModeBarPanelTest
     {
         ModeBarPanel panel = new ModeBarPanel();
 
-        assertEquals(List.of("Standard", "Wissenschaftlich", "PRG", "Graph", "Komplex"), panel.direkteModusLabelsForTest());
-        assertEquals(List.of("Matrix", "Statistik", "Einheiten"), panel.weitereLabelsForTest());
-        assertEquals("Weitere...", panel.weitereButtonForTest().getText());
-        assertEquals("Weitere Modi und Werkzeuge", panel.weitereButtonForTest().getToolTipText());
+        assertEquals(List.of("Standard", "Wissenschaftlich", "PRG", "Graph", "Komplex", "Weitere..."), buttonTexte(panel));
+        assertEquals(List.of("Matrix", "Statistik", "Einheiten"), buttonTexte(weitereMenu(panel)));
+        assertEquals("Weitere Modi und Werkzeuge", weitereButton(panel).getToolTipText());
     }
 
     @Test
@@ -32,7 +35,7 @@ class ModeBarPanelTest
 
         panel.setSelectedMode(RechnerModus.MATRIX, theme);
 
-        assertEquals(theme.modeButtonActiveBackground(), panel.weitereButtonForTest().getBackground());
+        assertEquals(theme.modeButtonActiveBackground(), weitereButton(panel).getBackground());
     }
 
     @Test
@@ -42,7 +45,7 @@ class ModeBarPanelTest
         AtomicBoolean invoked = new AtomicBoolean(false);
         panel.setUnitsListener(() -> invoked.set(true));
 
-        panel.weitereUnitsButtonForTest().doClick();
+        SwingSuche.button(weitereMenu(panel), "Einheiten").doClick();
 
         assertTrue(invoked.get());
     }
@@ -54,8 +57,23 @@ class ModeBarPanelTest
         AtomicReference<RechnerModus> selected = new AtomicReference<>();
         panel.setModeListener(selected::set);
 
-        panel.weitereModeButtonForTest(RechnerModus.STATISTIK).doClick();
+        SwingSuche.button(weitereMenu(panel), "Statistik").doClick();
 
         assertEquals(RechnerModus.STATISTIK, selected.get());
+    }
+
+    private static AbstractButton weitereButton(ModeBarPanel panel)
+    {
+        return SwingSuche.button(panel, "Weitere...");
+    }
+
+    private static JPopupMenu weitereMenu(ModeBarPanel panel)
+    {
+        return weitereButton(panel).getComponentPopupMenu();
+    }
+
+    private static List<String> buttonTexte(java.awt.Container container)
+    {
+        return SwingSuche.alle(container, JButton.class).stream().map(JButton::getText).toList();
     }
 }

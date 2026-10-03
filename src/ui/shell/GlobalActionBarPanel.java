@@ -1,5 +1,6 @@
 package ui.shell;
 
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 import ui.theme.ThemeType;
@@ -13,7 +14,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -47,7 +47,7 @@ public class GlobalActionBarPanel extends JPanel
         settingsButton.setFocusable(false);
         shortcutsButton.setFocusable(false);
         shortcutsButton.setToolTipText("Alle Tastenkürzel anzeigen (F1)");
-        settingsButton.setToolTipText("Einstellungen oeffnen");
+        settingsButton.setToolTipText("Einstellungen öffnen");
 
         buildThemePopup();
 
@@ -67,8 +67,8 @@ public class GlobalActionBarPanel extends JPanel
         JPanel popupContent = new JPanel(new BorderLayout(0, 10));
         popupContent.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JLabel popupTitle = new JLabel("Theme auswaehlen");
-        popupTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        JLabel popupTitle = new JLabel("Theme auswählen");
+        popupTitle.setFont(AppFonts.fett(14));
 
         JPanel themeGrid = new JPanel(new GridLayout(0, 2, 8, 8));
         themeGrid.setOpaque(false);
@@ -161,7 +161,7 @@ public class GlobalActionBarPanel extends JPanel
         setBackground(theme.windowBackground());
 
         titleLabel.setForeground(theme.displayForeground());
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        titleLabel.setFont(AppFonts.fett(20));
         themePopupMenu.setBorder(javax.swing.BorderFactory.createLineBorder(theme.modeBorder(), 1));
         applyThemeToPopup(themePopupMenu, theme);
 

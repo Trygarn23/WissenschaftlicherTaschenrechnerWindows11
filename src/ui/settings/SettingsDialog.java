@@ -4,6 +4,7 @@ import common.formatting.ZahlenFormatModus;
 import common.state.RechnerModus;
 import common.state.WinkelModus;
 import ui.animation.AnimationSupport;
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 import ui.theme.ThemeType;
@@ -75,7 +76,7 @@ public final class SettingsDialog extends JDialog
         content.setBackground(theme.windowBackground());
 
         JLabel title = new JLabel("Einstellungen");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        title.setFont(AppFonts.fett(22));
         title.setForeground(theme.displayForeground());
 
         JLabel hint = new JLabel("Optik ist Geschmackssache. Außer Neon. Neon ist eine Entscheidung.");
@@ -157,7 +158,7 @@ public final class SettingsDialog extends JDialog
     {
         JSpinner spinner = new JSpinner(new SpinnerNumberModel(selected, 2, 15, 1));
         spinner.addChangeListener(e -> workingSettings.setNachkommastellen((Integer) spinner.getValue()));
-        spinner.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        spinner.setFont(AppFonts.normal(13));
         return createSettingRow(name, spinner);
     }
 
@@ -181,7 +182,7 @@ public final class SettingsDialog extends JDialog
         section.setBackground(theme.cardBackground());
 
         JLabel title = new JLabel("Custom Theme");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        title.setFont(AppFonts.fett(14));
         title.setForeground(theme.displayForeground());
 
         JLabel hint = new JLabel("Farben selber mischen: offiziell erlaubt, optisch auf eigene Gefahr.");
@@ -236,7 +237,7 @@ public final class SettingsDialog extends JDialog
 
     private void styleColorButton(JButton button, Color color)
     {
-        button.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        button.setFont(AppFonts.normal(12));
         ModernButtonStyler.styleButton(button, theme, color, contrastFor(color));
     }
 
@@ -254,7 +255,7 @@ public final class SettingsDialog extends JDialog
     private JPanel createValueRow(String name, String value)
     {
         JLabel valueLabel = new JLabel(value);
-        valueLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        valueLabel.setFont(AppFonts.normal(13));
         valueLabel.setForeground(theme.secondaryDisplayForeground());
         return createSettingRow(name, valueLabel);
     }
@@ -297,7 +298,7 @@ public final class SettingsDialog extends JDialog
         row.setBackground(theme.cardBackground());
 
         JLabel nameLabel = new JLabel(name);
-        nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        nameLabel.setFont(AppFonts.fett(14));
         nameLabel.setForeground(theme.displayForeground());
 
         row.add(nameLabel, BorderLayout.WEST);
@@ -325,7 +326,7 @@ public final class SettingsDialog extends JDialog
 
     private void styleComboBox(JComboBox<?> comboBox)
     {
-        comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        comboBox.setFont(AppFonts.normal(13));
         comboBox.setBackground(theme.toggleButtonBackground());
         comboBox.setForeground(theme.toggleButtonForeground());
         comboBox.setFocusable(false);

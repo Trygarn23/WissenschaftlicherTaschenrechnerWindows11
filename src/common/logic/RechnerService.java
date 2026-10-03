@@ -6,6 +6,10 @@ import common.state.RechnerZustand;
 import common.state.SpeicherState;
 import common.state.WinkelModus;
 
+/**
+ * Fassade für Standard und Wissenschaftlich: verdrahtet Editor, Berechnung, Speicher und Formatierung
+ * auf demselben Zustand, damit die UI nur eine Stelle kennen muss. Das Durchreichen ist hier gewollt.
+ */
 public class RechnerService
 {
     private final ZahlenFormatter zahlenFormatierer;

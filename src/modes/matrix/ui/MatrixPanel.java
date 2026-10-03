@@ -5,10 +5,11 @@ import modes.matrix.formatting.MatrixFormatter;
 import modes.matrix.logic.MatrixRechnerService;
 import modes.matrix.model.Matrix;
 import common.state.RechnerModus;
-import ui.animation.AnimationSupport;
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 import ui.shell.ModePanel;
+import ui.shell.StatusAnzeige;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -30,6 +31,7 @@ public class MatrixPanel extends JPanel implements ModePanel
     private final JTextField skalarField = new JTextField("2");
     private final JTextArea resultArea = new JTextArea("Bereit");
     private final JLabel statusLabel = new JLabel("Matrixmodus bereit");
+    private final StatusAnzeige statusAnzeige = new StatusAnzeige(statusLabel, resultArea);
     private final JPanel matrixAHost = new JPanel(new BorderLayout());
     private final JPanel matrixBHost = new JPanel(new BorderLayout());
     private final List<JTextField> fields = new ArrayList<>();
@@ -69,7 +71,7 @@ public class MatrixPanel extends JPanel implements ModePanel
         resultArea.setBackground(theme.displayBackground());
         resultArea.setForeground(theme.displayForeground());
         resultArea.setCaretColor(theme.displayForeground());
-        statusLabel.setForeground(theme.secondaryDisplayForeground());
+        statusAnzeige.setTheme(theme);
 
         for (JTextField field : fields)
         {
@@ -78,7 +80,7 @@ public class MatrixPanel extends JPanel implements ModePanel
 
         for (JComboBox<Integer> box : sizeBoxes)
         {
-            box.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            box.setFont(AppFonts.normal(13));
             box.setBackground(theme.inputBackground());
             box.setForeground(theme.displayForeground());
             box.setFocusable(false);
@@ -128,7 +130,7 @@ public class MatrixPanel extends JPanel implements ModePanel
         section.setOpaque(false);
 
         JLabel label = new JLabel(title);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        label.setFont(AppFonts.fett(18));
 
         JPanel sizePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         sizePanel.setOpaque(false);
@@ -158,13 +160,13 @@ public class MatrixPanel extends JPanel implements ModePanel
         panel.setPreferredSize(new Dimension(330, 0));
 
         JLabel title = new JLabel("Ergebnis");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        title.setFont(AppFonts.fett(24));
 
         resultArea.setEditable(false);
-        resultArea.setFont(new Font("Consolas", Font.PLAIN, 18));
+        resultArea.setFont(AppFonts.festeBreite(18));
         resultArea.setBorder(new EmptyBorder(12, 12, 12, 12));
 
-        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        statusLabel.setFont(AppFonts.normal(14));
 
         panel.add(title, BorderLayout.NORTH);
         panel.add(new JScrollPane(resultArea), BorderLayout.CENTER);
@@ -271,22 +273,21 @@ public class MatrixPanel extends JPanel implements ModePanel
         }
         catch (IllegalArgumentException | ArithmeticException e)
         {
-            showError(e.getMessage());
+            resultArea.setText("Fehler");
+            statusAnzeige.zeigeFehler(e.getMessage(), "Ungültige Matrixeingabe");
         }
     }
 
     private void showMatrix(Matrix matrix, String status)
     {
         resultArea.setText(formatter.formatiere(matrix));
-        statusLabel.setText(status + " erfolgreich");
-        pulseResult(false);
+        statusAnzeige.zeigeErfolg(status + " erfolgreich");
     }
 
     private void showScalar(double value, String status)
     {
         resultArea.setText(formatter.formatiereDouble(value));
-        statusLabel.setText(status + " berechnet");
-        pulseResult(false);
+        statusAnzeige.zeigeErfolg(status + " berechnet");
     }
 
     private void clearMatrices()
@@ -296,26 +297,7 @@ public class MatrixPanel extends JPanel implements ModePanel
             field.setText(field == skalarField ? "2" : "0");
         }
         resultArea.setText("Bereit");
-        statusLabel.setText("Matrixmodus bereit");
-    }
-
-    private void showError(String message)
-    {
-        statusLabel.setText(message == null || message.isBlank() ? "Ungültige Matrixeingabe" : message);
-        if (theme != null)
-        {
-            statusLabel.setForeground(theme.dangerBackground());
-        }
-        resultArea.setText("Fehler");
-        pulseResult(true);
-    }
-
-    private void pulseResult(boolean error)
-    {
-        if (theme != null)
-        {
-            AnimationSupport.pulseBackground(resultArea, error ? theme.errorPulseColor() : theme.successPulseColor(), 200);
-        }
+        statusAnzeige.zeigeErfolg("Matrixmodus bereit");
     }
 
     private void styleField(JTextField field)
@@ -324,7 +306,7 @@ public class MatrixPanel extends JPanel implements ModePanel
         {
             return;
         }
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        field.setFont(AppFonts.normal(15));
         ModernButtonStyler.styleInput(field, theme);
         field.setCaretColor(theme.displayForeground());
     }

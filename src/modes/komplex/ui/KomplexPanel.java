@@ -7,9 +7,11 @@ import modes.komplex.logic.KomplexRechnerService;
 import modes.komplex.model.KomplexDarstellung;
 import modes.komplex.model.KomplexState;
 import modes.komplex.model.KomplexeZahl;
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 import ui.shell.ModePanel;
+import ui.shell.StatusAnzeige;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -34,6 +36,7 @@ public class KomplexPanel extends JPanel implements ModePanel
     private final JLabel resultLabel = new JLabel("0 + 0i");
     private final JLabel detailLabel = new JLabel("|z| = 0 | arg = 0°");
     private final JLabel statusLabel = new JLabel("Bereit");
+    private final StatusAnzeige statusAnzeige = new StatusAnzeige(statusLabel);
     private final List<JButton> buttons = new ArrayList<>();
     private final List<JTextField> fields = List.of(aRealField, aImagField, bRealField, bImagField);
 
@@ -63,12 +66,12 @@ public class KomplexPanel extends JPanel implements ModePanel
 
         for (JTextField field : fields)
         {
-            field.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+            field.setFont(AppFonts.normal(15));
             ModernButtonStyler.styleInput(field, theme);
             field.setCaretColor(theme.displayForeground());
         }
 
-        darstellungBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        darstellungBox.setFont(AppFonts.normal(14));
         darstellungBox.setBackground(theme.inputBackground());
         darstellungBox.setForeground(theme.displayForeground());
 
@@ -80,7 +83,7 @@ public class KomplexPanel extends JPanel implements ModePanel
         applyThemeToChildren(this);
         resultLabel.setForeground(theme.displayForeground());
         detailLabel.setForeground(theme.secondaryDisplayForeground());
-        statusLabel.setForeground(theme.secondaryDisplayForeground());
+        statusAnzeige.setTheme(theme);
     }
 
     private JPanel buildInputPanel()
@@ -120,7 +123,7 @@ public class KomplexPanel extends JPanel implements ModePanel
         panel.setOpaque(false);
 
         JLabel label = new JLabel(title);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        label.setFont(AppFonts.fett(18));
 
         JPanel row = new JPanel(new GridLayout(1, 2, 8, 0));
         row.setOpaque(false);
@@ -147,13 +150,13 @@ public class KomplexPanel extends JPanel implements ModePanel
         panel.setOpaque(false);
 
         JLabel title = new JLabel("Komplex");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        title.setFont(AppFonts.fett(28));
 
         JPanel resultBox = new JPanel(new GridLayout(0, 1, 0, 10));
         resultBox.setOpaque(false);
-        resultLabel.setFont(new Font("Segoe UI", Font.PLAIN, 44));
-        detailLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        resultLabel.setFont(AppFonts.normal(44));
+        detailLabel.setFont(AppFonts.normal(18));
+        statusLabel.setFont(AppFonts.normal(14));
         resultBox.add(resultLabel);
         resultBox.add(detailLabel);
         resultBox.add(statusLabel);
@@ -183,7 +186,8 @@ public class KomplexPanel extends JPanel implements ModePanel
         }
         catch (IllegalArgumentException | ArithmeticException e)
         {
-            showError(e.getMessage());
+            statusAnzeige.zeigeFehler(e.getMessage());
+            state.setStatus(statusLabel.getText());
         }
     }
 
@@ -208,7 +212,7 @@ public class KomplexPanel extends JPanel implements ModePanel
         resultLabel.setText(formatter.formatiere(state.getErgebnis(), state.getDarstellung()));
         detailLabel.setText("|z| = " + formatter.formatiereDouble(state.getErgebnis().betrag())
                 + " | arg = " + formatter.formatiereDouble(state.getErgebnis().phaseDeg()) + "°");
-        statusLabel.setText(state.getStatus());
+        statusAnzeige.zeigeErfolg(state.getStatus());
     }
 
     private void copyResult()
@@ -217,20 +221,6 @@ public class KomplexPanel extends JPanel implements ModePanel
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
         state.setStatus("Ergebnis kopiert");
         refresh();
-    }
-
-    private void showError(String message)
-    {
-        state.setStatus(message == null || message.isBlank() ? "Ungültige Eingabe" : message);
-        if (theme != null)
-        {
-            statusLabel.setForeground(theme.dangerBackground());
-        }
-        else
-        {
-            statusLabel.setForeground(Color.RED);
-        }
-        statusLabel.setText(state.getStatus());
     }
 
     private void applyThemeToChildren(Component component)

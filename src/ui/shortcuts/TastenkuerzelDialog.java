@@ -1,6 +1,7 @@
 package ui.shortcuts;
 
 import common.state.RechnerModus;
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 import ui.tooltips.ButtonTooltips;
@@ -90,7 +91,7 @@ public final class TastenkuerzelDialog extends JDialog
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
         JLabel title = new JLabel("Tastenkürzel");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        title.setFont(AppFonts.fett(22));
         title.setForeground(theme.displayForeground());
 
         JButton schliessen = new JButton("Schließen");
@@ -112,7 +113,7 @@ public final class TastenkuerzelDialog extends JDialog
     private JLabel createUeberschrift(String text)
     {
         JLabel label = new JLabel(text);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        label.setFont(AppFonts.fett(15));
         label.setForeground(theme.displayForeground());
         label.setBorder(new EmptyBorder(12, 0, 6, 0));
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -136,14 +137,14 @@ public final class TastenkuerzelDialog extends JDialog
             c.gridx = 0;
             c.weightx = 0;
             JLabel taste = new JLabel(eintrag.taste());
-            taste.setFont(new Font("Segoe UI", Font.BOLD, 13));
+            taste.setFont(AppFonts.fett(13));
             taste.setForeground(theme.displayForeground());
             tabelle.add(taste, c);
 
             c.gridx = 1;
             c.weightx = 1;
             JLabel beschreibung = new JLabel(eintrag.beschreibung());
-            beschreibung.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            beschreibung.setFont(AppFonts.normal(13));
             beschreibung.setForeground(theme.secondaryDisplayForeground());
             tabelle.add(beschreibung, c);
         }

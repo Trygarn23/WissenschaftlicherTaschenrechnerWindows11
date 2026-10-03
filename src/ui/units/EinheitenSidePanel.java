@@ -1,9 +1,11 @@
 package ui.units;
 
+import common.formatting.ZahlenAnzeige;
 import common.formatting.ZahlenEingabe;
 import common.units.Einheit;
 import common.units.EinheitKategorie;
 import common.units.EinheitenService;
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 import ui.theme.themes.DarkTheme;
@@ -18,7 +20,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -28,7 +29,6 @@ import java.util.List;
 public class EinheitenSidePanel extends JPanel
 {
     private final EinheitenService service = new EinheitenService();
-    private final EinheitenFormatter formatter = new EinheitenFormatter();
 
     private final JLabel titleLabel = new JLabel("Einheiten");
     private final JButton closeButton = new JButton("x");
@@ -72,7 +72,7 @@ public class EinheitenSidePanel extends JPanel
         this.theme = theme;
         setBackground(theme.panelBackground());
         titleLabel.setForeground(theme.displayForeground());
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        titleLabel.setFont(AppFonts.fett(20));
         resultLabel.setForeground(theme.displayForeground());
         resultLabel.setBackground(theme.displayBackground());
         resultLabel.setOpaque(true);
@@ -241,7 +241,7 @@ public class EinheitenSidePanel extends JPanel
             double wert = parseZahl(valueField.getText());
             double ergebnis = service.rechneUm(wert, von, nach);
 
-            resultLabel.setText(formatter.formatiere(ergebnis) + " " + nach.symbol());
+            resultLabel.setText(ZahlenAnzeige.formatiere(ergebnis) + " " + nach.symbol());
             detailLabel.setText(von + " -> " + nach);
             statusLabel.setText("Live umgerechnet");
         }
@@ -260,7 +260,7 @@ public class EinheitenSidePanel extends JPanel
 
     private void styleCombo(JComboBox<?> comboBox)
     {
-        comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        comboBox.setFont(AppFonts.normal(13));
         comboBox.setBackground(theme.inputBackground());
         comboBox.setForeground(theme.displayForeground());
         comboBox.setFocusable(false);
@@ -268,7 +268,7 @@ public class EinheitenSidePanel extends JPanel
 
     private void styleField(JTextField field)
     {
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        field.setFont(AppFonts.normal(16));
         ModernButtonStyler.styleInput(field, theme);
         field.setCaretColor(theme.displayForeground());
     }

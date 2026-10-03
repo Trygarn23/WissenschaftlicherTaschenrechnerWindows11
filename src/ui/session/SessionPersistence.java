@@ -1,13 +1,13 @@
 package ui.session;
 
 import common.formatting.ZahlenFormatModus;
+import common.persistence.AppDateien;
 import common.persistence.DateiPersistenz;
 import common.state.RechnerModus;
 import common.state.WinkelModus;
 import ui.theme.ThemeType;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,14 +19,11 @@ import static common.persistence.DateiPersistenz.leseInt;
 
 public class SessionPersistence
 {
-    private static final Path STANDARD_DATEI =
-            Paths.get(System.getProperty("user.home"), ".wissenschaftlicher_taschenrechner_session.properties");
-
     private final Path datei;
 
     public SessionPersistence()
     {
-        this(STANDARD_DATEI);
+        this(AppDateien.session());
     }
 
     public SessionPersistence(Path datei)

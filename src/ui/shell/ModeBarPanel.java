@@ -38,7 +38,6 @@ public class ModeBarPanel extends JPanel
 
     private Consumer<RechnerModus> modeListener;
     private Runnable unitsListener;
-    private AppTheme currentTheme;
 
     public ModeBarPanel()
     {
@@ -101,6 +100,7 @@ public class ModeBarPanel extends JPanel
         weitereButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         weitereButton.setToolTipText("Weitere Modi und Werkzeuge");
         weitereButton.addActionListener(e -> weitereMenu.show(weitereButton, 0, weitereButton.getHeight()));
+        weitereButton.setComponentPopupMenu(weitereMenu); // Rechtsklick öffnet das Menü auch
     }
 
     private void openMode(RechnerModus modus)
@@ -124,7 +124,6 @@ public class ModeBarPanel extends JPanel
 
     public void setSelectedMode(RechnerModus aktuellerModus, AppTheme theme)
     {
-        currentTheme = theme;
         setBackground(theme.modeBarBackground());
         weitereMenu.setBorder(javax.swing.BorderFactory.createLineBorder(theme.modeBorder(), 1));
 
@@ -167,35 +166,5 @@ public class ModeBarPanel extends JPanel
                 aktiv ? theme.menuActiveBackground() : theme.popupOptionBackground(),
                 aktiv ? theme.popupSelectedForeground() : theme.popupOptionForeground()
         );
-    }
-
-    List<String> direkteModusLabelsForTest()
-    {
-        return DIREKTE_MODI.stream().map(RechnerModus::getLabel).toList();
-    }
-
-    List<String> weitereLabelsForTest()
-    {
-        return List.of("Matrix", "Statistik", "Einheiten");
-    }
-
-    JButton weitereButtonForTest()
-    {
-        return weitereButton;
-    }
-
-    JButton weitereUnitsButtonForTest()
-    {
-        return einheitenButton;
-    }
-
-    JButton weitereModeButtonForTest(RechnerModus modus)
-    {
-        return weitereButtons.get(modus);
-    }
-
-    AppTheme currentThemeForTest()
-    {
-        return currentTheme;
     }
 }

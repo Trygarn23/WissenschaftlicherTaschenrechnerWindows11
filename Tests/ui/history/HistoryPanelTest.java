@@ -3,6 +3,11 @@ package ui.history;
 import common.history.VerlaufEintrag;
 import common.state.RechnerModus;
 import org.junit.jupiter.api.Test;
+import testhilfen.SwingSuche;
+
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JTextField;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,14 +49,14 @@ class HistoryPanelTest
         ));
 
         // Act / Assert
-        panel.setSearchTextForTest("sin");
-        assertEquals(1, panel.getVisibleEntryCountForTest());
+        SwingSuche.finde(panel, JTextField.class).setText("sin");
+        assertEquals(1, liste(panel).getModel().getSize());
 
-        panel.setSearchTextForTest("5");
-        assertEquals(1, panel.getVisibleEntryCountForTest());
+        SwingSuche.finde(panel, JTextField.class).setText("5");
+        assertEquals(1, liste(panel).getModel().getSize());
 
-        panel.setSearchTextForTest("wissenschaftlich");
-        assertEquals(1, panel.getVisibleEntryCountForTest());
+        SwingSuche.finde(panel, JTextField.class).setText("wissenschaftlich");
+        assertEquals(1, liste(panel).getModel().getSize());
     }
 
     @Test
@@ -67,20 +72,20 @@ class HistoryPanelTest
         ));
 
         // Act
-        panel.selectVisibleEntryForTest(0);
-        panel.toggleSelectedFavoriteForTest();
+        liste(panel).setSelectedIndex(0);
+        favoritButton(panel).doClick();
 
         // Assert
         assertTrue(panel.getAllStructuredEntries().getFirst().isFavorit());
-        assertTrue(panel.getVisibleEntryTextForTest(0).startsWith("\u2605 "));
+        assertTrue(angezeigterText(panel, 0).startsWith("\u2605 "));
         assertEquals(List.of("favoriteChanged"), favoriteEvents);
 
         // Act
-        panel.toggleSelectedFavoriteForTest();
+        favoritButton(panel).doClick();
 
         // Assert
         assertFalse(panel.getAllStructuredEntries().getFirst().isFavorit());
-        assertTrue(panel.getVisibleEntryTextForTest(0).startsWith("\u2606 "));
+        assertTrue(angezeigterText(panel, 0).startsWith("\u2606 "));
     }
 
     @Test
@@ -94,12 +99,12 @@ class HistoryPanelTest
         ));
 
         // Act
-        panel.setSearchTextForTest("sin");
-        panel.selectVisibleEntryForTest(0);
-        panel.toggleSelectedFavoriteForTest();
+        SwingSuche.finde(panel, JTextField.class).setText("sin");
+        liste(panel).setSelectedIndex(0);
+        favoritButton(panel).doClick();
 
         // Assert
-        assertEquals(1, panel.getVisibleEntryCountForTest());
+        assertEquals(1, liste(panel).getModel().getSize());
         assertEquals("sin(90)", panel.getAllStructuredEntries().get(1).getAusdruck());
         assertFalse(panel.getAllStructuredEntries().get(1).isFavorit());
     }
@@ -118,5 +123,25 @@ class HistoryPanelTest
         assertEquals("7*6", panel.getAllStructuredEntries().getFirst().getAusdruck());
         assertEquals("42", panel.getAllStructuredEntries().getFirst().getErgebnis());
         assertEquals(RechnerModus.STANDARD, panel.getAllStructuredEntries().getFirst().getModus());
+    }
+
+    private static javax.swing.AbstractButton favoritButton(HistoryPanel panel)
+    {
+        return SwingSuche.finde(panel, javax.swing.AbstractButton.class, b -> "Favorit umschalten".equals(b.getToolTipText()));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static JList<VerlaufEintrag> liste(HistoryPanel panel)
+    {
+        return SwingSuche.finde(panel, JList.class);
+    }
+
+    // Über den echten Renderer lesen, so wie der Eintrag auch auf dem Bildschirm steht.
+    private static String angezeigterText(HistoryPanel panel, int index)
+    {
+        JList<VerlaufEintrag> liste = liste(panel);
+        JLabel label = (JLabel) liste.getCellRenderer()
+                .getListCellRendererComponent(liste, liste.getModel().getElementAt(index), index, false, false);
+        return label.getText();
     }
 }

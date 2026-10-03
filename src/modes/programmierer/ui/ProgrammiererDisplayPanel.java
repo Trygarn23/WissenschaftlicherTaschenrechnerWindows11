@@ -3,6 +3,7 @@ package modes.programmierer.ui;
 import modes.programmierer.formatting.ProgrammiererFormatter;
 import modes.programmierer.logic.ProgrammiererLogik;
 import modes.programmierer.model.Basis;
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.themes.DarkTheme;
 
@@ -28,7 +29,7 @@ class ProgrammiererDisplayPanel extends JPanel
 
         displayPanel.setBorder(new EmptyBorder(8, 8, 8, 8));
 
-        aktuelleBasisLabel.setFont(new Font("Segoe UI", Font.PLAIN, 42));
+        aktuelleBasisLabel.setFont(AppFonts.normal(42));
         aktuelleBasisLabel.setBorder(new EmptyBorder(0, 0, 4, 0));
 
         JPanel conversions = new JPanel(new GridLayout(4, 1, 0, 6));
@@ -39,7 +40,7 @@ class ProgrammiererDisplayPanel extends JPanel
         styleSecondaryLabel(octLabel);
         styleSecondaryLabel(binLabel);
         styleSecondaryLabel(statusLabel);
-        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        statusLabel.setFont(AppFonts.normal(13));
 
         conversions.add(hexLabel);
         conversions.add(decLabel);
@@ -88,7 +89,7 @@ class ProgrammiererDisplayPanel extends JPanel
 
     private void styleSecondaryLabel(JLabel label)
     {
-        label.setFont(new Font("Consolas", Font.PLAIN, 18));
+        label.setFont(AppFonts.festeBreite(18));
         label.setOpaque(false);
         label.setHorizontalAlignment(SwingConstants.RIGHT);
     }

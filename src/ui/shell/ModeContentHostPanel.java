@@ -54,11 +54,6 @@ public class ModeContentHostPanel extends JPanel
         return modePanels.get(modus);
     }
 
-    double fadeOverlayAlphaForTest()
-    {
-        return fadeOverlayAlpha;
-    }
-
     private void animateModeChange(AppTheme theme)
     {
         setOpaque(false);

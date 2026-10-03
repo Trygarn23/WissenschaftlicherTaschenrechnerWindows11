@@ -1,23 +1,11 @@
 package modes.komplex.formatting;
 
+import common.formatting.ZahlenAnzeige;
 import modes.komplex.model.KomplexDarstellung;
 import modes.komplex.model.KomplexeZahl;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
-
 public class KomplexFormatter
 {
-    private final DecimalFormat format;
-
-    public KomplexFormatter()
-    {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.GERMANY);
-        symbols.setDecimalSeparator(',');
-        format = new DecimalFormat("#,##0.##########", symbols);
-    }
-
     public String formatiere(KomplexeZahl zahl, KomplexDarstellung darstellung)
     {
         return switch (darstellung)
@@ -42,10 +30,6 @@ public class KomplexFormatter
 
     public String formatiereDouble(double wert)
     {
-        if (Math.abs(wert) < 1e-10)
-        {
-            return "0";
-        }
-        return format.format(wert);
+        return ZahlenAnzeige.formatiere(wert);
     }
 }

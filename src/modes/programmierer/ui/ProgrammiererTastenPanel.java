@@ -1,6 +1,7 @@
 package modes.programmierer.ui;
 
 import modes.programmierer.model.Basis;
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.themes.DarkTheme;
 import ui.tooltips.ButtonTooltips;
@@ -73,7 +74,7 @@ class ProgrammiererTastenPanel extends JPanel
     private JButton createStyledButton(String text)
     {
         JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        btn.setFont(AppFonts.normal(18));
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setOpaque(true);

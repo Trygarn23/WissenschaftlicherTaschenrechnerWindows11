@@ -9,9 +9,11 @@ import modes.graph.logic.KurvendiskussionService;
 import modes.graph.model.GraphPunkt;
 import modes.graph.model.GraphState;
 import modes.graph.model.KurvendiskussionResult;
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 import ui.shell.ModePanel;
+import ui.shell.StatusAnzeige;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -29,7 +31,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -48,6 +49,7 @@ public class GraphPanel extends JPanel implements ModePanel
     private final GraphFormatter formatter = new GraphFormatter();
 
     private final JLabel statusLabel = new JLabel("Bereit");
+    private final StatusAnzeige statusAnzeige = new StatusAnzeige(statusLabel);
     private final JLabel analysisTitleLabel = new JLabel("Kurvendiskussion");
     private final JLabel functionValueHeaderLabel = new JLabel("f(x)");
     private final JLabel firstDerivativeHeaderLabel = new JLabel("f'(x)");
@@ -103,20 +105,20 @@ public class GraphPanel extends JPanel implements ModePanel
 
         for (JTextField expressionField : expressionFields)
         {
-            expressionField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            expressionField.setFont(AppFonts.normal(16));
             ModernButtonStyler.styleInput(expressionField, theme);
             expressionField.setCaretColor(theme.displayForeground());
         }
 
-        statusLabel.setForeground(theme.secondaryDisplayForeground());
-        analysisArea.setFont(new Font("Consolas", Font.PLAIN, 12));
+        analysisArea.setFont(AppFonts.festeBreite(12));
         analysisArea.setBackground(theme.cardBackground());
         analysisArea.setForeground(theme.displayForeground());
         analysisArea.setBorder(ModernButtonStyler.cardBorder(theme));
-        tableStepSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        tableStepSpinner.setFont(AppFonts.normal(12));
         functionScrollPane.setBorder(BorderFactory.createLineBorder(theme.cardBorder()));
         functionScrollPane.getViewport().setBackground(theme.panelBackground());
         applyThemeToChildren(this);
+        statusAnzeige.setTheme(theme);
         updateFunctionSelectionStyles();
 
         repaint();
@@ -132,7 +134,7 @@ public class GraphPanel extends JPanel implements ModePanel
         form.setOpaque(false);
 
         JLabel title = new JLabel("Funktionen");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 19));
+        title.setFont(AppFonts.fett(19));
 
         JPanel titleRow = new JPanel(new BorderLayout(8, 0));
         titleRow.setOpaque(false);
@@ -236,7 +238,7 @@ public class GraphPanel extends JPanel implements ModePanel
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setOpaque(false);
 
-        analysisTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        analysisTitleLabel.setFont(AppFonts.fett(14));
 
         analysisArea.setEditable(false);
         analysisArea.setFocusable(false);
@@ -365,7 +367,7 @@ public class GraphPanel extends JPanel implements ModePanel
         syncFunctionsFromUi();
         if (!state.entferneFunktion(index))
         {
-            setStatus("Eine Funktion muss bleiben", false);
+            statusAnzeige.zeigeFehler("Eine Funktion muss bleiben");
             return;
         }
 
@@ -421,7 +423,7 @@ public class GraphPanel extends JPanel implements ModePanel
     {
         tableCenterX = punkt.getX();
         updateMiniTable();
-        setStatus("Punkt " + formatter.formatierePunkt(punkt) + " in die Wertetabelle übernommen", true);
+        statusAnzeige.zeigeErfolg("Punkt " + formatter.formatierePunkt(punkt) + " in die Wertetabelle übernommen");
     }
 
     private void plot()
@@ -433,7 +435,7 @@ public class GraphPanel extends JPanel implements ModePanel
         String ausdruck = state.getAktiveFunktion().getAusdruck();
         if (ausdruck.isBlank())
         {
-            setStatus("Bitte Funktion eingeben", false);
+            statusAnzeige.zeigeFehler("Bitte Funktion eingeben");
             analysisArea.setText("Gib mir eine Funktion, ich mal dir was.");
             canvasPanel.setKurvendiskussionResult(null);
             canvasPanel.repaint();
@@ -442,14 +444,14 @@ public class GraphPanel extends JPanel implements ModePanel
 
         if (!evaluator.istGueltig(ausdruck, winkelModus))
         {
-            setStatus("Ausdruck kann nicht gezeichnet werden", false);
+            statusAnzeige.zeigeFehler("Ausdruck kann nicht gezeichnet werden");
             analysisArea.setText("Kurvendiskussion nicht möglich.");
             canvasPanel.setKurvendiskussionResult(null);
             canvasPanel.repaint();
             return;
         }
 
-        setStatus("Zeichne " + state.getAktiveFunktion().getName() + "(x) = " + ausdruck, true);
+        statusAnzeige.zeigeErfolg("Zeichne " + state.getAktiveFunktion().getName() + "(x) = " + ausdruck);
         updateMiniTable();
         updateAnalysis();
         canvasPanel.pulseRefresh();
@@ -466,15 +468,6 @@ public class GraphPanel extends JPanel implements ModePanel
         evaluator.setFunktionen(state.getFunktionen());
     }
 
-    private void setStatus(String text, boolean ok)
-    {
-        statusLabel.setText(text);
-        if (theme != null)
-        {
-            statusLabel.setForeground(ok ? theme.secondaryDisplayForeground() : theme.dangerBackground());
-        }
-    }
-
     private void updateMiniTable()
     {
         for (int i = 0; i < valueLabels.size(); i++)
@@ -487,44 +480,29 @@ public class GraphPanel extends JPanel implements ModePanel
             {
                 xLabels.get(row).setText(formatter.formatiereZahl(x));
             }
-            try
+            double y = switch (column)
             {
-                double y = switch (column)
-                {
-                    case 0 -> evaluator.auswerten(state.getAktiveFunktion().getAusdruck(), x, winkelModus);
-                    case 1 -> evaluator.ersteAbleitung(state.getAktiveFunktion().getAusdruck(), x, winkelModus);
-                    case 2 -> evaluator.zweiteAbleitung(state.getAktiveFunktion().getAusdruck(), x, winkelModus);
-                    default -> Double.NaN;
-                };
-                valueLabels.get(i).setText(Double.isFinite(y) ? formatter.formatiereZahl(y) : "undef.");
-            }
-            catch (RuntimeException e)
-            {
-                valueLabels.get(i).setText("undef.");
-            }
+                case 0 -> evaluator.wertOderNaN(state.getAktiveFunktion().getAusdruck(), x, winkelModus);
+                case 1 -> evaluator.ersteAbleitung(state.getAktiveFunktion().getAusdruck(), x, winkelModus);
+                case 2 -> evaluator.zweiteAbleitung(state.getAktiveFunktion().getAusdruck(), x, winkelModus);
+                default -> Double.NaN;
+            };
+            valueLabels.get(i).setText(Double.isFinite(y) ? formatter.formatiereZahl(y) : "undef.");
         }
     }
 
     private void updateAnalysis()
     {
-        try
-        {
-            KurvendiskussionResult result = kurvendiskussionService.analysiere(
-                    state.getAktiveFunktion().getAusdruck(),
-                    state.getXMin(),
-                    state.getXMax(),
-                    winkelModus
-            );
+        KurvendiskussionResult result = kurvendiskussionService.analysiere(
+                state.getAktiveFunktion().getAusdruck(),
+                state.getXMin(),
+                state.getXMax(),
+                winkelModus
+        );
 
-            analysisArea.setText(formatter.formatiereKurvendiskussion(result, intersections()));
-            canvasPanel.setKurvendiskussionResult(result);
-            analysisArea.setCaretPosition(0);
-        }
-        catch (RuntimeException e)
-        {
-            canvasPanel.setKurvendiskussionResult(null);
-            analysisArea.setText("Kurvendiskussion nicht möglich.");
-        }
+        analysisArea.setText(formatter.formatiereKurvendiskussion(result, intersections()));
+        canvasPanel.setKurvendiskussionResult(result);
+        analysisArea.setCaretPosition(0);
     }
 
     private List<GraphPunkt> intersections()
@@ -542,20 +520,14 @@ public class GraphPanel extends JPanel implements ModePanel
                 continue;
             }
 
-            try
-            {
-                punkte.addAll(intersectionService.findeSchnittpunkte(
-                        state.getAktiveFunktion().getAusdruck(),
-                        state.getFunktion(index).getAusdruck(),
-                        state.getXMin(),
-                        state.getXMax(),
-                        winkelModus
-                ));
-            }
-            catch (RuntimeException ignored)
-            {
-                // Eine ungültige Nebenfunktion soll die aktive Kurvendiskussion nicht blockieren.
-            }
+            // Eine ungültige Nebenfunktion liefert einfach keine Schnittpunkte (NaN), statt alles zu blockieren.
+            punkte.addAll(intersectionService.findeSchnittpunkte(
+                    state.getAktiveFunktion().getAusdruck(),
+                    state.getFunktion(index).getAusdruck(),
+                    state.getXMin(),
+                    state.getXMax(),
+                    winkelModus
+            ));
         }
         return punkte;
     }
@@ -598,7 +570,6 @@ public class GraphPanel extends JPanel implements ModePanel
             }
         }
 
-        statusLabel.setForeground(theme.secondaryDisplayForeground());
     }
 
     private void styleCompactGraphButton(JButton button)

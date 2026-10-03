@@ -8,10 +8,11 @@ import modes.statistik.model.StatistikDatenpunkt;
 import modes.statistik.model.StatistikDiagrammTyp;
 import modes.statistik.model.StatistikErgebnis;
 import modes.statistik.model.StatistikState;
-import ui.animation.AnimationSupport;
+import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 import ui.shell.ModePanel;
+import ui.shell.StatusAnzeige;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -28,7 +29,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +49,7 @@ public class StatistikPanel extends JPanel implements ModePanel
     private final DefaultTableModel tableModel = new DefaultTableModel(TABLE_COLUMNS, 18);
     private final JTable dataTable = new JTable(tableModel);
     private final StatistikDiagrammPanel diagrammPanel = new StatistikDiagrammPanel();
+    private final StatusAnzeige statusAnzeige = new StatusAnzeige(statusLabel, resultArea, diagrammPanel);
     private final List<JButton> buttons = new ArrayList<>();
     private final List<JTextField> fields = List.of(klassenField);
 
@@ -90,7 +91,7 @@ public class StatistikPanel extends JPanel implements ModePanel
         dataTable.setGridColor(theme.modeBorder());
         dataTable.getTableHeader().setBackground(theme.toggleButtonBackground());
         dataTable.getTableHeader().setForeground(theme.toggleButtonForeground());
-        statusLabel.setForeground(theme.secondaryDisplayForeground());
+        statusAnzeige.setTheme(theme);
         sortierenBox.setForeground(theme.displayForeground());
         sortierenBox.setBackground(theme.panelBackground());
         diagrammBox.setBackground(theme.toggleButtonBackground());
@@ -99,7 +100,7 @@ public class StatistikPanel extends JPanel implements ModePanel
 
         for (JTextField field : fields)
         {
-            field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            field.setFont(AppFonts.normal(14));
             ModernButtonStyler.styleInput(field, theme);
             field.setCaretColor(theme.displayForeground());
         }
@@ -117,9 +118,9 @@ public class StatistikPanel extends JPanel implements ModePanel
         panel.setPreferredSize(new Dimension(360, 0));
 
         JLabel title = new JLabel("Statistik");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        title.setFont(AppFonts.fett(24));
 
-        textInput.setFont(new Font("Consolas", Font.PLAIN, 14));
+        textInput.setFont(AppFonts.festeBreite(14));
         textInput.setLineWrap(false);
 
         JPanel controls = new JPanel(new GridLayout(0, 2, 8, 8));
@@ -146,7 +147,7 @@ public class StatistikPanel extends JPanel implements ModePanel
         dataTable.setRowHeight(24);
 
         resultArea.setEditable(false);
-        resultArea.setFont(new Font("Consolas", Font.PLAIN, 14));
+        resultArea.setFont(AppFonts.festeBreite(14));
 
         JPanel split = new JPanel(new GridLayout(2, 1, 0, 10));
         split.setOpaque(false);
@@ -236,8 +237,7 @@ public class StatistikPanel extends JPanel implements ModePanel
 
         resultArea.setText(formatter.formatiereErgebnis(aktuellesErgebnis));
         diagrammPanel.setErgebnis(aktuellesErgebnis);
-        statusLabel.setText(status + " | n = " + aktuellesErgebnis.getAnzahl());
-        pulseResult(false);
+        statusAnzeige.zeigeErfolg(status + " | n = " + aktuellesErgebnis.getAnzahl());
     }
 
     private int parseKlassenAnzahl()
@@ -312,7 +312,7 @@ public class StatistikPanel extends JPanel implements ModePanel
         textInput.setText("");
         clearTable(18);
         resultArea.setText("Bereit");
-        statusLabel.setText("Statistikmodus bereit");
+        statusAnzeige.zeigeErfolg("Statistikmodus bereit");
         aktuellesErgebnis = null;
         diagrammPanel.setErgebnis(null);
     }
@@ -368,21 +368,9 @@ public class StatistikPanel extends JPanel implements ModePanel
         }
         catch (IllegalArgumentException | ArithmeticException e)
         {
-            statusLabel.setText(e.getMessage() == null || e.getMessage().isBlank()
-                    ? "Ungültige Statistikdaten"
-                    : e.getMessage());
             resultArea.setText("Fehler");
             diagrammPanel.setErgebnis(null);
-            pulseResult(true);
-        }
-    }
-
-    private void pulseResult(boolean error)
-    {
-        if (theme != null)
-        {
-            AnimationSupport.pulseBackground(resultArea, error ? theme.errorPulseColor() : theme.successPulseColor(), 200);
-            AnimationSupport.pulseBackground(diagrammPanel, error ? theme.errorPulseColor() : theme.softAccentBackground(), 200);
+            statusAnzeige.zeigeFehler(e.getMessage(), "Ungültige Statistikdaten");
         }
     }
 

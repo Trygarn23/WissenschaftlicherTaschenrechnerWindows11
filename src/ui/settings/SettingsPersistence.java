@@ -1,13 +1,13 @@
 package ui.settings;
 
 import common.formatting.ZahlenFormatModus;
+import common.persistence.AppDateien;
 import common.persistence.DateiPersistenz;
 import common.state.RechnerModus;
 import common.state.WinkelModus;
 import ui.theme.ThemeType;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -16,14 +16,11 @@ import static common.persistence.DateiPersistenz.leseInt;
 
 public class SettingsPersistence
 {
-    private static final Path STANDARD_DATEI =
-            Paths.get(System.getProperty("user.home"), ".wissenschaftlicher_taschenrechner_settings.properties");
-
     private final Path datei;
 
     public SettingsPersistence()
     {
-        this(STANDARD_DATEI);
+        this(AppDateien.settings());
     }
 
     public SettingsPersistence(Path datei)

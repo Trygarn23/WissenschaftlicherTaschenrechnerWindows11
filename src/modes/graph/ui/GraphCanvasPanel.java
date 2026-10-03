@@ -10,26 +10,21 @@ import modes.graph.model.KurvendiskussionResult;
 import ui.animation.AnimationSupport;
 import ui.theme.AppTheme;
 
-import java.awt.AlphaComposite;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.FontMetrics;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.Cursor;
 import java.awt.Point;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -47,6 +42,7 @@ public class GraphCanvasPanel extends JPanel
 
     private final GraphEvaluator evaluator;
     private final GraphFormatter formatter = new GraphFormatter();
+    private final GraphZeichner zeichner;
     private GraphState state;
     private AppTheme theme;
     private WinkelModus winkelModus = WinkelModus.DEG;
@@ -64,6 +60,7 @@ public class GraphCanvasPanel extends JPanel
     {
         this.state = state;
         this.evaluator = evaluator;
+        this.zeichner = new GraphZeichner(evaluator, formatter);
         setOpaque(true);
         setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
         hoverTimer = new Timer(HOVER_VERZOEGERUNG_MS, e -> {
@@ -134,264 +131,19 @@ public class GraphCanvasPanel extends JPanel
 
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        AppTheme activeTheme = theme;
-        Color background = activeTheme == null ? new Color(18, 18, 18) : activeTheme.canvasBackground();
-        Color foreground = activeTheme == null ? Color.WHITE : activeTheme.displayForeground();
-        Color secondary = activeTheme == null ? new Color(150, 150, 150) : activeTheme.secondaryDisplayForeground();
-        Color grid = activeTheme == null ? mische(background, foreground, 0.18) : activeTheme.gridColor();
-
-        g.setColor(background);
-        g.fillRect(0, 0, getWidth(), getHeight());
-        zeichneRefreshPulse(g, activeTheme);
-
-        zeichneRaster(g, grid, secondary);
-        zeichneAchsen(g, foreground);
-        zeichneFunktionen(g);
-        zeichneAnalysePunkte(g, background, foreground);
-        zeichneBereich(g, secondary);
-        zeichneHoverKoordinaten(g);
-
+        zeichner.zeichne(g, new GraphZeichner.Szene(
+                koordinaten(),
+                theme,
+                winkelModus,
+                kurvendiskussionResult,
+                hoverSichtbar ? hoverPunkt : null,
+                refreshPulse));
         g.dispose();
     }
 
-    private void zeichneRefreshPulse(Graphics2D g, AppTheme activeTheme)
+    private GraphKoordinaten koordinaten()
     {
-        if (activeTheme == null || refreshPulse <= 0.0)
-        {
-            return;
-        }
-
-        Graphics2D pulseGraphics = (Graphics2D) g.create();
-        pulseGraphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) (0.16 * refreshPulse)));
-        pulseGraphics.setColor(activeTheme.successPulseColor());
-        pulseGraphics.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
-        pulseGraphics.dispose();
-    }
-
-    private void zeichneRaster(Graphics2D g, Color grid, Color labels)
-    {
-        g.setStroke(new BasicStroke(1f));
-        g.setColor(grid);
-
-        double xStep = ermittleSchrittweite(state.getXMax() - state.getXMin());
-        double yStep = ermittleSchrittweite(state.getYMax() - state.getYMin());
-
-        for (double x = Math.ceil(state.getXMin() / xStep) * xStep; x <= state.getXMax(); x += xStep)
-        {
-            int px = zuBildschirmX(x);
-            g.drawLine(px, 0, px, getHeight());
-            zeichneLabel(g, labels, formatter.formatiereAchsenwert(x), px + 4, Math.min(getHeight() - 6, zuBildschirmY(0) + 16));
-        }
-
-        for (double y = Math.ceil(state.getYMin() / yStep) * yStep; y <= state.getYMax(); y += yStep)
-        {
-            int py = zuBildschirmY(y);
-            g.drawLine(0, py, getWidth(), py);
-            if (Math.abs(y) > 1e-9)
-            {
-                zeichneLabel(g, labels, formatter.formatiereAchsenwert(y), Math.max(4, zuBildschirmX(0) + 6), py - 4);
-            }
-        }
-    }
-
-    private void zeichneAchsen(Graphics2D g, Color foreground)
-    {
-        g.setColor(foreground);
-        g.setStroke(new BasicStroke(2f));
-
-        if (state.getYMin() <= 0.0 && state.getYMax() >= 0.0)
-        {
-            int y = zuBildschirmY(0.0);
-            g.drawLine(0, y, getWidth(), y);
-        }
-
-        if (state.getXMin() <= 0.0 && state.getXMax() >= 0.0)
-        {
-            int x = zuBildschirmX(0.0);
-            g.drawLine(x, 0, x, getHeight());
-        }
-    }
-
-    private void zeichneFunktionen(Graphics2D g)
-    {
-        for (int index = 0; index < state.getFunktionen().size(); index++)
-        {
-            FunktionsDefinition funktion = state.getFunktion(index);
-            if (!funktion.isSichtbar())
-            {
-                continue;
-            }
-
-            Path2D path = new Path2D.Double();
-            boolean pathGestartet = false;
-            int letzterY = 0;
-
-            for (int px = 0; px < getWidth(); px++)
-            {
-                double x = zuWeltX(px);
-
-                try
-                {
-                    double y = evaluator.auswerten(funktion.getAusdruck(), x, winkelModus);
-                    if (!Double.isFinite(y) || y < state.getYMin() - 1_000 || y > state.getYMax() + 1_000)
-                    {
-                        pathGestartet = false;
-                        continue;
-                    }
-
-                    int py = zuBildschirmY(y);
-                    if (pathGestartet && Math.abs(py - letzterY) > getHeight() * 2)
-                    {
-                        pathGestartet = false;
-                    }
-
-                    if (!pathGestartet)
-                    {
-                        path.moveTo(px, py);
-                        pathGestartet = true;
-                    }
-                    else
-                    {
-                        path.lineTo(px, py);
-                    }
-                    letzterY = py;
-                }
-                catch (RuntimeException e)
-                {
-                    pathGestartet = false;
-                }
-            }
-
-            float breite = index == state.getAktiveFunktionIndex() ? 3.5f : 2.5f;
-            g.setStroke(new BasicStroke(breite, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            g.setColor(funktion.getFarbe());
-            g.draw(path);
-        }
-    }
-
-    private void zeichneBereich(Graphics2D g, Color secondary)
-    {
-        String text = String.format("x %.1f .. %.1f | y %.1f .. %.1f", state.getXMin(), state.getXMax(), state.getYMin(), state.getYMax());
-        g.setColor(secondary);
-        FontMetrics metrics = g.getFontMetrics();
-        g.drawString(text, getWidth() - metrics.stringWidth(text) - 12, getHeight() - 12);
-    }
-
-    private void zeichneLabel(Graphics2D g, Color color, String text, int x, int y)
-    {
-        g.setColor(color);
-        g.drawString(text, x, y);
-    }
-
-    private int zuBildschirmX(double x)
-    {
-        return (int) Math.round((x - state.getXMin()) / (state.getXMax() - state.getXMin()) * getWidth());
-    }
-
-    private int zuBildschirmY(double y)
-    {
-        return (int) Math.round((state.getYMax() - y) / (state.getYMax() - state.getYMin()) * getHeight());
-    }
-
-    private double zuWeltX(int x)
-    {
-        return state.getXMin() + (x / Math.max(1.0, getWidth() - 1.0)) * (state.getXMax() - state.getXMin());
-    }
-
-    private void zeichneAnalysePunkte(Graphics2D g, Color background, Color foreground)
-    {
-        if (kurvendiskussionResult == null)
-        {
-            return;
-        }
-
-        AppTheme activeTheme = theme;
-        Color nullstelle = activeTheme == null ? new Color(30, 190, 120) : activeTheme.graphNullstelleColor();
-        Color extremum = activeTheme == null ? new Color(255, 190, 60) : activeTheme.graphExtremumColor();
-        Color wendestelle = activeTheme == null ? new Color(190, 120, 255) : activeTheme.graphWendestelleColor();
-        Color yAchse = activeTheme == null ? new Color(70, 190, 255) : activeTheme.graphYAchseColor();
-
-        zeichneMarker(g, kurvendiskussionResult.getYAchsenSchnittpunkt(), yAchse, background, "Y");
-
-        for (GraphPunkt punkt : kurvendiskussionResult.getNullstellen())
-        {
-            zeichneMarker(g, punkt, nullstelle, background, "N");
-        }
-
-        for (GraphPunkt punkt : kurvendiskussionResult.getExtremstellen())
-        {
-            zeichneMarker(g, punkt, extremum, background, "E");
-        }
-
-        for (GraphPunkt punkt : kurvendiskussionResult.getWendestellen())
-        {
-            zeichneMarker(g, punkt, wendestelle, background, "W");
-        }
-    }
-
-    private void zeichneMarker(Graphics2D g, GraphPunkt punkt, Color color, Color background, String label)
-    {
-        if (punkt == null || !istSichtbar(punkt))
-        {
-            return;
-        }
-
-        int x = zuBildschirmX(punkt.getX());
-        int y = zuBildschirmY(punkt.getY());
-
-        g.setColor(background);
-        g.fillOval(x - 7, y - 7, 14, 14);
-        g.setColor(color);
-        g.setStroke(new BasicStroke(2f));
-        g.drawOval(x - 7, y - 7, 14, 14);
-        g.fillOval(x - 3, y - 3, 6, 6);
-        g.drawString(label, x + 8, y - 8);
-    }
-
-    private boolean istSichtbar(GraphPunkt punkt)
-    {
-        return punkt.getX() >= state.getXMin()
-                && punkt.getX() <= state.getXMax()
-                && punkt.getY() >= state.getYMin()
-                && punkt.getY() <= state.getYMax();
-    }
-
-    private double zuWeltY(int y)
-    {
-        return state.getYMax() - (y / Math.max(1.0, getHeight() - 1.0)) * (state.getYMax() - state.getYMin());
-    }
-
-    private void zeichneHoverKoordinaten(Graphics2D g)
-    {
-        if (!hoverSichtbar || hoverPunkt == null)
-        {
-            return;
-        }
-
-        String text = "x = " + formatter.formatiereZahl(zuWeltX(hoverPunkt.x))
-                + "   y = " + formatter.formatiereZahl(zuWeltY(hoverPunkt.y));
-        FontMetrics metrics = g.getFontMetrics();
-        int breite = metrics.stringWidth(text) + 20;
-        int hoehe = metrics.getHeight() + 10;
-        int x = Math.min(hoverPunkt.x + 14, Math.max(6, getWidth() - breite - 6));
-        int y = hoverPunkt.y - hoehe - 12;
-        if (y < 6)
-        {
-            y = Math.min(getHeight() - hoehe - 6, hoverPunkt.y + 16);
-        }
-
-        AppTheme activeTheme = theme;
-        Color background = activeTheme == null ? new Color(35, 35, 35) : activeTheme.popupBackground();
-        Color foreground = activeTheme == null ? Color.WHITE : activeTheme.popupForeground();
-        Color border = activeTheme == null ? new Color(100, 100, 100) : activeTheme.cardBorder();
-
-        g.setColor(background);
-        g.fillRoundRect(x, y, breite, hoehe, 10, 10);
-        g.setColor(border);
-        g.drawRoundRect(x, y, breite, hoehe, 10, 10);
-        g.setColor(foreground);
-        g.drawString(text, x + 10, y + metrics.getAscent() + 5);
+        return new GraphKoordinaten(state, getWidth(), getHeight());
     }
 
     private void registriereMaussteuerung()
@@ -418,7 +170,7 @@ public class GraphCanvasPanel extends JPanel
 
     private int findeFunktion(Point punkt)
     {
-        double x = zuWeltX(punkt.x);
+        double x = koordinaten().zuWeltX(punkt.x);
         int besterIndex = -1;
         double besterAbstand = KLICK_TOLERANZ_KURVE_PX;
 
@@ -430,24 +182,18 @@ public class GraphCanvasPanel extends JPanel
                 continue;
             }
 
-            try
+            // Eine ungültige Funktion liefert NaN und ist an dieser Stelle einfach nicht anklickbar.
+            double y = evaluator.wertOderNaN(funktion.getAusdruck(), x, winkelModus);
+            if (Double.isNaN(y))
             {
-                double y = evaluator.auswerten(funktion.getAusdruck(), x, winkelModus);
-                if (!Double.isFinite(y))
-                {
-                    continue;
-                }
-
-                double abstand = Math.abs(zuBildschirmY(y) - punkt.y);
-                if (abstand < besterAbstand)
-                {
-                    besterAbstand = abstand;
-                    besterIndex = index;
-                }
+                continue;
             }
-            catch (RuntimeException ignored)
+
+            double abstand = Math.abs(koordinaten().zuBildschirmY(y) - punkt.y);
+            if (abstand < besterAbstand)
             {
-                // Eine ungültige Funktion ist an dieser Stelle einfach nicht anklickbar.
+                besterAbstand = abstand;
+                besterIndex = index;
             }
         }
         return besterIndex;
@@ -478,13 +224,13 @@ public class GraphCanvasPanel extends JPanel
         double besterAbstand = KLICK_TOLERANZ_PUNKT_PX;
         for (GraphPunkt punkt : analysePunkte())
         {
-            if (punkt == null || !istSichtbar(punkt))
+            if (punkt == null || !koordinaten().istSichtbar(punkt))
             {
                 continue;
             }
 
-            double deltaX = zuBildschirmX(punkt.getX()) - mausPunkt.x;
-            double deltaY = zuBildschirmY(punkt.getY()) - mausPunkt.y;
+            double deltaX = koordinaten().zuBildschirmX(punkt.getX()) - mausPunkt.x;
+            double deltaY = koordinaten().zuBildschirmY(punkt.getY()) - mausPunkt.y;
             double abstand = Math.hypot(deltaX, deltaY);
             if (abstand < besterAbstand)
             {
@@ -533,31 +279,11 @@ public class GraphCanvasPanel extends JPanel
         {
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
         }
-        catch (RuntimeException e)
+        catch (IllegalStateException e)
         {
+            // Zwischenablage gerade von einem anderen Programm belegt.
             Toolkit.getDefaultToolkit().beep();
         }
-    }
-
-    private double ermittleSchrittweite(double span)
-    {
-        double rough = span / 10.0;
-        double power = Math.pow(10, Math.floor(Math.log10(rough)));
-        double normalized = rough / power;
-
-        if (normalized < 2.0) return power;
-        if (normalized < 5.0) return 2.0 * power;
-        return 5.0 * power;
-    }
-
-    private Color mische(Color a, Color b, double amount)
-    {
-        double inverse = 1.0 - amount;
-        return new Color(
-                (int) (a.getRed() * inverse + b.getRed() * amount),
-                (int) (a.getGreen() * inverse + b.getGreen() * amount),
-                (int) (a.getBlue() * inverse + b.getBlue() * amount)
-        );
     }
 
     /** Verschieben, Zoomen, Hover und Klicks auf der Zeichenfläche. */
@@ -600,10 +326,10 @@ public class GraphCanvasPanel extends JPanel
                 return;
             }
 
-            double vorherX = zuWeltX(letzterDragPunkt.x);
-            double vorherY = zuWeltY(letzterDragPunkt.y);
-            double jetztX = zuWeltX(e.getX());
-            double jetztY = zuWeltY(e.getY());
+            double vorherX = koordinaten().zuWeltX(letzterDragPunkt.x);
+            double vorherY = koordinaten().zuWeltY(letzterDragPunkt.y);
+            double jetztX = koordinaten().zuWeltX(e.getX());
+            double jetztY = koordinaten().zuWeltY(e.getY());
 
             state.verschiebe(vorherX - jetztX, vorherY - jetztY);
             letzterDragPunkt = e.getPoint();

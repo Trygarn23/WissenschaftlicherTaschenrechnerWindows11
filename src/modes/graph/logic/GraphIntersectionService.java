@@ -80,22 +80,13 @@ public class GraphIntersectionService
 
     private GraphPunkt punkt(String ausdruck, double x, WinkelModus winkelModus)
     {
-        return new GraphPunkt(x, evaluator.auswerten(ausdruck, x, winkelModus));
+        return new GraphPunkt(x, evaluator.wertOderNaN(ausdruck, x, winkelModus));
     }
 
     private double differenz(String ersterAusdruck, String zweiterAusdruck, double x, WinkelModus winkelModus)
     {
-        try
-        {
-            double erster = evaluator.auswerten(ersterAusdruck, x, winkelModus);
-            double zweiter = evaluator.auswerten(zweiterAusdruck, x, winkelModus);
-            double diff = erster - zweiter;
-            return Double.isFinite(diff) ? diff : Double.NaN;
-        }
-        catch (RuntimeException e)
-        {
-            return Double.NaN;
-        }
+        double diff = evaluator.wertOderNaN(ersterAusdruck, x, winkelModus) - evaluator.wertOderNaN(zweiterAusdruck, x, winkelModus);
+        return Double.isFinite(diff) ? diff : Double.NaN;
     }
 
     private void fuegeEinzigartigHinzu(List<GraphPunkt> punkte, GraphPunkt punkt)

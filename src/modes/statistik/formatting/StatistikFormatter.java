@@ -1,30 +1,16 @@
 package modes.statistik.formatting;
 
+import common.formatting.ZahlenAnzeige;
 import modes.statistik.model.StatistikErgebnis;
 import modes.statistik.model.StatistikRegression;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class StatistikFormatter
 {
-    private final DecimalFormat format;
-
-    public StatistikFormatter()
-    {
-        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.GERMANY);
-        format = new DecimalFormat("#,##0.##########", symbols);
-    }
-
     public String formatiereZahl(double wert)
     {
-        if (!Double.isFinite(wert))
-        {
-            return "nicht definiert";
-        }
-        return format.format(wert);
+        return ZahlenAnzeige.formatiere(wert);
     }
 
     public String formatiereErgebnis(StatistikErgebnis ergebnis)

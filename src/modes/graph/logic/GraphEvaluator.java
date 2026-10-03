@@ -27,31 +27,40 @@ public class GraphEvaluator
         return funktionsResolver.auswerten(ausdruck, x, winkelModus, funktionen);
     }
 
+    /**
+     * Wie {@link #auswerten}, liefert bei ungültigem Ausdruck oder undefinierter Stelle aber {@code NaN}
+     * statt einer Exception. Fürs Zeichnen und die Kurvendiskussion ist das der Normalfall.
+     */
+    public double wertOderNaN(String ausdruck, double x, WinkelModus winkelModus)
+    {
+        try
+        {
+            double y = auswerten(ausdruck, x, winkelModus);
+            return Double.isFinite(y) ? y : Double.NaN;
+        }
+        catch (IllegalArgumentException e)
+        {
+            return Double.NaN;
+        }
+    }
+
     public double ersteAbleitung(String ausdruck, double x, WinkelModus winkelModus)
     {
-        double links = auswerten(ausdruck, x - DEFAULT_H, winkelModus);
-        double rechts = auswerten(ausdruck, x + DEFAULT_H, winkelModus);
+        double links = wertOderNaN(ausdruck, x - DEFAULT_H, winkelModus);
+        double rechts = wertOderNaN(ausdruck, x + DEFAULT_H, winkelModus);
         return (rechts - links) / (2.0 * DEFAULT_H);
     }
 
     public double zweiteAbleitung(String ausdruck, double x, WinkelModus winkelModus)
     {
-        double links = auswerten(ausdruck, x - DEFAULT_H, winkelModus);
-        double mitte = auswerten(ausdruck, x, winkelModus);
-        double rechts = auswerten(ausdruck, x + DEFAULT_H, winkelModus);
+        double links = wertOderNaN(ausdruck, x - DEFAULT_H, winkelModus);
+        double mitte = wertOderNaN(ausdruck, x, winkelModus);
+        double rechts = wertOderNaN(ausdruck, x + DEFAULT_H, winkelModus);
         return (links - 2.0 * mitte + rechts) / (DEFAULT_H * DEFAULT_H);
     }
 
     public boolean istGueltig(String ausdruck, WinkelModus winkelModus)
     {
-        try
-        {
-            double wert = auswerten(ausdruck, 0.0, winkelModus);
-            return Double.isFinite(wert);
-        }
-        catch (RuntimeException e)
-        {
-            return false;
-        }
+        return Double.isFinite(wertOderNaN(ausdruck, 0.0, winkelModus));
     }
 }

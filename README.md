@@ -151,6 +151,18 @@ todo.md
 
 Die Modi sind weitgehend getrennt aufgebaut. Gemeinsame Logik wie Parser, Verlauf, Formatierung und Rechnerzustand liegt unter `common`.
 
+### Namensregeln
+
+- **UI-Klassen auf Englisch** (`applyTheme`, `buildSidebar`, `createButton`), weil Swing selbst englisch ist.
+- **Logik und Model auf Deutsch** (`berechne`, `formatiereZahl`, `RechnerZustand`).
+- Innerhalb einer Klasse nicht mischen: die privaten Hilfsmethoden einer Klasse sind alle in einer Sprache.
+- Texte für die Oberfläche immer mit echten Umlauten („öffnen“, nicht „oeffnen“).
+
+### Gespeicherte Dateien
+
+Settings, Session, Verlauf und das eigene Theme liegen unter `~/.wissenschaftlicher_taschenrechner/`.
+Ältere Versionen haben die Dateien direkt im Benutzerordner abgelegt, die werden beim Start einmal dorthin verschoben.
+
 ## Bekannte Einschränkungen
 
 - Es gibt noch kein Maven- oder Gradle-Build-System.

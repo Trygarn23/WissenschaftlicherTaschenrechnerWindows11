@@ -22,7 +22,7 @@ public class KurvendiskussionService
 
     public KurvendiskussionResult analysiere(String ausdruck, double xMin, double xMax, WinkelModus winkelModus)
     {
-        DoubleUnaryOperator f = x -> evaluator.auswerten(ausdruck, x, winkelModus);
+        DoubleUnaryOperator f = x -> evaluator.wertOderNaN(ausdruck, x, winkelModus);
         double h = Math.max(1e-4, (xMax - xMin) / 10_000.0);
 
         GraphPunkt yAchse = berechneYAchsenSchnittpunkt(f);
@@ -35,15 +35,8 @@ public class KurvendiskussionService
 
     private GraphPunkt berechneYAchsenSchnittpunkt(DoubleUnaryOperator f)
     {
-        try
-        {
-            double y = f.applyAsDouble(0.0);
-            return Double.isFinite(y) ? new GraphPunkt(0.0, y) : null;
-        }
-        catch (RuntimeException e)
-        {
-            return null;
-        }
+        double y = f.applyAsDouble(0.0);
+        return Double.isFinite(y) ? new GraphPunkt(0.0, y) : null;
     }
 
     private List<GraphPunkt> findeNullstellen(DoubleUnaryOperator f, double xMin, double xMax)
@@ -135,17 +128,11 @@ public class KurvendiskussionService
         return (links - 2.0 * mitte + rechts) / (h * h);
     }
 
+    /** Unendlich zählt hier genauso als „nicht definiert“ wie NaN. */
     private double sicherAuswerten(DoubleUnaryOperator funktion, double x)
     {
-        try
-        {
-            double y = funktion.applyAsDouble(x);
-            return Double.isFinite(y) ? y : Double.NaN;
-        }
-        catch (RuntimeException e)
-        {
-            return Double.NaN;
-        }
+        double y = funktion.applyAsDouble(x);
+        return Double.isFinite(y) ? y : Double.NaN;
     }
 
     private void fuegeEinzigartigHinzu(List<GraphPunkt> punkte, GraphPunkt punkt)
