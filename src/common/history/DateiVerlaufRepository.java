@@ -1,11 +1,9 @@
 package common.history;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import common.persistence.DateiPersistenz;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 public class DateiVerlaufRepository implements VerlaufRepository
@@ -28,41 +26,12 @@ public class DateiVerlaufRepository implements VerlaufRepository
     @Override
     public List<String> ladeEintraege()
     {
-        try
-        {
-            if (!Files.exists(datei))
-            {
-                return List.of();
-            }
-            return Files.readAllLines(datei, StandardCharsets.UTF_8);
-        }
-        catch (IOException ignored)
-        {
-            return List.of();
-        }
+        return DateiPersistenz.ladeZeilen(datei);
     }
 
     @Override
     public void speichereEintraege(List<String> eintraege)
     {
-        try
-        {
-            Path parent = datei.getParent();
-            if (parent != null)
-            {
-                Files.createDirectories(parent);
-            }
-
-            Files.write(
-                    datei,
-                    eintraege,
-                    StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING
-            );
-        }
-        catch (IOException ignored)
-        {
-        }
+        DateiPersistenz.speichereZeilen(datei, eintraege);
     }
 }

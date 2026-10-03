@@ -1,18 +1,18 @@
 package ui.settings;
 
 import common.formatting.ZahlenFormatModus;
+import common.persistence.DateiPersistenz;
 import common.state.RechnerModus;
 import common.state.WinkelModus;
 import ui.theme.ThemeType;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.Properties;
+
+import static common.persistence.DateiPersistenz.leseEnum;
+import static common.persistence.DateiPersistenz.leseInt;
 
 public class SettingsPersistence
 {
@@ -34,29 +34,21 @@ public class SettingsPersistence
     public AppSettings lade()
     {
         AppSettings settings = new AppSettings();
-        if (!Files.exists(datei))
+        Optional<Properties> geladen = DateiPersistenz.ladeProperties(datei);
+        if (geladen.isEmpty())
         {
             return settings;
         }
 
-        Properties properties = new Properties();
-        try (Reader reader = Files.newBufferedReader(datei, StandardCharsets.UTF_8))
-        {
-            properties.load(reader);
-        }
-        catch (IOException ignored)
-        {
-            return settings;
-        }
-
-        settings.setThemeType(readEnum(properties, "theme", ThemeType.class, settings.getThemeType()));
-        settings.setStartModus(readEnum(properties, "startModus", RechnerModus.class, settings.getStartModus()));
-        settings.setWinkelModus(readEnum(properties, "winkelModus", WinkelModus.class, settings.getWinkelModus()));
+        Properties properties = geladen.get();
+        settings.setThemeType(leseEnum(properties, "theme", ThemeType.class, settings.getThemeType()));
+        settings.setStartModus(leseEnum(properties, "startModus", RechnerModus.class, settings.getStartModus()));
+        settings.setWinkelModus(leseEnum(properties, "winkelModus", WinkelModus.class, settings.getWinkelModus()));
         settings.setHistoryEnabled(Boolean.parseBoolean(properties.getProperty("historyEnabled", Boolean.toString(settings.isHistoryEnabled()))));
-        settings.setNachkommastellen(readInt(properties, "nachkommastellen", settings.getNachkommastellen()));
-        settings.setZahlenFormatModus(readEnum(properties, "zahlenFormat", ZahlenFormatModus.class, settings.getZahlenFormatModus()));
-        settings.setFensterBreite(readInt(properties, "fensterBreite", settings.getFensterBreite()));
-        settings.setFensterHoehe(readInt(properties, "fensterHoehe", settings.getFensterHoehe()));
+        settings.setNachkommastellen(leseInt(properties, "nachkommastellen", settings.getNachkommastellen()));
+        settings.setZahlenFormatModus(leseEnum(properties, "zahlenFormat", ZahlenFormatModus.class, settings.getZahlenFormatModus()));
+        settings.setFensterBreite(leseInt(properties, "fensterBreite", settings.getFensterBreite()));
+        settings.setFensterHoehe(leseInt(properties, "fensterHoehe", settings.getFensterHoehe()));
         return settings;
     }
 
@@ -72,45 +64,6 @@ public class SettingsPersistence
         properties.setProperty("fensterBreite", Integer.toString(settings.getFensterBreite()));
         properties.setProperty("fensterHoehe", Integer.toString(settings.getFensterHoehe()));
 
-        try
-        {
-            Path parent = datei.getParent();
-            if (parent != null)
-            {
-                Files.createDirectories(parent);
-            }
-
-            try (Writer writer = Files.newBufferedWriter(datei, StandardCharsets.UTF_8))
-            {
-                properties.store(writer, "Wissenschaftlicher Taschenrechner Einstellungen");
-            }
-        }
-        catch (IOException ignored)
-        {
-        }
-    }
-
-    private <T extends Enum<T>> T readEnum(Properties properties, String key, Class<T> enumType, T fallback)
-    {
-        try
-        {
-            return Enum.valueOf(enumType, properties.getProperty(key, fallback.name()));
-        }
-        catch (IllegalArgumentException ignored)
-        {
-            return fallback;
-        }
-    }
-
-    private int readInt(Properties properties, String key, int fallback)
-    {
-        try
-        {
-            return Integer.parseInt(properties.getProperty(key, Integer.toString(fallback)));
-        }
-        catch (NumberFormatException ignored)
-        {
-            return fallback;
-        }
+        DateiPersistenz.speichereProperties(datei, properties, "Wissenschaftlicher Taschenrechner Einstellungen");
     }
 }

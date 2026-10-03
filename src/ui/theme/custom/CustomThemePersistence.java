@@ -1,13 +1,11 @@
 package ui.theme.custom;
 
+import common.persistence.DateiPersistenz;
+
 import java.awt.Color;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.Properties;
 
 public class CustomThemePersistence
@@ -29,21 +27,13 @@ public class CustomThemePersistence
 
     public CustomThemeColors lade()
     {
-        if (!Files.exists(datei))
+        Optional<Properties> geladen = DateiPersistenz.ladeProperties(datei);
+        if (geladen.isEmpty())
         {
             return CustomThemeColors.DEFAULT;
         }
 
-        Properties properties = new Properties();
-        try (Reader reader = Files.newBufferedReader(datei, StandardCharsets.UTF_8))
-        {
-            properties.load(reader);
-        }
-        catch (IOException ignored)
-        {
-            return CustomThemeColors.DEFAULT;
-        }
-
+        Properties properties = geladen.get();
         CustomThemeColors defaults = CustomThemeColors.DEFAULT;
         return new CustomThemeColors(
                 readColor(properties, "panelBackground", defaults.panelBackground()),
@@ -68,22 +58,7 @@ public class CustomThemePersistence
         properties.setProperty("functionButtonBackground", writeColor(value.functionButtonBackground()));
         properties.setProperty("accentBackground", writeColor(value.accentBackground()));
 
-        try
-        {
-            Path parent = datei.getParent();
-            if (parent != null)
-            {
-                Files.createDirectories(parent);
-            }
-
-            try (Writer writer = Files.newBufferedWriter(datei, StandardCharsets.UTF_8))
-            {
-                properties.store(writer, "Wissenschaftlicher Taschenrechner Custom Theme");
-            }
-        }
-        catch (IOException ignored)
-        {
-        }
+        DateiPersistenz.speichereProperties(datei, properties, "Wissenschaftlicher Taschenrechner Custom Theme");
     }
 
     private Color readColor(Properties properties, String key, Color fallback)

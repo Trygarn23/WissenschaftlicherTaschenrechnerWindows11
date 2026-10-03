@@ -1,20 +1,21 @@
 package ui.session;
 
 import common.formatting.ZahlenFormatModus;
+import common.persistence.DateiPersistenz;
 import common.state.RechnerModus;
 import common.state.WinkelModus;
 import ui.theme.ThemeType;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
+
+import static common.persistence.DateiPersistenz.leseDouble;
+import static common.persistence.DateiPersistenz.leseEnum;
+import static common.persistence.DateiPersistenz.leseInt;
 
 public class SessionPersistence
 {
@@ -36,21 +37,13 @@ public class SessionPersistence
     public RechnerSession lade()
     {
         RechnerSession fallback = RechnerSession.standard();
-        if (!Files.exists(datei))
+        Optional<Properties> geladen = DateiPersistenz.ladeProperties(datei);
+        if (geladen.isEmpty())
         {
             return fallback;
         }
 
-        Properties properties = new Properties();
-        try (Reader reader = Files.newBufferedReader(datei, StandardCharsets.UTF_8))
-        {
-            properties.load(reader);
-        }
-        catch (IOException ignored)
-        {
-            return fallback;
-        }
-
+        Properties properties = geladen.get();
         String version = properties.getProperty("version", "");
         if (!RechnerSession.VERSION.equals(version))
         {
@@ -59,15 +52,15 @@ public class SessionPersistence
 
         return new RechnerSession(
                 version,
-                readEnum(properties, "aktiverModus", RechnerModus.class, fallback.getAktiverModus()),
+                leseEnum(properties, "aktiverModus", RechnerModus.class, fallback.getAktiverModus()),
                 properties.getProperty("ausdruck", fallback.getAusdruck()),
                 properties.getProperty("verlauf", fallback.getVerlauf()),
                 readHistory(properties),
-                readEnum(properties, "winkelModus", WinkelModus.class, fallback.getWinkelModus()),
-                readDouble(properties, "speicherWert", fallback.getSpeicherWert()),
-                readEnum(properties, "theme", ThemeType.class, fallback.getThemeType()),
-                readEnum(properties, "zahlenFormat", ZahlenFormatModus.class, fallback.getZahlenFormatModus()),
-                readInt(properties, "nachkommastellen", fallback.getNachkommastellen())
+                leseEnum(properties, "winkelModus", WinkelModus.class, fallback.getWinkelModus()),
+                leseDouble(properties, "speicherWert", fallback.getSpeicherWert()),
+                leseEnum(properties, "theme", ThemeType.class, fallback.getThemeType()),
+                leseEnum(properties, "zahlenFormat", ZahlenFormatModus.class, fallback.getZahlenFormatModus()),
+                leseInt(properties, "nachkommastellen", fallback.getNachkommastellen())
         );
     }
 
@@ -91,27 +84,12 @@ public class SessionPersistence
             properties.setProperty("history." + i, value.getHistoryEintraege().get(i));
         }
 
-        try
-        {
-            Path parent = datei.getParent();
-            if (parent != null)
-            {
-                Files.createDirectories(parent);
-            }
-
-            try (Writer writer = Files.newBufferedWriter(datei, StandardCharsets.UTF_8))
-            {
-                properties.store(writer, "Wissenschaftlicher Taschenrechner Session");
-            }
-        }
-        catch (IOException ignored)
-        {
-        }
+        DateiPersistenz.speichereProperties(datei, properties, "Wissenschaftlicher Taschenrechner Session");
     }
 
     private List<String> readHistory(Properties properties)
     {
-        int count = readInt(properties, "history.count", 0);
+        int count = leseInt(properties, "history.count", 0);
         if (count <= 0)
         {
             return List.of();
@@ -127,42 +105,5 @@ public class SessionPersistence
             }
         }
         return entries;
-    }
-
-    private <T extends Enum<T>> T readEnum(Properties properties, String key, Class<T> enumType, T fallback)
-    {
-        try
-        {
-            return Enum.valueOf(enumType, properties.getProperty(key, fallback.name()));
-        }
-        catch (IllegalArgumentException ignored)
-        {
-            return fallback;
-        }
-    }
-
-    private int readInt(Properties properties, String key, int fallback)
-    {
-        try
-        {
-            return Integer.parseInt(properties.getProperty(key, Integer.toString(fallback)));
-        }
-        catch (NumberFormatException ignored)
-        {
-            return fallback;
-        }
-    }
-
-    private double readDouble(Properties properties, String key, double fallback)
-    {
-        try
-        {
-            double value = Double.parseDouble(properties.getProperty(key, Double.toString(fallback)));
-            return Double.isFinite(value) ? value : fallback;
-        }
-        catch (NumberFormatException ignored)
-        {
-            return fallback;
-        }
     }
 }

@@ -1,11 +1,10 @@
 package ui.theme;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import common.persistence.DateiPersistenz;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.util.List;
 
 public class ThemePersistence
 {
@@ -14,22 +13,17 @@ public class ThemePersistence
 
     public ThemeType ladeTheme(ThemeType fallback)
     {
+        String text = String.join("", DateiPersistenz.ladeZeilen(THEME_DATEI)).trim();
+        if (text.isBlank())
+        {
+            return fallback;
+        }
+
         try
         {
-            if (!Files.exists(THEME_DATEI))
-            {
-                return fallback;
-            }
-
-            String text = Files.readString(THEME_DATEI, StandardCharsets.UTF_8).trim();
-            if (text.isBlank())
-            {
-                return fallback;
-            }
-
             return ThemeType.valueOf(text);
         }
-        catch (Exception ignored)
+        catch (IllegalArgumentException ignored)
         {
             return fallback;
         }
@@ -37,18 +31,6 @@ public class ThemePersistence
 
     public void speichereTheme(ThemeType themeType)
     {
-        try
-        {
-            Files.writeString(
-                    THEME_DATEI,
-                    themeType.name(),
-                    StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING
-            );
-        }
-        catch (IOException ignored)
-        {
-        }
+        DateiPersistenz.speichereZeilen(THEME_DATEI, List.of(themeType.name()));
     }
 }
