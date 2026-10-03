@@ -2,6 +2,7 @@ package ui.history;
 
 import common.history.VerlaufEintrag;
 import ui.theme.AppTheme;
+import ui.theme.themes.DarkTheme;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
@@ -14,6 +15,8 @@ import java.util.regex.Pattern;
 
 final class HistoryEntryRenderer extends DefaultListCellRenderer
 {
+    private static final AppTheme FALLBACK_THEME = new DarkTheme();
+
     private final EmptyBorder pad = new EmptyBorder(6, 8, 6, 8);
     private final Supplier<String> searchTextSupplier;
     private final Supplier<AppTheme> themeSupplier;
@@ -44,9 +47,10 @@ final class HistoryEntryRenderer extends DefaultListCellRenderer
             label.setText(text);
         }
 
+        AppTheme theme = theme();
         label.setBorder(pad);
-        label.setBackground(isSelected ? historySelectionBackground() : rowBackground(index));
-        label.setForeground(historyForeground());
+        label.setBackground(isSelected ? theme.historySelectionBackground() : rowBackground(theme, index));
+        label.setForeground(theme.historyForeground());
         label.setOpaque(true);
         return label;
     }
@@ -71,31 +75,15 @@ final class HistoryEntryRenderer extends DefaultListCellRenderer
         return "<html><div style='white-space:nowrap;'>" + highlighted + "</div></html>";
     }
 
-    private Color historyForeground()
+    /** Solange noch kein Theme gesetzt ist, gelten die Farben des Standard-Themes statt eigener Magic Numbers. */
+    private AppTheme theme()
     {
         AppTheme theme = themeSupplier.get();
-        return theme != null ? theme.historyForeground() : Color.WHITE;
+        return theme != null ? theme : FALLBACK_THEME;
     }
 
-    private Color historyBackground()
+    private Color rowBackground(AppTheme theme, int index)
     {
-        AppTheme theme = themeSupplier.get();
-        return theme != null ? theme.historyBackground() : new Color(35, 35, 35);
-    }
-
-    private Color historySelectionBackground()
-    {
-        AppTheme theme = themeSupplier.get();
-        return theme != null ? theme.historySelectionBackground() : new Color(70, 70, 70);
-    }
-
-    private Color rowBackground(int index)
-    {
-        AppTheme theme = themeSupplier.get();
-        if (theme == null)
-        {
-            return historyBackground();
-        }
         return index % 2 == 0 ? theme.cardBackground() : theme.historyBackground();
     }
 
