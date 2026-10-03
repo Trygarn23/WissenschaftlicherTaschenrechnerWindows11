@@ -30,6 +30,8 @@
 - [ ] Fokusreihenfolge pro Modus festlegen.
 - [ ] Accessibility verbessern: Kontrast, Screenreader-Namen, Tooltips, Fokusrahmen.
 - [ ] Fehlertexte vereinheitlichen: kurz, fachlich korrekt, hilfreich.
+  - [x] Zahleneingaben in Komplex, Matrix, Statistik und Einheiten über `ZahlenEingabe` mit deutscher Meldung.
+  - [x] Umlaute in Fehlermeldungen und Einheitennamen korrigiert (z. B. „benötigt“, „Länge“, „Fuß“).
 - [ ] In-App-Hilfe planen, aber ohne nerviges Tutorial-Gedöns.
 - [ ] Performance bei langen Ausdrücken, vielen History-Einträgen und großen Matrizen messen.
 - [ ] Letzte Eingabe nach einem Absturz wieder anbieten, damit nicht alles einfach weg ist.
@@ -480,15 +482,15 @@
   - [ ] Wissenschaftlich.
   - [x] Programmierer.
 - [x] `WissenschaftlichRechnerService` langfristig entfernen oder als Deprecated-Adapter markieren.
-- [ ] `WissenschaftlichRechnerService`-Adapter aus Tests entfernen, sobald kein Kompatibilitätsbedarf mehr besteht.
-- [ ] `ShellActionRegistry` weiter beobachten: Wird sie zu groß?
+- [x] `WissenschaftlichRechnerService`-Adapter entfernt (wurde nur noch vom eigenen Test genutzt).
+- [x] `ShellActionRegistry` weiter beobachten: Wird sie zu groß? → Nein, Aktionen sind jetzt Einzeiler über `mitRefresh(...)`.
 - [x] Persistence-Orchestrierung aus `TaschenrechnerUI` in einen Shell-Service auslagern.
 - [ ] `GraphPanel`, `MatrixPanel` und `AusdruckEditor` in weiteren sicheren Schritten verkleinern.
 - [ ] Gemeinsame Theme-Hilfen für einfache Mode-Panels prüfen, ohne Spezialpanels zu verbiegen.
 - [ ] Optional `StandardActionFactory` nur einführen, falls Standardaktionen wachsen.
 - [ ] Optional `WissenschaftlichActionFactory` einführen, falls wissenschaftliche Actions wachsen.
-- [ ] `KeyboardShortcutBinder` mit Tooltips synchron halten.
-- [ ] `ButtonTooltips` und `ShellActionRegistry` auf gemeinsame Action-Namen vereinheitlichen.
+- [x] `KeyboardShortcutBinder` mit Tooltips synchron halten → gemeinsame Tabelle `Tastenkuerzel`, abgesichert per Test.
+- [x] `ButtonTooltips` und `ShellActionRegistry` auf gemeinsame Action-Namen vereinheitlichen (Action-Name = Button-Text, `ShellActionRegistry.ausfuehren(...)`).
 - [x] Package-Namen vereinheitlichen: überall lowercase, z. B. `ui.theme`.
 - [ ] Unit Tests nachziehen: Teststruktur langfristig in Standardstruktur überführen, z. B. `src/test/java`.
 - [x] README aktualisieren: Projektstruktur, Modi, Tastenkürzel, Build/Test-Anleitung.
@@ -501,7 +503,7 @@
 - [ ] Parser weiter modularisieren, bevor CAS-/Matrix-/Statistikfeatures auf ihn aufbauen.
 - [x] `RechnerZustand` stärker kapseln und direkte `StringBuilder`-Zugriffe reduzieren.
 - [x] Unit Tests nachziehen: `BerechnungsService` stärker über Ergebnisobjekte statt Strings absichern.
-- [ ] Fehlerbehandlung vereinheitlichen.
+- [x] Fehlerbehandlung vereinheitlichen: nur erwartete Exceptions fangen, IO-Fehler loggen (`DateiPersistenz`).
 - [x] Einheitliches `ModePanel`-Konzept einführen: Jeder Modus bekommt klare Methoden für Modus, Theme, Sichtbarkeit und Winkelmodus.
 
 ### Großes MVP-Refactoring
@@ -526,7 +528,7 @@
 - [ ] Eine kurze Architektur-Seite schreiben: Wo gehört neuer Code hin und wie sieht ein einfacher MVP-Modus bei uns aus?
 
 - [ ] Gemeinsames `ModeState`-Konzept entwerfen, ohne Spezialzustände wie Graph/Komplex/PRG in `RechnerZustand` zu quetschen.
-- [ ] Theme-Duplikation reduzieren, z. B. über `ThemePalette` oder Basisklasse.
+- [x] Theme-Duplikation reduzieren → `BasisTheme`, feste Themes setzen nur noch ihre Farben.
 - [x] Gemeinsame Button-Rollenzuordnung in `CalculatorButtonStyler` bündeln und für Standard/Wissenschaftlich/Shell nutzen.
 - [ ] Theme-System um semantische Rollen erweitern: Display, Function, Operator, Danger, Accent, Disabled, Grid, Canvas.
 - [x] Theme Default-Rollen für Disabled, Hover, Pressed, Danger, Grid, Canvas und Popup ergänzen.
