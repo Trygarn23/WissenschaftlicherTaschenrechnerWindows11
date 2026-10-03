@@ -1,6 +1,6 @@
 package ui.tooltips;
 
-import ui.shortcuts.KeyboardShortcutText;
+import ui.shortcuts.Tastenkuerzel;
 
 import javax.swing.JButton;
 import java.util.Map;
@@ -77,28 +77,6 @@ public final class ButtonTooltips
             Map.entry("UNSIGNED", "Schaltet zwischen vorzeichenloser und vorzeichenbehafteter Darstellung um")
     );
 
-    private static final Map<String, String> SHORTCUTS = Map.ofEntries(
-            Map.entry("0", KeyboardShortcutText.digit("0")),
-            Map.entry("1", KeyboardShortcutText.digit("1")),
-            Map.entry("2", KeyboardShortcutText.digit("2")),
-            Map.entry("3", KeyboardShortcutText.digit("3")),
-            Map.entry("4", KeyboardShortcutText.digit("4")),
-            Map.entry("5", KeyboardShortcutText.digit("5")),
-            Map.entry("6", KeyboardShortcutText.digit("6")),
-            Map.entry("7", KeyboardShortcutText.digit("7")),
-            Map.entry("8", KeyboardShortcutText.digit("8")),
-            Map.entry("9", KeyboardShortcutText.digit("9")),
-            Map.entry(",", KeyboardShortcutText.COMMA),
-            Map.entry("+", KeyboardShortcutText.PLUS),
-            Map.entry("-", KeyboardShortcutText.MINUS),
-            Map.entry("×", KeyboardShortcutText.MULTIPLY),
-            Map.entry("÷", KeyboardShortcutText.DIVIDE),
-            Map.entry("mod", KeyboardShortcutText.MODULO),
-            Map.entry("=", KeyboardShortcutText.ENTER),
-            Map.entry("←", KeyboardShortcutText.BACKSPACE),
-            Map.entry("CLR", KeyboardShortcutText.ESCAPE)
-    );
-
     private ButtonTooltips()
     {
     }
@@ -115,7 +93,7 @@ public final class ButtonTooltips
             return null;
         }
 
-        String normalizedKey = normalisiereKey(key);
+        String normalizedKey = "f(x) ▼".equals(key) ? "f(x)" : key;
         String description = normalizedKey.matches("\\d")
                 ? "Gibt die Ziffer " + key + " ein"
                 : DESCRIPTIONS.get(normalizedKey);
@@ -125,7 +103,7 @@ public final class ButtonTooltips
             return null;
         }
 
-        String shortcut = SHORTCUTS.get(normalizedKey);
+        String shortcut = shortcutFor(normalizedKey);
         if (shortcut == null)
         {
             return description;
@@ -134,18 +112,16 @@ public final class ButtonTooltips
         return description + " (Taste: " + shortcut + ")";
     }
 
-    private static String normalisiereKey(String key)
+    private static String shortcutFor(String key)
     {
-        if ("C".equals(key))
+        if (key.matches("\\d"))
         {
-            return key;
+            return Tastenkuerzel.ziffernText(key);
         }
-
-        if ("f(x) ▼".equals(key))
+        if ("CLR".equals(key))
         {
-            return "f(x)";
+            return Tastenkuerzel.PROGRAMMIERER_CLR_TEXT;
         }
-
-        return key;
+        return Tastenkuerzel.fuerAktion(key).map(Tastenkuerzel::getAnzeigeText).orElse(null);
     }
 }

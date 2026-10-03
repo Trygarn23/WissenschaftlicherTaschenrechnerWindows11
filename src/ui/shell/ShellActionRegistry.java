@@ -40,187 +40,71 @@ public class ShellActionRegistry
         initMemoryActions();
     }
 
-    private void initCommonActions()
+    /** Registriert eine Aktion, nach der die Anzeige automatisch aktualisiert wird. */
+    private void mitRefresh(String taste, Runnable aktion)
     {
-        actions.put(",", () -> {
-            rechner.eingabeKomma();
-            refresh.run();
-        });
-
-        actions.put("+", () -> {
-            rechner.operatorSetzen("+");
-            refresh.run();
-        });
-        actions.put("-", () -> {
-            rechner.operatorSetzen("-");
-            refresh.run();
-        });
-        actions.put("×", () -> {
-            rechner.operatorSetzen("×");
-            refresh.run();
-        });
-        actions.put("÷", () -> {
-            rechner.operatorSetzen("÷");
-            refresh.run();
-        });
-
-        actions.put("=", evaluate);
-
-        actions.put("±", () -> {
-            rechner.wechselVorzeichen();
-            refresh.run();
-        });
-
-        actions.put("C", () -> {
-            rechner.allesLoeschen();
-            refresh.run();
-        });
-        actions.put("CE", () -> {
-            rechner.ce();
-            refresh.run();
-        });
-        actions.put("←", () -> {
-            rechner.loeschen();
-            refresh.run();
-        });
-
-        actions.put("%", () -> {
-            rechner.prozent();
-            refresh.run();
-        });
-        actions.put("mod", () -> {
-            rechner.operatorSetzen("%");
-            refresh.run();
-        });
-
-        actions.put("x²", () -> {
-            rechner.quadriere();
-            refresh.run();
-        });
-        actions.put("√x", () -> {
-            rechner.wurzel();
-            refresh.run();
-        });
-        actions.put("1/x", () -> {
-            rechner.reziprok();
-            refresh.run();
-        });
-
-        actions.put("(", () -> {
-            rechner.klammerAuf();
-            refresh.run();
-        });
-        actions.put(")", () -> {
-            rechner.klammerZu();
-            refresh.run();
-        });
-
-        actions.put("xʸ", () -> {
-            rechner.potenz();
-            refresh.run();
-        });
-
-        actions.put("Ans", () -> {
-            rechner.ans();
+        actions.put(taste, () -> {
+            aktion.run();
             refresh.run();
         });
     }
 
+    private void initCommonActions()
+    {
+        for (int ziffer = 0; ziffer <= 9; ziffer++)
+        {
+            String text = String.valueOf(ziffer);
+            mitRefresh(text, () -> rechner.eingabeZahl(text));
+        }
+
+        mitRefresh(",", rechner::eingabeKomma);
+
+        for (String operator : new String[]{"+", "-", "×", "÷"})
+        {
+            mitRefresh(operator, () -> rechner.operatorSetzen(operator));
+        }
+        mitRefresh("mod", () -> rechner.operatorSetzen("%"));
+
+        actions.put("=", evaluate);
+
+        mitRefresh("±", rechner::wechselVorzeichen);
+        mitRefresh("C", rechner::allesLoeschen);
+        mitRefresh("CE", rechner::ce);
+        mitRefresh("←", rechner::loeschen);
+        mitRefresh("%", rechner::prozent);
+        mitRefresh("x²", rechner::quadriere);
+        mitRefresh("√x", rechner::wurzel);
+        mitRefresh("1/x", rechner::reziprok);
+        mitRefresh("(", rechner::klammerAuf);
+        mitRefresh(")", rechner::klammerZu);
+        mitRefresh("xʸ", rechner::potenz);
+        mitRefresh("Ans", rechner::ans);
+    }
+
     private void initScientificActions()
     {
-        actions.put("n!", () -> {
-            wissenschaftlichOperationen.fakultaet();
-            refresh.run();
-        });
-
-        actions.put("10ˣ", () -> {
-            wissenschaftlichOperationen.zehnHoch();
-            refresh.run();
-        });
-
-        actions.put("ln", () -> {
-            wissenschaftlichOperationen.ln();
-            refresh.run();
-        });
-        actions.put("log", () -> {
-            wissenschaftlichOperationen.log();
-            refresh.run();
-        });
-
-        actions.put("sin", () -> {
-            wissenschaftlichOperationen.sin();
-            refresh.run();
-        });
-        actions.put("cos", () -> {
-            wissenschaftlichOperationen.cos();
-            refresh.run();
-        });
-        actions.put("tan", () -> {
-            wissenschaftlichOperationen.tan();
-            refresh.run();
-        });
-
-        actions.put("asin", () -> {
-            wissenschaftlichOperationen.arcsin();
-            refresh.run();
-        });
-        actions.put("acos", () -> {
-            wissenschaftlichOperationen.arccos();
-            refresh.run();
-        });
-        actions.put("atan", () -> {
-            wissenschaftlichOperationen.arctan();
-            refresh.run();
-        });
-
-        actions.put("sinh", () -> {
-            wissenschaftlichOperationen.sinusHyperbolicus();
-            refresh.run();
-        });
-        actions.put("cosh", () -> {
-            wissenschaftlichOperationen.cosinusHyperbolicus();
-            refresh.run();
-        });
-        actions.put("tanh", () -> {
-            wissenschaftlichOperationen.tangensHyperbolicus();
-            refresh.run();
-        });
-
-        actions.put("π", () -> {
-            wissenschaftlichOperationen.pi();
-            refresh.run();
-        });
-        actions.put("e", () -> {
-            wissenschaftlichOperationen.e();
-            refresh.run();
-        });
-
-        actions.put("exp", () -> {
-            wissenschaftlichOperationen.exp();
-            refresh.run();
-        });
-        actions.put("|x|", () -> {
-            wissenschaftlichOperationen.betrag();
-            refresh.run();
-        });
-
-        actions.put("floor", () -> {
-            wissenschaftlichOperationen.abrunden();
-            refresh.run();
-        });
-        actions.put("ceil", () -> {
-            wissenschaftlichOperationen.aufrunden();
-            refresh.run();
-        });
-        actions.put("round", () -> {
-            wissenschaftlichOperationen.runden();
-            refresh.run();
-        });
-
-        actions.put("rand", () -> {
-            wissenschaftlichOperationen.zufall();
-            refresh.run();
-        });
+        WissenschaftlichOperationen w = wissenschaftlichOperationen;
+        mitRefresh("n!", w::fakultaet);
+        mitRefresh("10ˣ", w::zehnHoch);
+        mitRefresh("ln", w::ln);
+        mitRefresh("log", w::log);
+        mitRefresh("sin", w::sin);
+        mitRefresh("cos", w::cos);
+        mitRefresh("tan", w::tan);
+        mitRefresh("asin", w::arcsin);
+        mitRefresh("acos", w::arccos);
+        mitRefresh("atan", w::arctan);
+        mitRefresh("sinh", w::sinusHyperbolicus);
+        mitRefresh("cosh", w::cosinusHyperbolicus);
+        mitRefresh("tanh", w::tangensHyperbolicus);
+        mitRefresh("π", w::pi);
+        mitRefresh("e", w::e);
+        mitRefresh("exp", w::exp);
+        mitRefresh("|x|", w::betrag);
+        mitRefresh("floor", w::abrunden);
+        mitRefresh("ceil", w::aufrunden);
+        mitRefresh("round", w::runden);
+        mitRefresh("rand", w::zufall);
     }
 
     private void initMemoryActions()
@@ -229,32 +113,37 @@ public class ShellActionRegistry
             rechner.speicherLoeschen();
             refreshWithExtraInfo.accept("M = 0");
         });
-        actions.put("MR", () -> {
-            rechner.speicherAbrufen();
-            refresh.run();
-        });
+        mitRefresh("MR", rechner::speicherAbrufen);
         actions.put("M+", () -> refreshWithExtraInfo.accept("M = " + rechner.speicherAddieren()));
         actions.put("M-", () -> refreshWithExtraInfo.accept("M = " + rechner.speicherSubtrahieren()));
+    }
+
+    /**
+     * Führt die Aktion mit diesem Namen aus. Der Name entspricht dem Button-Text,
+     * damit Buttons, Tastenkürzel und Tooltips dieselben Namen verwenden.
+     *
+     * @return {@code false}, wenn es keine Aktion mit diesem Namen gibt
+     */
+    public boolean ausfuehren(String aktion)
+    {
+        Runnable action = aktion == null ? null : actions.get(aktion);
+        if (action == null)
+        {
+            return false;
+        }
+        action.run();
+        return true;
+    }
+
+    public boolean kennt(String aktion)
+    {
+        return actions.containsKey(aktion);
     }
 
     public void handleButton(JButton sourceBtn)
     {
         String text = sourceBtn.getText();
-        if (text == null) return;
-
-        if (text.matches("\\d"))
-        {
-            rechner.eingabeZahl(text);
-            refresh.run();
-            return;
-        }
-
-        Runnable action = actions.get(text);
-        if (action != null)
-        {
-            action.run();
-        }
-        else
+        if (text != null && !ausfuehren(text))
         {
             Toolkit.getDefaultToolkit().beep();
         }
@@ -262,11 +151,7 @@ public class ShellActionRegistry
 
     public void handleScientificMenuAction(String functionName)
     {
-        Runnable action = actions.get(functionName);
-        if (action != null)
-        {
-            action.run();
-        }
+        ausfuehren(functionName);
     }
 
     public void attachCalculatorButtonActions(Component component)

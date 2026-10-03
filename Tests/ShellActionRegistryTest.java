@@ -4,6 +4,8 @@ import modes.wissenschaftlich.logic.WissenschaftlichOperationen;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ui.shell.ShellActionRegistry;
+import ui.shortcuts.Tastenkuerzel;
+import ui.tooltips.ButtonTooltips;
 
 import javax.swing.*;
 import java.awt.Component;
@@ -36,6 +38,32 @@ public class ShellActionRegistryTest
                     rechner.berechne();
                     refreshCount.incrementAndGet();
                 });
+    }
+
+    @Test
+    void tastenkuerzel_ShouldOnlyPointToExistingActionsWithTooltip()
+    {
+        // Arrange & Act & Assert
+        for (Tastenkuerzel kuerzel : Tastenkuerzel.values())
+        {
+            assertTrue(registry.kennt(kuerzel.getAktion()), "Keine Aktion für " + kuerzel);
+            assertTrue(ButtonTooltips.textFor(kuerzel.getAktion()).endsWith("(Taste: " + kuerzel.getAnzeigeText() + ")"),
+                    "Tooltip zeigt Tastenkürzel nicht an: " + kuerzel);
+        }
+    }
+
+    @Test
+    void ausfuehren_ShouldHandleDigitsAndReportUnknownActions()
+    {
+        // Act
+        boolean ziffer = registry.ausfuehren("7");
+        boolean unbekannt = registry.ausfuehren("gibtsNicht");
+
+        // Assert
+        assertTrue(ziffer);
+        assertFalse(unbekannt);
+        assertEquals("7", rechner.formatiereLiveAnzeige());
+        assertEquals(1, refreshCount.get());
     }
 
     @Test

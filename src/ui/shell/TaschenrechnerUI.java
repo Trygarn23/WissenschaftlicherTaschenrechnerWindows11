@@ -64,9 +64,7 @@ public class TaschenrechnerUI extends JFrame
         keyboardShortcutBinder = new KeyboardShortcutBinder(
                 getRootPane(),
                 historyPanel,
-                rechner,
-                this::refresh,
-                this::evaluate,
+                shellActionRegistry,
                 this::dispose,
                 this::sindStandardShortcutsAktiv
         );
