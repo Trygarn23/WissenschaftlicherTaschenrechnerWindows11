@@ -24,7 +24,7 @@
 - [x] Statusanzeige bei Speicheränderung sofort aktualisieren.
 - [x] Statusanzeige bei Winkelmoduswechsel sofort aktualisieren.
 - [x] History/Suche bei ausgeblendeten Modi nicht per Tastatur fokussierbar machen.
-- [ ] `ESC`-Verhalten festlegen: Suche defokussieren, Eingabe löschen oder Fenster schließen.
+- [x] `ESC`-Verhalten festlegen: Suche defokussieren, Eingabe löschen oder Fenster schließen. → Suche verlassen, sonst wie `CE`; Fenster schließt Esc nicht mehr.
 - [ ] Einheitliche Benennung im UI festlegen: `CLR`, `C`, `CE`, `←`, `Backspace`.
 - [ ] Tastaturbedienung für jeden Modus vereinheitlichen.
 - [ ] Fokusreihenfolge pro Modus festlegen.
@@ -35,12 +35,12 @@
 - [ ] In-App-Hilfe planen, aber ohne nerviges Tutorial-Gedöns.
 - [ ] Performance bei langen Ausdrücken, vielen History-Einträgen und großen Matrizen messen.
 - [ ] Letzte Eingabe nach einem Absturz wieder anbieten, damit nicht alles einfach weg ist.
-- [ ] Einmal Rückgängig anbieten, wenn man aus Versehen den Ausdruck gelöscht hat.
+- [x] Einmal Rückgängig anbieten, wenn man aus Versehen den Ausdruck gelöscht hat. → Strg+Z nach C/CE, solange noch nichts Neues getippt wurde.
 - [ ] Klammerpaare beim Tippen sichtbar zusammengehörig markieren.
 - [x] Stern-Button im Verlauf zeigt nur ein Kästchen → Stern wird jetzt selbst gemalt (`StarIcon`), klappt in jeder Schrift und jedem Theme.
 - [x] Suchfeld im Verlauf ist zu schmal, da steht nur „Such“ → Suchfeld hat jetzt eine eigene Zeile über den Buttons.
-- [ ] Live-Vorschau im Display: Ergebnis schon beim Tippen grau anzeigen, z. B. „= 42“ → `aktuellerWertOder0()` gibt's eh schon.
-- [ ] Anzeigen, wie viele Klammern noch offen sind, z. B. „2 offen“ → als kleiner Zwischenschritt, bevor die Klammerpaare markiert werden.
+- [x] Live-Vorschau im Display: Ergebnis schon beim Tippen grau anzeigen, z. B. „= 42“ → über `vorschauWert()` mit `OptionalDouble`, weil `aktuellerWertOder0()` „ist 0“ und „geht nicht“ nicht unterscheiden kann.
+- [x] Anzeigen, wie viele Klammern noch offen sind, z. B. „2 offen“ → als kleiner Zwischenschritt, bevor die Klammerpaare markiert werden.
 - [x] Fenstergröße nach Neustart optional speichern.
 - [x] Letzten aktiven Modus optional speichern.
 - [x] Letzten Winkelmodus optional speichern.

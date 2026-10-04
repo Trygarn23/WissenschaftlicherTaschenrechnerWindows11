@@ -14,6 +14,9 @@ public class AusdruckEditor
     private final RechnerZustand zustand;
     private final ZahlenFormatter zahlenFormatierer;
 
+    /** Ausdruck vor dem letzten C/CE, für einmal Rückgängig. */
+    private String vorDemLoeschen;
+
     public AusdruckEditor(RechnerZustand zustand, ZahlenFormatter zahlenFormatierer)
     {
         this.zustand = zustand;
@@ -123,16 +126,52 @@ public class AusdruckEditor
             return allesLoeschen();
         }
 
+        merkeFuerRueckgaengig();
         zustand.clearAusdruck();
         return "0";
     }
 
     public String allesLoeschen()
     {
+        merkeFuerRueckgaengig();
         zustand.clearVerlauf();
         zustand.clearAusdruck();
         zustand.setGleichGedrueckt(false);
         return "0";
+    }
+
+    /**
+     * Holt den zuletzt mit C/CE gelöschten Ausdruck zurück. Geht nur, solange das Display noch leer ist –
+     * sobald wieder etwas getippt wurde, würde Rückgängig sonst die neue Eingabe überschreiben.
+     */
+    public String rueckgaengig()
+    {
+        if (kannRueckgaengig())
+        {
+            zustand.setAusdruckText(vorDemLoeschen);
+            zustand.setGleichGedrueckt(false);
+            vorDemLoeschen = null;
+        }
+        return zustand.isAusdruckLeer() ? "0" : zustand.getAusdruckText();
+    }
+
+    public boolean kannRueckgaengig()
+    {
+        return vorDemLoeschen != null && zustand.isAusdruckLeer();
+    }
+
+    public int offeneKlammern()
+    {
+        return Math.max(0, AusdruckTermFinder.zaehleOffeneKlammern(zustand.getAusdruckText()));
+    }
+
+    /** Ein leeres Display wird nicht gemerkt, sonst würde zweimal C den eigentlichen Ausdruck wegwerfen. */
+    private void merkeFuerRueckgaengig()
+    {
+        if (!zustand.isAusdruckLeer())
+        {
+            vorDemLoeschen = zustand.getAusdruckText();
+        }
     }
 
     public String operatorSetzen(String operator)

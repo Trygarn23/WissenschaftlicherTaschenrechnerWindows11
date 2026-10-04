@@ -27,7 +27,8 @@ class KeyboardShortcutBinderTest
 
     KeyboardShortcutBinderTest()
     {
-        KeyboardShortcutBinder binder = new KeyboardShortcutBinder(rootPane, new HistoryPanel(), null, () -> {}, () -> false);
+        KeyboardShortcutBinder binder = new KeyboardShortcutBinder(rootPane, new HistoryPanel(), null, () -> false);
+        binder.setupKeyboard();
         binder.setupGlobaleTasten(gewaehlterModus::set, einheitenUmgeschaltet::incrementAndGet, hilfeGeoeffnet::incrementAndGet);
     }
 
@@ -57,6 +58,15 @@ class KeyboardShortcutBinderTest
         // Assert
         assertEquals(1, einheitenUmgeschaltet.get());
         assertEquals(1, hilfeGeoeffnet.get());
+    }
+
+    @Test
+    void escape_ShouldClearInput_InsteadOfClosingTheWindow()
+    {
+        // Act / Assert
+        assertEquals("CE", Tastenkuerzel.EINGABE_LOESCHEN.getAktion());
+        assertEquals(Tastenkuerzel.EINGABE_LOESCHEN.name() + KeyEvent.VK_ESCAPE,
+                rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).get(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)));
     }
 
     @Test

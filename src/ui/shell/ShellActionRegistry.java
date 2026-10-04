@@ -2,6 +2,7 @@ package ui.shell;
 
 import common.logic.RechnerService;
 import modes.wissenschaftlich.logic.WissenschaftlichOperationen;
+import ui.shortcuts.Tastenkuerzel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,6 +72,7 @@ public class ShellActionRegistry
         mitRefresh("C", rechner::allesLoeschen);
         mitRefresh("CE", rechner::ce);
         mitRefresh("←", rechner::loeschen);
+        mitRefresh(Tastenkuerzel.RUECKGAENGIG_AKTION, rechner::rueckgaengig);
         mitRefresh("%", rechner::prozent);
         mitRefresh("x²", rechner::quadriere);
         mitRefresh("√x", rechner::wurzel);

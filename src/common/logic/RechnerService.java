@@ -6,6 +6,11 @@ import common.state.RechnerZustand;
 import common.state.SpeicherState;
 import common.state.WinkelModus;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
+
 /**
  * Fassade für Standard und Wissenschaftlich: verdrahtet Editor, Berechnung, Speicher und Formatierung
  * auf demselben Zustand, damit die UI nur eine Stelle kennen muss. Das Durchreichen ist hier gewollt.
@@ -77,6 +82,51 @@ public class RechnerService
     public String allesLoeschen()
     {
         return ausdruckEditor.allesLoeschen();
+    }
+
+    public String rueckgaengig()
+    {
+        return ausdruckEditor.rueckgaengig();
+    }
+
+    public int offeneKlammern()
+    {
+        return ausdruckEditor.offeneKlammern();
+    }
+
+    /**
+     * Ergebnis-Vorschau beim Tippen, z. B. „= 42“. Leer, wenn es nichts Neues zu zeigen gibt:
+     * nicht ausrechenbar, direkt nach „=“ oder wenn nur eine Zahl dasteht.
+     */
+    public Optional<String> liveVorschau()
+    {
+        // rand() würde bei jedem Tastendruck eine andere Zahl zeigen als später beim „=“.
+        if (zustand.isGleichGedrueckt() || zustand.getAusdruckText().contains("rand"))
+        {
+            return Optional.empty();
+        }
+
+        OptionalDouble wert = berechnungsService.vorschauWert();
+        if (wert.isEmpty())
+        {
+            return Optional.empty();
+        }
+
+        String ergebnis = zahlenFormatierer.formatiereZahl(wert.getAsDouble());
+        return ergebnis.equals(formatiereLiveAnzeige()) ? Optional.empty() : Optional.of("= " + ergebnis);
+    }
+
+    /** Zweite Display-Zeile: beim Tippen Vorschau und offene Klammern, sonst die letzte Rechnung. */
+    public String zweiteZeile()
+    {
+        List<String> teile = new ArrayList<>();
+        liveVorschau().ifPresent(teile::add);
+        int offen = offeneKlammern();
+        if (offen > 0)
+        {
+            teile.add(offen + " offen");
+        }
+        return teile.isEmpty() ? getVerlauf() : String.join("  ·  ", teile);
     }
 
     public String operatorSetzen(String operator)

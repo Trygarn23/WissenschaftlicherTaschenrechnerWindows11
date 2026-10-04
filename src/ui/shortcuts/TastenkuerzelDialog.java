@@ -67,7 +67,8 @@ public final class TastenkuerzelDialog extends JDialog
         abschnitte.put("Sonstiges", List.of(
                 new Eintrag("Strg+C", "Anzeige kopieren (Display vorher anklicken)"),
                 new Eintrag("Strg+V", "Ausdruck einfügen (Display vorher anklicken)"),
-                new Eintrag(Tastenkuerzel.PROGRAMMIERER_CLR_TEXT, "Suche verlassen, im PRG-Modus CLR, sonst Fenster schließen"),
+                new Eintrag(Tastenkuerzel.RUECKGAENGIG_TEXT, "Mit C/CE gelöschte Eingabe zurückholen"),
+                new Eintrag(Tastenkuerzel.PROGRAMMIERER_CLR_TEXT, "Suche verlassen, im PRG-Modus CLR"),
                 new Eintrag(Tastenkuerzel.HILFE_TEXT, "Diese Übersicht öffnen")
         ));
         return abschnitte;

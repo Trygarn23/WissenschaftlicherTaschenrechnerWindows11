@@ -6,6 +6,8 @@ import common.parser.AusdruckParserException;
 import common.parser.ParserFehler;
 import common.state.RechnerZustand;
 
+import java.util.OptionalDouble;
+
 public class BerechnungsService
 {
     private final RechnerZustand zustand;
@@ -56,25 +58,37 @@ public class BerechnungsService
 
     public double aktuellerWertOder0()
     {
-        if (zustand.isAusdruckLeer()) return 0.0;
+        return probeAuswertung(zustand.getAusdruckText()).orElse(0.0);
+    }
 
+    public OptionalDouble vorschauWert()
+    {
+        String ausdruck = zustand.getAusdruckText();
+        if (endetMitOperatorOderKlammerAuf(ausdruck)) return OptionalDouble.empty();
+
+        int offen = Math.max(0, AusdruckTermFinder.zaehleOffeneKlammern(ausdruck));
+        return probeAuswertung(ausdruck + ")".repeat(offen));
+    }
+
+    private OptionalDouble probeAuswertung(String ausdruck)
+    {
+        if (endetMitOperatorOderKlammerAuf(ausdruck)) return OptionalDouble.empty();
+        
         try
         {
-            if (endetMitOperatorOderKlammerAuf()) return 0.0;
-
-            double wert = AusdruckParser.auswerten(zustand.getAusdruckText(), zustand.getLetzteAntwort(), zustand.getWinkelModus());
-            return Double.isFinite(wert) ? wert : 0.0;
+            double wert = AusdruckParser.auswerten(ausdruck, zustand.getLetzteAntwort(), zustand.getWinkelModus());
+            return Double.isFinite(wert) ? OptionalDouble.of(wert) : OptionalDouble.empty();
         }
         catch (IllegalArgumentException e)
         {
-            return 0.0;
+            return OptionalDouble.empty();
         }
     }
 
-    private boolean endetMitOperatorOderKlammerAuf()
+    private static boolean endetMitOperatorOderKlammerAuf(String ausdruck)
     {
-        if (zustand.isAusdruckLeer()) return true;
-        char zeichen = zustand.getAusdruckZeichen(zustand.getAusdruckLaenge() - 1);
+        if (ausdruck.isEmpty()) return true;
+        char zeichen = ausdruck.charAt(ausdruck.length() - 1);
         return "+-*/^%".indexOf(zeichen) >= 0 || zeichen == '(';
     }
 

@@ -20,11 +20,16 @@ public enum Tastenkuerzel
     GETEILT("÷", "/ oder Num /", KeyEvent.VK_SLASH, KeyEvent.VK_DIVIDE),
     MODULO("mod", "% oder P", KeyEvent.VK_P),
     GLEICH("=", "Enter", KeyEvent.VK_ENTER),
-    ZURUECK("←", "Backspace", KeyEvent.VK_BACK_SPACE);
+    ZURUECK("←", "Backspace", KeyEvent.VK_BACK_SPACE),
+    /** Früher hat Esc das ganze Fenster geschlossen – ein Vertipper und alles war weg. */
+    EINGABE_LOESCHEN("CE", "Esc", KeyEvent.VK_ESCAPE);
 
     /** Wird nicht von der Shell gebunden, sondern vom Programmierer-Panel selbst. */
     public static final String PROGRAMMIERER_CLR_TEXT = "Esc";
     public static final String HILFE_TEXT = "F1";
+    /** Strg+Z braucht eine Zusatztaste und passt deshalb nicht in die Tabelle oben. */
+    public static final String RUECKGAENGIG_TEXT = "Strg+Z";
+    public static final String RUECKGAENGIG_AKTION = "Rückgängig";
 
     private final String aktion;
     private final String anzeigeText;

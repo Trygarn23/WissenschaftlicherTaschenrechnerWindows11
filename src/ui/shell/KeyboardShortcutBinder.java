@@ -32,20 +32,17 @@ public class KeyboardShortcutBinder
     private final JRootPane rootPane;
     private final HistoryPanel historyPanel;
     private final ShellActionRegistry aktionen;
-    private final Runnable closeAction;
     private final BooleanSupplier calculatorShortcutsEnabled;
 
     public KeyboardShortcutBinder(
             JRootPane rootPane,
             HistoryPanel historyPanel,
             ShellActionRegistry aktionen,
-            Runnable closeAction,
             BooleanSupplier calculatorShortcutsEnabled)
     {
         this.rootPane = rootPane;
         this.historyPanel = historyPanel;
         this.aktionen = aktionen;
-        this.closeAction = closeAction;
         this.calculatorShortcutsEnabled = calculatorShortcutsEnabled;
     }
 
@@ -69,7 +66,8 @@ public class KeyboardShortcutBinder
             }
         }
 
-        bind(im, am, KeyEvent.VK_ESCAPE, "escapePress", closeAction);
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK), "rueckgaengig",
+                () -> aktionen.ausfuehren(Tastenkuerzel.RUECKGAENGIG_AKTION));
     }
 
     /**
@@ -110,7 +108,12 @@ public class KeyboardShortcutBinder
 
     private void bind(InputMap im, ActionMap am, int tastenCode, String name, Runnable action)
     {
-        im.put(KeyStroke.getKeyStroke(tastenCode, 0), name);
+        bind(im, am, KeyStroke.getKeyStroke(tastenCode, 0), name, action);
+    }
+
+    private void bind(InputMap im, ActionMap am, KeyStroke ks, String name, Runnable action)
+    {
+        im.put(ks, name);
         am.put(name, new AbstractAction()
         {
             @Override

@@ -66,7 +66,6 @@ public class TaschenrechnerUI extends JFrame
                 getRootPane(),
                 historyPanel,
                 shellActionRegistry,
-                this::dispose,
                 this::sindStandardShortcutsAktiv
         );
         keyboardShortcutBinder.setupKeyboard();
@@ -247,7 +246,7 @@ public class TaschenrechnerUI extends JFrame
     private void refresh()
     {
         displayPanel.setMainText(rechner.formatiereLiveAnzeige());
-        displayPanel.setSecondaryText(rechner.getVerlauf());
+        displayPanel.setSecondaryText(rechner.zweiteZeile());
         globalActionBarPanel.setAngleModeText(rechner.getWinkelModus().name());
         updateStatus();
     }
