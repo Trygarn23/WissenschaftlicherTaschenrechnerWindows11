@@ -184,7 +184,7 @@ public class TaschenrechnerUI extends JFrame
                 this::ladeSession
         ));
         globalActionBarPanel.setShortcutsListener(e -> zeigeTastenkuerzel());
-        historyPanel.setClearHistoryListener(e -> speichereVerlauf());
+        historyPanel.setEntriesChangedListener(e -> speichereVerlauf());
         historyPanel.setFavoriteChangedListener(e -> speichereVerlauf());
         historyPanel.setEntryDoubleClickListener(this::useHistoryEntryResult);
         displayPanel.setPasteListener(this::pasteDisplayText);

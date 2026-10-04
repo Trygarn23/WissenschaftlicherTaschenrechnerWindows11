@@ -443,7 +443,7 @@
 - [x] Verlauf mit Zeitstempel erweitern.
 - [x] Verlauf nach Modus kennzeichnen.
 - [x] Favoriten im Verlauf ermöglichen.
-- [ ] Verlauf exportieren.
+- [x] Verlauf exportieren. → „Mehr“-Menü im Verlauf, exportiert die gerade angezeigten Einträge.
 - [x] Verlauf erst nach Einführung einer strukturierten `VerlaufEintrag`-Klasse erweitern.
 - [x] `VerlaufEintrag` als Modell einführen.
 - [x] `VerlaufEintrag` Felder planen: Ausdruck, Ergebnis, Modus, Zeitstempel, Favorit.
@@ -457,16 +457,16 @@
 - [ ] History-Suche über Datum optional planen.
 - [x] Favoriten im UI anzeigen.
 - [x] Favoriten persistent speichern.
-- [ ] Verlaufseinträge löschen: einzeln.
-- [ ] Verlaufseinträge löschen: alle.
-- [ ] Verlaufseinträge löschen: nur aktueller Modus.
-- [ ] Vor dem endgültigen Löschen kurz nachfragen.
-- [ ] Gerade gelöschte Verlaufseinträge für diesen Moment zurückholen.
+- [x] Verlaufseinträge löschen: einzeln.
+- [x] Verlaufseinträge löschen: alle.
+- [x] Verlaufseinträge löschen: nur aktueller Modus. → gelöst als „Angezeigte Einträge löschen“: Filter auf den Modus stellen, dann löschen.
+- [x] Vor dem endgültigen Löschen kurz nachfragen. → bei mehreren Einträgen; ein einzelner geht ohne Rückfrage, dafür gibt es Rückgängig.
+- [x] Gerade gelöschte Verlaufseinträge für diesen Moment zurückholen. → „Löschen rückgängig“, gilt bis zum nächsten neuen Eintrag.
 - [ ] Gleiche Rechnungen im Verlauf auf Wunsch zusammenfassen.
-- [ ] Verlauf nach Modus filtern.
-- [ ] Verlauf nach Favoriten filtern.
-- [ ] Verlauf exportieren als `.txt`.
-- [ ] Verlauf exportieren als `.csv`.
+- [x] Verlauf nach Modus filtern.
+- [x] Verlauf nach Favoriten filtern.
+- [x] Verlauf exportieren als `.txt`.
+- [x] Verlauf exportieren als `.csv`. → Semikolon-getrennt, mit BOM, damit Excel die Umlaute erkennt.
 - [ ] Verlauf exportieren als `.json` optional planen.
 - [ ] Verlauf importieren optional planen.
 - [x] Doppelklick-Verhalten bei strukturierten Einträgen neu implementieren.
@@ -475,7 +475,7 @@
 - [x] Unit Tests nachziehen: Verlaufsladen alter Dateien absichern.
 - [x] Unit Tests nachgezogen: Verlaufsspeichern strukturierter Einträge absichern.
 - [x] Unit Tests nachziehen: Favoriten absichern.
-- [ ] Unit Tests nachziehen: Export absichern.
+- [x] Unit Tests nachziehen: Export absichern.
 
 ---
 

@@ -32,6 +32,21 @@ class HistoryFilterTest
         assertEquals(1, HistoryFilter.filter(entries, "Wissenschaftlich", "Suche...").size());
     }
 
+    @Test
+    void filterNachModusUndFavoriten()
+    {
+        List<VerlaufEintrag> entries = List.of(
+                new VerlaufEintrag("1+1", "2", RechnerModus.STANDARD, ZEITPUNKT, true),
+                new VerlaufEintrag("2+2", "4", RechnerModus.STANDARD, ZEITPUNKT, false),
+                new VerlaufEintrag("sin(1)", "0,017", RechnerModus.WISSENSCHAFTLICH, ZEITPUNKT, true)
+        );
+
+        assertEquals(2, HistoryFilter.filter(entries, "", "Suche...", RechnerModus.STANDARD, false).size());
+        assertEquals(2, HistoryFilter.filter(entries, "", "Suche...", null, true).size());
+        assertEquals(1, HistoryFilter.filter(entries, "", "Suche...", RechnerModus.WISSENSCHAFTLICH, true).size());
+        assertEquals(0, HistoryFilter.filter(entries, "sin", "Suche...", RechnerModus.STANDARD, false).size());
+    }
+
     private List<VerlaufEintrag> entries()
     {
         return List.of(
