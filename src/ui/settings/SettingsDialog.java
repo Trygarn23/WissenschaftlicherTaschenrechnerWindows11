@@ -24,7 +24,7 @@ public final class SettingsDialog extends JDialog
     private final Consumer<AppSettings> settingsListener;
     private final Runnable sessionSaveListener;
     private final Runnable sessionLoadListener;
-    private final CustomThemePersistence customThemePersistence = new CustomThemePersistence();
+    private final CustomThemePersistence customThemePersistence;
     private CustomThemeColors customThemeColors;
     private CustomThemeColors appliedCustomThemeColors;
 
@@ -34,7 +34,8 @@ public final class SettingsDialog extends JDialog
             AppSettings settings,
             Consumer<AppSettings> settingsListener,
             Runnable sessionSaveListener,
-            Runnable sessionLoadListener)
+            Runnable sessionLoadListener,
+            CustomThemePersistence customThemePersistence)
     {
         super(owner, "Einstellungen", false);
         this.theme = theme;
@@ -43,6 +44,7 @@ public final class SettingsDialog extends JDialog
         this.settingsListener = settingsListener;
         this.sessionSaveListener = sessionSaveListener;
         this.sessionLoadListener = sessionLoadListener;
+        this.customThemePersistence = customThemePersistence;
         this.customThemeColors = customThemePersistence.lade();
         this.appliedCustomThemeColors = customThemeColors;
 
@@ -66,7 +68,8 @@ public final class SettingsDialog extends JDialog
             Runnable sessionSaveListener,
             Runnable sessionLoadListener)
     {
-        new SettingsDialog(owner, theme, settings, settingsListener, sessionSaveListener, sessionLoadListener).setVisible(true);
+        new SettingsDialog(owner, theme, settings, settingsListener, sessionSaveListener, sessionLoadListener,
+                new CustomThemePersistence()).setVisible(true);
     }
 
     private JPanel createContent()

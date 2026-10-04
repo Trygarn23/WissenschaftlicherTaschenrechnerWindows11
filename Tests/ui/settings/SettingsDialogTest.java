@@ -2,11 +2,14 @@ package ui.settings;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import ui.theme.ThemeType;
+import ui.theme.custom.CustomThemePersistence;
 import ui.theme.themes.DarkTheme;
 
 import javax.swing.*;
 import java.awt.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,13 +17,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SettingsDialogTest
 {
+    // Speichern landet im Testordner statt in den echten Einstellungen.
+    @TempDir
+    Path tempDir;
+
     @Test
     void settingsDialog_ShouldPublishOnlyWhenApplyOrSaveIsClicked()
     {
         Assumptions.assumeFalse(GraphicsEnvironment.isHeadless());
 
         List<AppSettings> published = new ArrayList<>();
-        SettingsDialog dialog = new SettingsDialog(null, new DarkTheme(), new AppSettings(), published::add, null, null);
+        SettingsDialog dialog = new SettingsDialog(null, new DarkTheme(), new AppSettings(), published::add, null, null,
+                new CustomThemePersistence(tempDir.resolve("custom_theme.properties")));
 
         comboBox(dialog, 0).setSelectedItem(ThemeType.LIGHT);
         assertTrue(published.isEmpty());
@@ -38,7 +46,8 @@ class SettingsDialogTest
         Assumptions.assumeFalse(GraphicsEnvironment.isHeadless());
 
         List<AppSettings> published = new ArrayList<>();
-        SettingsDialog dialog = new SettingsDialog(null, new DarkTheme(), new AppSettings(), published::add, null, null);
+        SettingsDialog dialog = new SettingsDialog(null, new DarkTheme(), new AppSettings(), published::add, null, null,
+                new CustomThemePersistence(tempDir.resolve("custom_theme.properties")));
 
         comboBox(dialog, 0).setSelectedItem(ThemeType.LIGHT);
         button(dialog, "Abbrechen").doClick();
@@ -53,7 +62,8 @@ class SettingsDialogTest
         Assumptions.assumeFalse(GraphicsEnvironment.isHeadless());
 
         List<AppSettings> published = new ArrayList<>();
-        SettingsDialog dialog = new SettingsDialog(null, new DarkTheme(), new AppSettings(), published::add, null, null);
+        SettingsDialog dialog = new SettingsDialog(null, new DarkTheme(), new AppSettings(), published::add, null, null,
+                new CustomThemePersistence(tempDir.resolve("custom_theme.properties")));
 
         comboBox(dialog, 0).setSelectedItem(ThemeType.LIGHT);
         button(dialog, "Zurücksetzen").doClick();

@@ -37,8 +37,8 @@
 - [ ] Letzte Eingabe nach einem Absturz wieder anbieten, damit nicht alles einfach weg ist.
 - [ ] Einmal Rückgängig anbieten, wenn man aus Versehen den Ausdruck gelöscht hat.
 - [ ] Klammerpaare beim Tippen sichtbar zusammengehörig markieren.
-- [ ] Stern-Button im Verlauf zeigt nur ein Kästchen → Segoe UI kennt `☆` nicht, andere Schrift nehmen oder das Icon selber malen.
-- [ ] Suchfeld im Verlauf ist zu schmal, da steht nur „Such“ → Spalte breiter machen oder mitwachsen lassen.
+- [x] Stern-Button im Verlauf zeigt nur ein Kästchen → Stern wird jetzt selbst gemalt (`StarIcon`), klappt in jeder Schrift und jedem Theme.
+- [x] Suchfeld im Verlauf ist zu schmal, da steht nur „Such“ → Suchfeld hat jetzt eine eigene Zeile über den Buttons.
 - [ ] Live-Vorschau im Display: Ergebnis schon beim Tippen grau anzeigen, z. B. „= 42“ → `aktuellerWertOder0()` gibt's eh schon.
 - [ ] Anzeigen, wie viele Klammern noch offen sind, z. B. „2 offen“ → als kleiner Zwischenschritt, bevor die Klammerpaare markiert werden.
 - [x] Fenstergröße nach Neustart optional speichern.
@@ -613,7 +613,7 @@ Ergänzt die Punkte aus Refactoring und MVP oben.
 - [x] Alle Speicherorte der App an einer Stelle sammeln → `AppDateien`.
 - [x] Eigener Ordner statt vieler einzelner Dateien im Benutzerordner → `~/.wissenschaftlicher_taschenrechner/`, alte Dateien ziehen beim ersten Start automatisch um.
 - [x] Theme-Speicher testbar machen → hat sich erledigt, weil es ihn nicht mehr gibt.
-- [ ] Ein paar Tests schreiben noch in den echten Benutzerordner (über den Einstellungen-Dialog) → Speicherort dort von außen reingeben, damit Tests nur in Testordnern rumspielen.
+- [x] Ein paar Tests schreiben noch in den echten Benutzerordner (über den Einstellungen-Dialog) → `SettingsDialog` bekommt den Speicherort jetzt von außen, Tests nutzen einen Testordner.
 
 ### Nicht alles doppelt schreiben
 - [x] Zahlen sehen in Komplex, Matrix, Statistik und Einheiten jetzt gleich aus → eine gemeinsame `ZahlenAnzeige`.

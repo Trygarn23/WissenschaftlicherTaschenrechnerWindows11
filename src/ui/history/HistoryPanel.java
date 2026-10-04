@@ -24,7 +24,7 @@ public class HistoryPanel extends JPanel
     private final DefaultListModel<VerlaufEintrag> filteredHistoryModel = new DefaultListModel<>();
 
     private final JTextField historySearchField = new JTextField();
-    private final JButton favoriteButton = new JButton("\u2606");
+    private final JButton favoriteButton = new JButton(new StarIcon(false, 14));
     private final JButton clearHistoryBtn = new JButton("Leeren");
     private final JList<VerlaufEintrag> historyList = new JList<>(filteredHistoryModel);
     private final JScrollPane historyScroll = new JScrollPane(historyList);
@@ -84,10 +84,11 @@ public class HistoryPanel extends JPanel
         historyActions.add(favoriteButton);
         historyActions.add(clearHistoryBtn);
 
+        // Suchfeld bekommt eine eigene Zeile, neben den Buttons blieb nur Platz für „Such“.
         JPanel historyTop = new JPanel(new BorderLayout(6, 6));
         historyTop.setOpaque(false);
-        historyTop.add(historySearchField, BorderLayout.CENTER);
-        historyTop.add(historyActions, BorderLayout.EAST);
+        historyTop.add(historySearchField, BorderLayout.NORTH);
+        historyTop.add(historyActions, BorderLayout.CENTER);
 
         add(historyTop, BorderLayout.NORTH);
         add(historyScroll, BorderLayout.CENTER);

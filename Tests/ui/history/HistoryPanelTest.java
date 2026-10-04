@@ -77,7 +77,7 @@ class HistoryPanelTest
 
         // Assert
         assertTrue(panel.getAllStructuredEntries().getFirst().isFavorit());
-        assertTrue(angezeigterText(panel, 0).startsWith("\u2605 "));
+        assertTrue(angezeigterStern(panel, 0).isFilled());
         assertEquals(List.of("favoriteChanged"), favoriteEvents);
 
         // Act
@@ -85,7 +85,22 @@ class HistoryPanelTest
 
         // Assert
         assertFalse(panel.getAllStructuredEntries().getFirst().isFavorit());
-        assertTrue(angezeigterText(panel, 0).startsWith("\u2606 "));
+        assertFalse(angezeigterStern(panel, 0).isFilled());
+    }
+
+    @Test
+    void historyPanel_SearchFieldShouldUseFullPanelWidth()
+    {
+        // Arrange
+        HistoryPanel panel = new HistoryPanel();
+        panel.setSize(220, 400);
+
+        // Act
+        panel.doLayout();
+        SwingSuche.alle(panel, java.awt.Container.class).forEach(java.awt.Container::doLayout);
+
+        // Assert
+        assertEquals(panel.getWidth(), SwingSuche.finde(panel, JTextField.class).getWidth());
     }
 
     @Test
@@ -137,11 +152,11 @@ class HistoryPanelTest
     }
 
     // Über den echten Renderer lesen, so wie der Eintrag auch auf dem Bildschirm steht.
-    private static String angezeigterText(HistoryPanel panel, int index)
+    private static StarIcon angezeigterStern(HistoryPanel panel, int index)
     {
         JList<VerlaufEintrag> liste = liste(panel);
         JLabel label = (JLabel) liste.getCellRenderer()
                 .getListCellRendererComponent(liste, liste.getModel().getElementAt(index), index, false, false);
-        return label.getText();
+        return (StarIcon) label.getIcon();
     }
 }
