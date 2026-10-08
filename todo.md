@@ -354,6 +354,10 @@
 - [x] Fehlerfälle menschlich formulieren: keine Lösung, unendlich viele Lösungen, ungültige Eingabe.
 - [x] Gleichungsmodus vom normalen Parser wiederverwenden, ohne Parser-Sonderfälle quer durchs Projekt zu ziehen.
 - [x] Unit Tests nachziehen: lineare Gleichungen, quadratische Gleichungen, Sonderfälle.
+- [x] Gleichungsmodus: Anzahl der Unbekannten per Dropdown wählbar machen (1 bis ca. 10) → mit mehr als einer Unbekannten wird es ein lineares Gleichungssystem; dafür das vorhandene `GaussJordan.loese` aus dem Matrixmodus wiederverwenden.
+  - Auswahl 1–10; ab 2 Koeffizientengitter für Ax = b mit Gauß-Jordan. Eindeutige, fehlende und unendlich viele Lösungen sowie Enter in den Eingabefeldern geprüft.
+- [x] Gleichungsmodus: Das Freitextfeld ist riesig und zieht sich über die ganze Höhe (Text steht mittig) → einzeiliges Feld, Ergebnisbereich rechts bleibt nach dem Start leer („—“), besser gleich mit Beispiel lösen.
+  - Eingaben kompakt oben angeordnet; Beispiel wird beim Öffnen gelöst, lange Systemergebnisse sind scrollbar.
 
 ---
 
@@ -732,12 +736,15 @@ Große Brocken zuerst, kleine als Lückenfüller.
 - [ ] Session laden mit kaputter/alter Datei als Test absichern.
 - [ ] Testabdeckung grob schätzen: welche Klasse in `src/common` hat noch gar keinen Test?
 
+Verifikation der Bugfixes: 210 Java-Quelldateien kompiliert, 722 JUnit-Tests erfolgreich (keine übersprungen), UI-Bildprüfung für Einstellungen, Gleichungen, LGS, Logik und Graph. Testläufe mit separatem `user.home`; echte Einstellungen unverändert. Windows-Skalierung und sämtliche Themes nicht manuell durchgetestet.
+
 ### Build / Release
 - [ ] Maven oder Gradle entscheiden und einführen (Voraussetzung für GitHub Actions).
 - [ ] Ausführbare `.jar` bauen und auf einem zweiten Rechner ohne IntelliJ starten.
 - [ ] `CHANGELOG.md` anlegen, rückwirkend aus der Git-Historie füllen.
 - [ ] Release-Checkliste in `docs/` schreiben.
 - [ ] README: Screenshots aller Modi ergänzen.
+- [ ] Git: Der Stand vor den Bugfixes liegt als ein großer Commit (`010f1b2`) auf GitHub. Optional in einzelne Commits aufteilen, dann ist aber ein Force-Push nötig – vorher entscheiden.
 
 ### Skills / Werkzeuge (global in `~/.claude/skills`)
 - [x] `todo-abarbeiten`: nächsten offenen Punkt nehmen, umsetzen, testen, abhaken, Commit vorschlagen.

@@ -4,6 +4,10 @@ import common.formatting.ZahlenEingabe;
 import common.state.RechnerModus;
 import modes.gleichung.logic.GleichungsLoeser;
 import modes.gleichung.model.GleichungsErgebnis;
+import modes.matrix.logic.GaussJordan;
+import modes.matrix.model.Matrix;
+import modes.matrix.model.LgsLoesung;
+import modes.matrix.formatting.MatrixFormatter;
 import ui.shell.ModePanel;
 import ui.shell.StatusAnzeige;
 import ui.theme.AppFonts;
@@ -29,7 +33,11 @@ public class GleichungPanel extends JPanel implements ModePanel
     private final JLabel statusLabel = new JLabel("Bereit");
     private final StatusAnzeige statusAnzeige = new StatusAnzeige(statusLabel);
     private final List<JButton> buttons = new ArrayList<>();
-    private final List<JTextField> fields = List.of(aField, bField, cField, gleichungField);
+    private final List<JTextField> fields = new ArrayList<>(List.of(aField, bField, cField, gleichungField));
+    private final JComboBox<Integer> unbekannte = new JComboBox<>(new Integer[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    private final JPanel eingaben = new JPanel(new CardLayout());
+    private final JPanel systemPanel = new JPanel(new BorderLayout(0, 8));
+    private JTextField[][] systemFields;
 
     private AppTheme theme;
 
@@ -40,6 +48,7 @@ public class GleichungPanel extends JPanel implements ModePanel
 
         add(buildInputPanel(), BorderLayout.WEST);
         add(buildResultPanel(), BorderLayout.CENTER);
+        loese(() -> loeser.loese(gleichungField.getText()));
     }
 
     @Override
@@ -53,6 +62,9 @@ public class GleichungPanel extends JPanel implements ModePanel
     {
         this.theme = theme;
         setBackground(theme.windowBackground());
+        unbekannte.setFont(AppFonts.normal(14));
+        unbekannte.setBackground(theme.inputBackground());
+        unbekannte.setForeground(theme.displayForeground());
 
         for (JTextField field : fields)
         {
@@ -76,7 +88,6 @@ public class GleichungPanel extends JPanel implements ModePanel
     {
         JPanel panel = new JPanel(new BorderLayout(0, 18));
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(340, 0));
 
         Runnable loeseKoeffizienten = () -> loese(() -> loeser.loese(lese(aField), lese(bField), lese(cField)));
         Runnable loeseText = () -> loese(() -> loeser.loese(gleichungField.getText()));
@@ -103,8 +114,97 @@ public class GleichungPanel extends JPanel implements ModePanel
         freitext.add(createButton("Gleichung lösen", loeseText), BorderLayout.SOUTH);
 
         panel.add(koeffizienten, BorderLayout.NORTH);
-        panel.add(freitext, BorderLayout.CENTER);
-        return panel;
+        panel.add(freitext, BorderLayout.SOUTH);
+
+        eingaben.setOpaque(false);
+        eingaben.add(panel, "einzeln");
+        systemPanel.setOpaque(false);
+        eingaben.add(systemPanel, "system");
+        unbekannte.setToolTipText("Eine Unbekannte: linear/quadratisch; mehrere: lineares Gleichungssystem Ax = b.");
+        unbekannte.addActionListener(e -> {
+            int n = (Integer) unbekannte.getSelectedItem();
+            ((CardLayout) eingaben.getLayout()).show(eingaben, n == 1 ? "einzeln" : "system");
+            if (n > 1) baueSystem(n);
+            else loese(() -> loeser.loese(gleichungField.getText()));
+        });
+        JPanel auswahl = new JPanel(new BorderLayout(8, 0));
+        auswahl.setOpaque(false);
+        auswahl.add(new JLabel("Unbekannte"), BorderLayout.WEST);
+        auswahl.add(unbekannte, BorderLayout.CENTER);
+        JPanel oben = new JPanel(new BorderLayout(0, 12));
+        oben.setOpaque(false);
+        oben.add(auswahl, BorderLayout.NORTH);
+        oben.add(eingaben, BorderLayout.CENTER);
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setOpaque(false);
+        wrapper.setPreferredSize(new Dimension(340, 0));
+        wrapper.add(oben, BorderLayout.NORTH);
+        return wrapper;
+    }
+
+    private void baueSystem(int n)
+    {
+        if (systemFields != null)
+        {
+            for (JTextField[] zeile : systemFields) for (JTextField field : zeile) fields.remove(field);
+        }
+        systemPanel.removeAll();
+        JPanel grid = new JPanel(new GridLayout(n + 1, n + 1, 4, 4));
+        grid.setOpaque(false);
+        for (int s = 0; s < n; s++) grid.add(new JLabel("x" + (s + 1)));
+        grid.add(new JLabel("= b"));
+        systemFields = new JTextField[n][n + 1];
+        for (int z = 0; z < n; z++)
+        {
+            for (int s = 0; s <= n; s++)
+            {
+                JTextField field = new JTextField(s == n ? String.valueOf(z + 1) : s == z ? "1" : "0", 4);
+                field.getAccessibleContext().setAccessibleName("Zeile " + (z + 1) + ", " + (s == n ? "rechte Seite" : "x" + (s + 1)));
+                field.addActionListener(e -> loeseSystem());
+                systemFields[z][s] = field;
+                fields.add(field);
+                grid.add(field);
+            }
+        }
+        JScrollPane scroll = new JScrollPane(grid);
+        scroll.setPreferredSize(new Dimension(320, Math.min(360, grid.getPreferredSize().height + 24)));
+        systemPanel.add(scroll, BorderLayout.CENTER);
+        // Ein Knopf für alle Größen; alte Knöpfe nicht in der Theme-Liste behalten.
+        buttons.removeIf(b -> b.getText().equals("System lösen"));
+        systemPanel.add(createButton("System lösen", this::loeseSystem), BorderLayout.SOUTH);
+        if (theme != null) applyTheme(theme);
+        systemPanel.revalidate();
+        systemPanel.repaint();
+        loeseSystem();
+    }
+
+    private void loeseSystem()
+    {
+        try
+        {
+            int n = systemFields.length;
+            double[][] a = new double[n][n];
+            double[][] b = new double[n][1];
+            for (int z = 0; z < n; z++)
+            {
+                for (int s = 0; s < n; s++) a[z][s] = lese(systemFields[z][s]);
+                b[z][0] = lese(systemFields[z][n]);
+            }
+            LgsLoesung ergebnis = new GaussJordan().loese(new Matrix(a), new Matrix(b));
+            MatrixFormatter formatter = new MatrixFormatter();
+            resultLabel.setText(ergebnis.art() == LgsLoesung.Art.EINDEUTIG
+                    ? "<html>" + formatter.formatiereLoesung(ergebnis.loesung()).replace(System.lineSeparator(), "<br>") + "</html>"
+                    : ergebnis.art() == LgsLoesung.Art.KEINE ? "Keine Lösung" : "Unendlich viele Lösungen");
+            detailLabel.setText("<html>" + escape(ergebnis.meldung()) + "<br>Reduzierte Matrix (A|b):<br>"
+                    + escape(formatter.formatiere(ergebnis.stufenform())).replace(System.lineSeparator(), "<br>") + "</html>");
+            statusAnzeige.zeigeErfolg("Gelöst");
+        }
+        catch (IllegalArgumentException e)
+        {
+            resultLabel.setText("–");
+            detailLabel.setText(" ");
+            statusAnzeige.zeigeFehler(e.getMessage());
+        }
     }
 
     private JPanel wrapField(String labelText, JTextField field, Runnable enterAktion)
@@ -113,7 +213,7 @@ public class GleichungPanel extends JPanel implements ModePanel
         JPanel panel = new JPanel(new BorderLayout(0, 4));
         panel.setOpaque(false);
         panel.add(new JLabel(labelText), BorderLayout.NORTH);
-        panel.add(field, BorderLayout.CENTER);
+        panel.add(field, BorderLayout.SOUTH);
         return panel;
     }
 
@@ -136,7 +236,11 @@ public class GleichungPanel extends JPanel implements ModePanel
         resultBox.add(statusLabel, BorderLayout.SOUTH);
 
         panel.add(title, BorderLayout.NORTH);
-        panel.add(resultBox, BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(resultBox);
+        scroll.setBorder(null);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        panel.add(scroll, BorderLayout.CENTER);
         return panel;
     }
 
@@ -185,6 +289,10 @@ public class GleichungPanel extends JPanel implements ModePanel
         else if (component instanceof JPanel panel && panel != this)
         {
             panel.setBackground(theme.panelBackground());
+        }
+        else if (component instanceof JScrollPane scroll)
+        {
+            scroll.getViewport().setBackground(theme.panelBackground());
         }
 
         if (component instanceof Container container)
