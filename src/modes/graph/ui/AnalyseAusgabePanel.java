@@ -3,6 +3,13 @@ package modes.graph.ui;
 import common.state.WinkelModus;
 import modes.graph.formatting.GraphFormatter;
 import modes.graph.logic.GraphEvaluator;
+import modes.graph.model.GraphPunkt;
+import modes.graph.model.KurvendiskussionResult;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreePath;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
@@ -12,7 +19,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import java.awt.BorderLayout;
@@ -32,7 +38,8 @@ final class AnalyseAusgabePanel extends JPanel
     private final JLabel functionValueHeaderLabel = new JLabel("f(x)");
     private final JLabel firstDerivativeHeaderLabel = new JLabel("f'(x)");
     private final JLabel secondDerivativeHeaderLabel = new JLabel("f''(x)");
-    private final JTextArea analysisArea = new JTextArea();
+    private final JTree analysisTree = new JTree(new DefaultMutableTreeNode());
+    private final DefaultTreeCellRenderer analysisRenderer = new DefaultTreeCellRenderer();
     private final JSpinner tableStepSpinner = new JSpinner(new SpinnerNumberModel(1.0, 0.25, 10.0, 0.25));
     private final JTextField grenzeA = new JTextField("0", 4);
     private final JTextField grenzeB = new JTextField("1", 4);
@@ -60,10 +67,13 @@ final class AnalyseAusgabePanel extends JPanel
 
     void applyTheme(AppTheme theme)
     {
-        analysisArea.setFont(AppFonts.festeBreite(12));
-        analysisArea.setBackground(theme.cardBackground());
-        analysisArea.setForeground(theme.displayForeground());
-        analysisArea.setBorder(ModernButtonStyler.cardBorder(theme));
+        analysisTree.setFont(AppFonts.normal(12));
+        analysisTree.setBackground(theme.cardBackground());
+        analysisTree.setForeground(theme.displayForeground());
+        analysisRenderer.setTextNonSelectionColor(theme.displayForeground());
+        analysisRenderer.setTextSelectionColor(theme.popupSelectedForeground());
+        analysisRenderer.setBackgroundNonSelectionColor(theme.cardBackground());
+        analysisRenderer.setBackgroundSelectionColor(theme.popupSelectedBackground());
         tableStepSpinner.setFont(AppFonts.normal(12));
         for (JTextField grenze : List.of(grenzeA, grenzeB))
         {
@@ -83,8 +93,44 @@ final class AnalyseAusgabePanel extends JPanel
 
     void zeigeText(String text)
     {
-        analysisArea.setText(text);
-        analysisArea.setCaretPosition(0);
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        for (String zeile : text.split("\\R")) root.add(new DefaultMutableTreeNode(zeile));
+        analysisTree.setModel(new DefaultTreeModel(root));
+    }
+
+    void zeigeAnalyse(KurvendiskussionResult result, List<GraphPunkt> schnittpunkte, String zusatz)
+    {
+        List<String> offen = new ArrayList<>();
+        for (int row = 0; row < analysisTree.getRowCount(); row++)
+        {
+            TreePath path = analysisTree.getPathForRow(row);
+            if (analysisTree.isExpanded(path))
+                offen.add(path.getLastPathComponent().toString().replaceAll(" \\(.*", ""));
+        }
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        root.add(new DefaultMutableTreeNode("Y-Achse: " + formatter.formatierePunkt(result.getYAchsenSchnittpunkt())));
+        addPunkte(root, "Nullstellen", result.getNullstellen());
+        addPunkte(root, "Extrema", result.getExtremstellen());
+        addPunkte(root, "Wendestellen", result.getWendestellen());
+        addPunkte(root, "Schnitt mit anderen", schnittpunkte);
+        root.add(new DefaultMutableTreeNode("Hinweis: numerisch, sichtbarer x-Bereich."));
+        for (String zeile : zusatz.split("\\R"))
+            if (!zeile.isBlank()) root.add(new DefaultMutableTreeNode(zeile));
+        analysisTree.setModel(new DefaultTreeModel(root));
+        for (int i = 0; i < root.getChildCount(); i++)
+        {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) root.getChildAt(i);
+            if (offen.contains(node.toString().replaceAll(" \\(.*", "")))
+                analysisTree.expandPath(new TreePath(node.getPath()));
+        }
+    }
+
+    private void addPunkte(DefaultMutableTreeNode root, String titel, List<GraphPunkt> punkte)
+    {
+        DefaultMutableTreeNode kategorie = new DefaultMutableTreeNode(titel + " (" + punkte.size() + ")");
+        for (GraphPunkt punkt : punkte) kategorie.add(new DefaultMutableTreeNode(formatter.formatierePunkt(punkt)));
+        if (punkte.isEmpty()) kategorie.add(new DefaultMutableTreeNode("keine gefunden"));
+        root.add(kategorie);
     }
 
     void setTabellenMitte(double x)
@@ -184,12 +230,15 @@ final class AnalyseAusgabePanel extends JPanel
 
         analysisTitleLabel.setFont(AppFonts.fett(14));
 
-        analysisArea.setEditable(false);
-        analysisArea.setFocusable(false);
-        analysisArea.setLineWrap(true);
-        analysisArea.setWrapStyleWord(true);
+        analysisTree.setRootVisible(false);
+        analysisTree.setShowsRootHandles(true);
+        analysisTree.setRowHeight(0);
+        analysisTree.setCellRenderer(analysisRenderer);
+        analysisRenderer.setLeafIcon(null);
+        analysisRenderer.setOpenIcon(null);
+        analysisRenderer.setClosedIcon(null);
 
-        JScrollPane scrollPane = new JScrollPane(analysisArea);
+        JScrollPane scrollPane = new JScrollPane(analysisTree);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setOpaque(false);
         scrollPane.getViewport().setOpaque(false);

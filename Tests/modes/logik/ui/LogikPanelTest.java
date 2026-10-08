@@ -13,6 +13,19 @@ import static org.junit.jupiter.api.Assertions.*;
 public class LogikPanelTest
 {
     @Test
+    void logicFonts_ShouldDisplayEveryOperatorAfterThemeChanges()
+    {
+        LogikPanel panel = new LogikPanel();
+        for (ui.theme.AppTheme theme : java.util.List.of(new ui.theme.themes.DarkTheme(), new ui.theme.themes.Win95Theme()))
+        {
+            panel.applyTheme(theme);
+            assertEquals(-1, SwingSuche.finde(panel, JTextField.class).getFont().canDisplayUpTo("∧∨¬⊕→↔"));
+            for (String symbol : java.util.List.of("∧", "∨", "⊕"))
+                assertEquals(-1, SwingSuche.button(panel, symbol).getFont().canDisplayUpTo(symbol));
+        }
+    }
+
+    @Test
     void logikPanel_ShouldShowTruthTableForExampleAndOfferSymbolButtons()
     {
         // Arrange

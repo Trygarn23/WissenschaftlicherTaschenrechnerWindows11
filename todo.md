@@ -269,6 +269,10 @@
 - [x] Schieberegler für Parameter: f(x) = a·x², a am Regler ziehen und die Kurve wackelt live mit.
 - [x] Tangente an einem angeklickten Punkt einzeichnen.
 - [x] Fläche unter der Kurve berechnen (Integral, numerisch reicht) und schraffiert anzeigen.
+- [x] Graph: Kurvendiskussion ist als Fließtext schwer lesbar → je Kategorie eine eigene Zeile mit Pfeil zum Aufklappen, darunter jeder Punkt in einer eigenen Zeile:
+  - `Nullstellen (7) ↓` → `(-9,425 | 0)`, `(-6,283 | 0)`, …
+  - genauso für Extrema, Wendestellen, Schnitt mit anderen; Y-Achse und Hinweis bleiben einzeilig.
+  - Jetzt als aufklappbarer Swing-Baum mit Anzahl und einzelnen Punkten; geöffnete Kategorien bleiben beim Aktualisieren offen.
 
 ---
 
@@ -401,6 +405,8 @@
 - [x] Eingabe auch mit `&&`, `||`, `!` bzw. AND/OR/NOT erlauben, damit man nicht nach Sonderzeichen suchen muss.
 - [x] KV-Diagramm optional planen, aber erst wenn die Wahrheitstabelle sauber läuft.
 - [x] Unit Tests nachziehen: Klammern, Vorrang, Variablen A–D.
+- [x] Logikmodus: Auf den Knöpfen und im Eingabefeld werden ∧, ∨ und ⊕ als Kästchen angezeigt (Schrift hat die Zeichen nicht) → Schrift mit diesen Zeichen nehmen (z. B. „Segoe UI Symbol“ prüfen) oder die Zeichen selbst zeichnen wie beim `StarIcon`.
+  - Segoe UI Symbol mit Glyphenprüfung und Dialog-Fallback für Eingabe, Buttons und Normalformen, auch nach Themewechsel.
 
 ---
 

@@ -244,7 +244,7 @@ public class GraphPanel extends JPanel implements ModePanel
                 winkelModus
         );
 
-        StringBuilder text = new StringBuilder(formatter.formatiereKurvendiskussion(result, intersections()));
+        StringBuilder text = new StringBuilder();
         aktualisiereTangenteUndFlaeche();
         if (tangente != null)
         {
@@ -255,7 +255,7 @@ public class GraphPanel extends JPanel implements ModePanel
             text.append("\n").append(formatter.formatiereFlaeche(flaeche));
         }
 
-        analyseAusgabe.zeigeText(text.toString());
+        analyseAusgabe.zeigeAnalyse(result, intersections(), text.toString());
         canvasPanel.setKurvendiskussionResult(result);
     }
 

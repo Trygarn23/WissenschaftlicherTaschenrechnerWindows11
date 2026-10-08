@@ -64,13 +64,14 @@ public class LogikPanel extends JPanel implements ModePanel
         this.theme = theme;
         setBackground(theme.windowBackground());
 
-        ausdruckField.setFont(AppFonts.normal(18));
+        ausdruckField.setFont(AppFonts.symbole(18));
         ModernButtonStyler.styleInput(ausdruckField, theme);
         ausdruckField.setCaretColor(theme.displayForeground());
 
         for (JButton button : buttons)
         {
             ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
+            button.setFont(AppFonts.symbole(16));
         }
 
         for (JTable table : List.of(wahrheitsTable, kvTable))
@@ -83,6 +84,7 @@ public class LogikPanel extends JPanel implements ModePanel
         }
         normalformArea.setBackground(theme.inputBackground());
         normalformArea.setForeground(theme.displayForeground());
+        normalformArea.setFont(AppFonts.symbole(14));
         tabs.setBackground(theme.panelBackground());
         tabs.setForeground(theme.displayForeground());
 
