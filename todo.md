@@ -746,13 +746,6 @@ Verifikation der Bugfixes: 210 Java-Quelldateien kompiliert, 722 JUnit-Tests erf
 - [ ] README: Screenshots aller Modi ergänzen.
 - [ ] Git: Der Stand vor den Bugfixes liegt als ein großer Commit (`010f1b2`) auf GitHub. Optional in einzelne Commits aufteilen, dann ist aber ein Force-Push nötig – vorher entscheiden.
 
-### Skills / Werkzeuge (global in `~/.claude/skills`)
-- [x] `todo-abarbeiten`: nächsten offenen Punkt nehmen, umsetzen, testen, abhaken, Commit vorschlagen.
-- [x] `klasse-aufteilen`: große Klasse sicher in kleinere zerlegen, Tests vorher/nachher.
-- [x] `ihk-lernzettel`: aus eigenem Code Lernzettel + Prüfungsfragen für AP1/AP2 machen.
-- [ ] Skills ausprobieren und Beschreibungen nachschärfen, wenn sie nicht von selbst anspringen.
-- [ ] Skill `java-test-schreiben` (JUnit-Stil dieses Projekts) überlegen.
-
 ### Neu gefunden beim Abarbeiten
 - [x] Parser: `-x^2` wird als `(-x)^2` gerechnet, richtig wäre `-(x^2)` → Parser-Agent hatte den Auftrag, Ergebnis prüfen. → behoben: `-2^2 = -4`, `2^-2 = 0,25`, `(-2)^2 = 4`.
 - [ ] Parser: Leerzeichen werden entfernt, dadurch wird `a x` zu `ax` (ungültig) statt `a·x`.
@@ -773,5 +766,5 @@ Verifikation der Bugfixes: 210 Java-Quelldateien kompiliert, 722 JUnit-Tests erf
 
 ## Befehle
 git add .
-git commit -m ""
+git commit -m "Das Crazy todo"
 git push
