@@ -156,8 +156,8 @@ public class ModeBarPanel extends JPanel
         ModernButtonStyler.styleButton(
                 weitereButton,
                 theme,
-                weitererModusAktiv ? theme.modeButtonActiveBackground() : theme.modeButtonInactiveBackground(),
-                theme.modeButtonForeground(weitererModusAktiv)
+                theme.modeButtonInactiveBackground(),
+                theme.modeButtonForeground(false)
         );
 
         for (Map.Entry<RechnerModus, JButton> entry : weitereButtons.entrySet())

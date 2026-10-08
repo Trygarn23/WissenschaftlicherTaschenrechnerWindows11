@@ -30,14 +30,17 @@ class ModeBarPanelTest
     }
 
     @Test
-    void modeBar_ShouldMarkMoreButtonActive_WhenExtraModeIsSelected()
+    void modeBar_ShouldOnlyMarkLastUsedButtonActive_WhenExtraModeIsSelected()
     {
         ModeBarPanel panel = new ModeBarPanel();
         AzubiModernTheme theme = new AzubiModernTheme();
 
         panel.setSelectedMode(RechnerModus.MATRIX, theme);
 
-        assertEquals(theme.modeButtonActiveBackground(), weitereButton(panel).getBackground());
+        assertEquals(theme.modeButtonInactiveBackground(), weitereButton(panel).getBackground());
+        assertEquals(theme.modeButtonActiveBackground(), SwingSuche.button(panel, "Matrix").getBackground());
+        panel.setSelectedMode(RechnerModus.STANDARD, theme);
+        assertEquals(theme.modeButtonInactiveBackground(), SwingSuche.button(panel, "Matrix").getBackground());
     }
 
     @Test

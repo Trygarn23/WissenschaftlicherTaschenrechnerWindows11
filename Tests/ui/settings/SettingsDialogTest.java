@@ -22,6 +22,38 @@ class SettingsDialogTest
     Path tempDir;
 
     @Test
+    void settingsDialog_ShouldFitFooterAndColorButtonsAtMinimumSize() throws Exception
+    {
+        Assumptions.assumeFalse(GraphicsEnvironment.isHeadless());
+        SwingUtilities.invokeAndWait(() -> {
+            SettingsDialog dialog = new SettingsDialog(null, new DarkTheme(), new AppSettings(), s -> {}, null, null,
+                    new CustomThemePersistence(tempDir.resolve("layout.properties")));
+            try
+            {
+                dialog.setSize(dialog.getMinimumSize());
+                dialog.setVisible(true);
+                dialog.validate();
+                JScrollPane scroll = testhilfen.SwingSuche.finde(dialog, JScrollPane.class);
+                assertFalse(scroll.getHorizontalScrollBar().isVisible());
+                for (JButton button : testhilfen.SwingSuche.alle(dialog, JButton.class))
+                {
+                    if (!button.isShowing()) continue;
+                    Rectangle bounds = SwingUtilities.convertRectangle(button.getParent(), button.getBounds(), dialog.getContentPane());
+                    assertTrue(bounds.width > 0 && bounds.x >= 0
+                            && bounds.x + bounds.width <= dialog.getContentPane().getWidth(), button.getText());
+                }
+                for (String text : List.of("Alles auf Standard", "Zurücksetzen", "Abbrechen", "Anwenden", "Speichern"))
+                {
+                    JButton button = button(dialog, text);
+                    Rectangle bounds = SwingUtilities.convertRectangle(button.getParent(), button.getBounds(), dialog.getContentPane());
+                    assertTrue(bounds.y >= 0 && bounds.y + bounds.height <= dialog.getContentPane().getHeight(), text);
+                }
+            }
+            finally { dialog.dispose(); }
+        });
+    }
+
+    @Test
     void settingsDialog_ShouldPublishOnlyWhenApplyOrSaveIsClicked()
     {
         Assumptions.assumeFalse(GraphicsEnvironment.isHeadless());

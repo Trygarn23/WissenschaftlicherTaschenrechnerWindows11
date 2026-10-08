@@ -52,8 +52,9 @@ public final class SettingsDialog extends JDialog
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         rebuildContent();
-        setMinimumSize(new Dimension(600, 520));
-        setSize(new Dimension(640, 720));
+        int breite = Math.max(680, getContentPane().getPreferredSize().width + 40);
+        setMinimumSize(new Dimension(breite, 520));
+        setSize(new Dimension(breite, 720));
         setLocationRelativeTo(owner);
     }
 
@@ -107,7 +108,9 @@ public final class SettingsDialog extends JDialog
         addSection(settingsList, "Rechnen", createRechnen());
         addSection(settingsList, "Verlauf und Session", createVerlauf());
         addSection(settingsList, "Schule", createSchule());
-        settingsList.add(rows.value("Version", AppSettings.VERSION));
+        JPanel versionRow = rows.value("Version", AppSettings.VERSION);
+        versionRow.setAlignmentX(LEFT_ALIGNMENT);
+        settingsList.add(versionRow);
 
         // Oben ausrichten, sonst zieht das Scrollfenster die Zeilen auf volle Höhe.
         JPanel top = new JPanel(new BorderLayout());
@@ -198,7 +201,7 @@ public final class SettingsDialog extends JDialog
 
     private JPanel createFooter()
     {
-        JPanel footer = new JPanel(new BorderLayout());
+        JPanel footer = new JPanel(new BorderLayout(0, 8));
         footer.setOpaque(false);
 
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -217,8 +220,8 @@ public final class SettingsDialog extends JDialog
             dispose();
         }));
 
-        footer.add(left, BorderLayout.WEST);
-        footer.add(right, BorderLayout.EAST);
+        footer.add(left, BorderLayout.NORTH);
+        footer.add(right, BorderLayout.SOUTH);
         return footer;
     }
 

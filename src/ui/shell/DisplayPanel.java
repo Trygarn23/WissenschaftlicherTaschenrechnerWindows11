@@ -66,6 +66,13 @@ public class DisplayPanel extends JPanel
         pane.setFocusable(true);
         pane.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 
+        // Nicht editierbare Textpanes behalten sonst ihre Editor-Aktionen und
+        // schlucken Enter/Backspace, bevor die Rechnertasten am RootPane greifen.
+        for (int key : new int[]{KeyEvent.VK_ENTER, KeyEvent.VK_BACK_SPACE})
+        {
+            pane.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(key, 0), "rechnerTaste");
+        }
+
         StyledDocument doc = pane.getStyledDocument();
         SimpleAttributeSet right = new SimpleAttributeSet();
         StyleConstants.setAlignment(right, StyleConstants.ALIGN_RIGHT);

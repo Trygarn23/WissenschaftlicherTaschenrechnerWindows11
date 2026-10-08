@@ -44,6 +44,8 @@
 - [x] Fenstergröße nach Neustart optional speichern.
 - [x] Letzten aktiven Modus optional speichern.
 - [x] Letzten Winkelmodus optional speichern.
+- [x] DRINGEND: In den Rechnern gehen Backspace (zurück) und Enter (Rechnung bestätigen) nicht.
+  - Behoben: Die nicht editierbaren Display-Textpanes lassen Enter/Backspace zur globalen Rechnerbelegung durch. In der gestarteten App mit echtem Display-Fokus und Tasteneingaben in Standard und Wissenschaftlich geprüft; beide Displays getestet.
 
 ---
 
@@ -497,6 +499,8 @@
 - [x] Zuletzt genutzte Modi in der Modusleiste weiter nach vorne holen.
 - [ ] Im Display irgendwo in den Ausdruck klicken und mittendrin weitertippen, statt nur hinten anhängen/löschen.
 - [x] Mini-Rechner: kleines Fenster, das immer im Vordergrund bleibt → z. B. neben IntelliJ.
+- [x] Aktionsleiste oben: Der Knopf „Zuletzt genutzt“ (hier „Gleichungen“) und „Weitere…“ sind beide gleich hell hervorgehoben → nur den aktiven Modus hervorheben.
+  - „Weitere…“ bleibt neutral; nur der tatsächliche Modusknopf wird hervorgehoben.
 
 ---
 
@@ -655,6 +659,8 @@ Ergänzt die Punkte aus Refactoring und MVP oben.
 - [x] Einstellungen für Winkelmodus ergänzen.
 - [x] Einstellungen für History-Verhalten ergänzen.
 - [x] Einstellungen für Zahlenformat ergänzen.
+- [x] Einstellungen: Unten ist der Knopf „Alles auf Standard“ abgeschnitten und unten erscheint ein waagerechter Scrollbalken → Mindestbreite für den Dialog setzen oder die Knöpfe unten kleiner/zweizeilig machen. Die Farbknöpfe im Custom Theme sind rechts ebenfalls abgeschnitten.
+  - Zweizeiliger Footer, Mindestbreite aus Inhalt und einheitliche Zeilenausrichtung; bei Mindestgröße auf vollständige Buttonbreiten und fehlenden horizontalen Scrollbalken geprüft.
 
 ## Spätere Features
 - [x] Session speichern/laden erst nach sauberem `RechnerZustand`.
@@ -734,7 +740,6 @@ Große Brocken zuerst, kleine als Lückenfüller.
 - [ ] Skills ausprobieren und Beschreibungen nachschärfen, wenn sie nicht von selbst anspringen.
 - [ ] Skill `java-test-schreiben` (JUnit-Stil dieses Projekts) überlegen.
 
-
 ### Neu gefunden beim Abarbeiten
 - [x] Parser: `-x^2` wird als `(-x)^2` gerechnet, richtig wäre `-(x^2)` → Parser-Agent hatte den Auftrag, Ergebnis prüfen. → behoben: `-2^2 = -4`, `2^-2 = 0,25`, `(-2)^2 = 4`.
 - [ ] Parser: Leerzeichen werden entfernt, dadurch wird `a x` zu `ax` (ungültig) statt `a·x`.
@@ -745,6 +750,7 @@ Große Brocken zuerst, kleine als Lückenfüller.
 - [ ] Konstanten-Dialog: Favoriten als Stern statt Checkbox (dafür `StarIcon` public machen).
 - [ ] Alle neuen Modi einmal in der echten App durchklicken (nur über Tests geprüft, Layout nicht angeschaut).
 - [ ] Wissenschaftlich: neue Parserfunktionen (nCr, nPr, ggT, kgV) als Buttons/f(x)-Menü anbieten, sobald der Parser-Teil fertig ist.
+
 ---
 
 ## Legende
