@@ -73,7 +73,7 @@ public class BerechnungsService
     private OptionalDouble probeAuswertung(String ausdruck)
     {
         if (endetMitOperatorOderKlammerAuf(ausdruck)) return OptionalDouble.empty();
-        
+
         try
         {
             double wert = AusdruckParser.auswerten(ausdruck, zustand.getLetzteAntwort(), zustand.getWinkelModus());

@@ -682,6 +682,60 @@ Ergänzt die Punkte aus Refactoring und MVP oben.
 - [ ] Rechner-Statistik als Spaß-Feature: „Deine Lieblingsfunktion: sin (42×)“ xD
 - [ ] GitHub Actions: Tests bei jedem Push automatisch laufen lassen → geht erst nach Maven/Gradle.
 
+## Nächste Runde (für volles Limit)
+Große Brocken zuerst, kleine als Lückenfüller.
+
+### Refactoring (größte Klassen zuerst)
+- [ ] `HistoryPanel` (~600 Zeilen) aufteilen: Filter-/Suchleiste, Liste, Export-/Lösch-Aktionen in eigene Teile.
+- [ ] `GraphPanel` (~580 Zeilen) aufteilen: Funktionsliste, Steuerleiste (Zoom/Bereich), Analyse-Ausgabe getrennt.
+- [ ] `AusdruckEditor` (~510 Zeilen) prüfen: Cursor/Klammer-Logik von Undo/Redo trennen.
+- [ ] `TaschenrechnerUI` (~430 Zeilen) weiter entschlacken: Aufbau des Fensters vs. Verdrahtung der Aktionen.
+- [ ] `StatistikPanel` (~400 Zeilen): Eingabetabelle und Ergebnisanzeige trennen.
+- [ ] `SettingsDialog` (~340 Zeilen): je Einstellungsbereich ein eigenes kleines Panel.
+- [ ] `MatrixPanel` (~340 Zeilen): Matrix-Eingabegitter als eigene Komponente.
+- [ ] Nach jedem Aufteilen: alle Tests grün, Zeilenzahl vorher/nachher hier notieren.
+- [ ] Toten Code suchen (unbenutzte Methoden/Klassen/Imports) und löschen.
+- [ ] Magische Zahlen (Pixelgrößen, Abstände, Grenzwerte) in benannte Konstanten.
+- [ ] Alle `catch (Exception e)` durchgehen: konkrete Ausnahme oder bewusst kommentieren.
+
+### Features
+- [ ] Prüfungsmodus umsetzen (siehe Spätere Features) inkl. sichtbarem Hinweis in der Statuszeile.
+- [ ] Graph als PNG exportieren.
+- [ ] Matrix als CSV exportieren und importieren.
+- [ ] Statistik-Daten aus CSV importieren.
+- [ ] Verlauf zusätzlich als JSON exportieren.
+- [ ] Einheiten: Favoriten-Umrechnungen merken.
+- [ ] Wissenschaftlich: Ergebnis als Bruch anzeigen (z. B. 0,75 → 3/4), wo sinnvoll.
+- [ ] Wissenschaftlich: Ans-Taste / letztes Ergebnis in neuen Ausdruck übernehmen (falls nicht vorhanden).
+- [ ] Gleichungsmodus: lineare und quadratische Gleichungen lösen (Grundversion).
+- [ ] Bruchmodus: Grundrechenarten mit Kürzen (Grundversion).
+- [ ] Datumsrechner: Tage zwischen zwei Daten, Datum ± Tage.
+- [ ] Rechner-Statistik („Lieblingsfunktion“) aus dem Verlauf berechnen.
+- [ ] Lokalisierung DE/EN: alle UI-Texte an einer Stelle sammeln (erst sammeln, dann übersetzen).
+
+### Tests
+- [ ] Tests für die neuen Exporte (PNG nur „Datei entsteht“, CSV Inhalt prüfen).
+- [ ] Parser-Grenzfälle: sehr lange Ausdrücke, verschachtelte Klammern, leere Eingabe, nur Operatoren.
+- [ ] Programmierer: Überlauf an jeder Wortbreite testen.
+- [ ] Session laden mit kaputter/alter Datei als Test absichern.
+- [ ] Testabdeckung grob schätzen: welche Klasse in `src/common` hat noch gar keinen Test?
+
+### Build / Release
+- [ ] Maven oder Gradle entscheiden und einführen (Voraussetzung für GitHub Actions).
+- [ ] Ausführbare `.jar` bauen und auf einem zweiten Rechner ohne IntelliJ starten.
+- [ ] `CHANGELOG.md` anlegen, rückwirkend aus der Git-Historie füllen.
+- [ ] Release-Checkliste in `docs/` schreiben.
+- [ ] README: Screenshots aller Modi ergänzen.
+
+### Skills / Werkzeuge (global in `~/.claude/skills`)
+- [x] `todo-abarbeiten`: nächsten offenen Punkt nehmen, umsetzen, testen, abhaken, Commit vorschlagen.
+- [x] `klasse-aufteilen`: große Klasse sicher in kleinere zerlegen, Tests vorher/nachher.
+- [x] `ihk-lernzettel`: aus eigenem Code Lernzettel + Prüfungsfragen für AP1/AP2 machen.
+- [ ] Skills ausprobieren und Beschreibungen nachschärfen, wenn sie nicht von selbst anspringen.
+- [ ] Skill `java-test-schreiben` (JUnit-Stil dieses Projekts) überlegen.
+
+---
+
 ## Legende
 - [x] fertig
 - [ ] offen
