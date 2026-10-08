@@ -7,7 +7,14 @@ public enum RechnerModus {
     GRAPH("Graph"),
     KOMPLEX("Komplex"),
     MATRIX("Matrix"),
-    STATISTIK("Statistik");
+    STATISTIK("Statistik"),
+    GLEICHUNG("Gleichungen"),
+    BRUCH("Brüche"),
+    VEKTOR("Vektoren"),
+    FINANZ("Finanzen"),
+    NETZWERK("Netzwerk"),
+    LOGIK("Logik"),
+    DATUM("Datum/Zeit");
 
     private final String label;
 

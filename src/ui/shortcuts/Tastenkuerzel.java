@@ -67,16 +67,24 @@ public enum Tastenkuerzel
         return ziffer + " oder Num " + ziffer;
     }
 
+    /** Strg+1 … Strg+9 reichen nicht für alle Modi: Die ersten sieben bekommen eine Zahl, der Rest steckt unter „Weitere…“. */
+    public static final int MODI_MIT_STRG_ZAHL = 7;
+
+    public static boolean hatStrgZahl(RechnerModus modus)
+    {
+        return modus.ordinal() < MODI_MIT_STRG_ZAHL;
+    }
+
     /** Strg+1 … Strg+7 folgen der Reihenfolge in {@link RechnerModus}. */
     public static int modusNummer(RechnerModus modus)
     {
         return modus.ordinal() + 1;
     }
 
-    /** Die Einheiten hängen direkt hinter dem letzten Modus. */
+    /** Die Einheiten hängen direkt hinter dem letzten Modus mit Strg-Zahl. */
     public static int einheitenNummer()
     {
-        return RechnerModus.values().length + 1;
+        return MODI_MIT_STRG_ZAHL + 1;
     }
 
     public static String strgText(int nummer)

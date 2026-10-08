@@ -3,13 +3,16 @@ package modes.graph.ui;
 import common.state.WinkelModus;
 import modes.graph.formatting.GraphFormatter;
 import modes.graph.logic.GraphEvaluator;
+import modes.graph.model.Flaeche;
 import modes.graph.model.FunktionsDefinition;
 import modes.graph.model.GraphPunkt;
 import modes.graph.model.GraphState;
 import modes.graph.model.KurvendiskussionResult;
+import modes.graph.model.Tangente;
 import ui.animation.AnimationSupport;
 import ui.theme.AppTheme;
 
+import javax.imageio.ImageIO;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -25,8 +28,12 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
@@ -54,6 +61,10 @@ public class GraphCanvasPanel extends JPanel
     private Runnable viewportChangedListener = () -> {};
     private IntConsumer functionSelectionListener = index -> {};
     private Consumer<GraphPunkt> pointSelectionListener = punkt -> {};
+    private BiConsumer<Integer, Double> tangentenListener = (index, x) -> {};
+    private Runnable tangenteEntfernenListener = () -> {};
+    private Tangente tangente;
+    private Flaeche flaeche;
     private final Timer hoverTimer;
 
     public GraphCanvasPanel(GraphState state, GraphEvaluator evaluator)
@@ -111,6 +122,44 @@ public class GraphCanvasPanel extends JPanel
         repaint();
     }
 
+    /** Wird mit Funktionsindex und x-Stelle aufgerufen, wenn im Rechtsklick-Menü „Tangente hier“ gewählt wird. */
+    public void setTangentenListener(BiConsumer<Integer, Double> tangentenListener, Runnable tangenteEntfernenListener)
+    {
+        this.tangentenListener = tangentenListener;
+        this.tangenteEntfernenListener = tangenteEntfernenListener;
+    }
+
+    public void setTangente(Tangente tangente)
+    {
+        this.tangente = tangente;
+        repaint();
+    }
+
+    public void setFlaeche(Flaeche flaeche)
+    {
+        this.flaeche = flaeche;
+        repaint();
+    }
+
+    /** Rendert die Zeichenfläche in ihrer aktuellen Größe als PNG-Datei (ohne Hover-Hinweis). */
+    public void speichereAlsPng(File datei) throws IOException
+    {
+        if (getWidth() <= 0 || getHeight() <= 0)
+        {
+            throw new IllegalStateException("Die Zeichenfläche ist noch nicht sichtbar");
+        }
+
+        verbergeHover();
+        BufferedImage bild = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = bild.createGraphics();
+        paint(g);
+        g.dispose();
+        if (!ImageIO.write(bild, "png", datei))
+        {
+            throw new IOException("PNG konnte nicht geschrieben werden");
+        }
+    }
+
     public void pulseRefresh()
     {
         AnimationSupport.animate(220,
@@ -137,7 +186,9 @@ public class GraphCanvasPanel extends JPanel
                 winkelModus,
                 kurvendiskussionResult,
                 hoverSichtbar ? hoverPunkt : null,
-                refreshPulse));
+                refreshPulse,
+                tangente,
+                flaeche));
         g.dispose();
     }
 
@@ -202,20 +253,34 @@ public class GraphCanvasPanel extends JPanel
     private void zeigePunktMenu(MouseEvent event)
     {
         GraphPunkt punkt = findeAnalysePunkt(event.getPoint());
-        if (punkt == null)
+        List<JMenuItem> items = new ArrayList<>();
+        if (punkt != null)
         {
-            return;
+            items.add(menuPunkt("In Wertetabelle übernehmen", () -> pointSelectionListener.accept(punkt)));
+            items.add(menuPunkt("Punkt kopieren", () -> kopierePunkt(punkt)));
+        }
+
+        // Auf einem Analysepunkt genau dort, sonst an der geklickten x-Stelle der getroffenen (oder aktiven) Kurve.
+        double x = punkt != null ? punkt.getX() : koordinaten().zuWeltX(event.getX());
+        int getroffen = findeFunktion(event.getPoint());
+        int funktionIndex = getroffen >= 0 ? getroffen : state.getAktiveFunktionIndex();
+        items.add(menuPunkt("Tangente hier", () -> tangentenListener.accept(funktionIndex, x)));
+        if (tangente != null)
+        {
+            items.add(menuPunkt("Tangente entfernen", tangenteEntfernenListener));
         }
 
         JPopupMenu menu = new JPopupMenu();
-        JMenuItem uebernehmen = new JMenuItem("In Wertetabelle übernehmen");
-        uebernehmen.addActionListener(e -> pointSelectionListener.accept(punkt));
-        JMenuItem kopieren = new JMenuItem("Punkt kopieren");
-        kopieren.addActionListener(e -> kopierePunkt(punkt));
-        gestaltePopup(menu, uebernehmen, kopieren);
-        menu.add(uebernehmen);
-        menu.add(kopieren);
+        gestaltePopup(menu, items.toArray(JMenuItem[]::new));
+        items.forEach(menu::add);
         menu.show(this, event.getX(), event.getY());
+    }
+
+    private static JMenuItem menuPunkt(String text, Runnable aktion)
+    {
+        JMenuItem item = new JMenuItem(text);
+        item.addActionListener(e -> aktion.run());
+        return item;
     }
 
     private GraphPunkt findeAnalysePunkt(Point mausPunkt)

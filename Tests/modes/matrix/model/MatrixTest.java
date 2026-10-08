@@ -77,6 +77,20 @@ public class MatrixTest
     }
 
     @Test
+    void determinante_ShouldUseGauss_ForOneByOneAndLargerMatrices()
+    {
+        // Arrange
+        Matrix oneByOne = new Matrix(new double[][]{{-7}});
+        Matrix fourByFour = new Matrix(new double[][]{{0, 2, 1, 3}, {1, 1, 0, 2}, {4, 0, 1, 1}, {2, 3, 5, 0}});
+        Matrix singular = new Matrix(new double[][]{{1, 2, 3, 4}, {2, 4, 6, 8}, {0, 1, 0, 1}, {5, 0, 0, 1}});
+
+        // Act + Assert
+        assertEquals(-7, oneByOne.determinante(), 1e-10);
+        assertEquals(24, fourByFour.determinante(), 1e-9);
+        assertEquals(0, singular.determinante(), 1e-10);
+    }
+
+    @Test
     void transponiere_ShouldSwapRowsAndColumns()
     {
         Matrix matrix = new Matrix(new double[][]{{1, 2, 3}, {4, 5, 6}});

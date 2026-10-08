@@ -81,10 +81,17 @@ public class KeyboardShortcutBinder
 
         for (RechnerModus modus : RechnerModus.values())
         {
+            if (!Tastenkuerzel.hatStrgZahl(modus)) continue;
             bindStrgZahl(im, am, Tastenkuerzel.modusNummer(modus), "modus" + modus.name(), () -> modusWechsel.accept(modus));
         }
         bindStrgZahl(im, am, Tastenkuerzel.einheitenNummer(), "einheitenUmschalten", einheitenUmschalten);
         bindImmer(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), "tastenkuerzelHilfe", hilfeOeffnen);
+    }
+
+    /** Werkzeug-Tasten wie Strg+K: funktionieren in jedem Modus, auch wenn das Suchfeld den Fokus hat. */
+    public void bindeWerkzeugTaste(KeyStroke taste, String name, Runnable aktion)
+    {
+        bindImmer(rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW), rootPane.getActionMap(), taste, name, aktion);
     }
 
     private void bindStrgZahl(InputMap im, ActionMap am, int nummer, String name, Runnable action)

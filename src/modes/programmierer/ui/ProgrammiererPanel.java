@@ -7,6 +7,7 @@ import modes.programmierer.model.Wortbreite;
 import common.state.RechnerModus;
 import ui.shell.ModePanel;
 import ui.theme.AppTheme;
+import ui.theme.themes.DarkTheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -18,9 +19,11 @@ public class ProgrammiererPanel extends JPanel implements ModePanel
 {
     private final ProgrammiererLogik logik = new ProgrammiererLogik();
     private final ProgrammiererFormatter formatter = new ProgrammiererFormatter();
-    private final ProgrammiererDisplayPanel displayPanel = new ProgrammiererDisplayPanel();
+    private final ProgrammiererDisplayPanel displayPanel = new ProgrammiererDisplayPanel(this::oeffneIeeeDialog);
+    private final ProgrammiererBitLeiste bitLeiste = new ProgrammiererBitLeiste(this::kippeBit);
     private final ProgrammiererOptionsPanel optionsPanel = new ProgrammiererOptionsPanel(this::setBasis, this::setWortbreite);
     private final ProgrammiererTastenPanel tastenPanel = new ProgrammiererTastenPanel(this::handleButton);
+    private AppTheme theme = new DarkTheme();
 
     public ProgrammiererPanel()
     {
@@ -30,7 +33,12 @@ public class ProgrammiererPanel extends JPanel implements ModePanel
 
         optionsPanel.setTastenPanel(tastenPanel);
 
-        add(displayPanel, BorderLayout.NORTH);
+        JPanel oben = new JPanel(new BorderLayout());
+        oben.setOpaque(false);
+        oben.add(displayPanel, BorderLayout.CENTER);
+        oben.add(bitLeiste, BorderLayout.SOUTH);
+
+        add(oben, BorderLayout.NORTH);
         add(optionsPanel, BorderLayout.CENTER);
         setupKeyboard();
 
@@ -64,6 +72,7 @@ public class ProgrammiererPanel extends JPanel implements ModePanel
             case "XOR" -> logik.xor();
             case "+" -> logik.plus();
             case "-" -> logik.minus();
+            case "×" -> logik.mal();
             case "=" -> logik.berechne();
             case "±" -> logik.vorzeichenWechseln();
             case "SIGNED", "UNSIGNED" -> logik.toggleUnsigned();
@@ -98,6 +107,7 @@ public class ProgrammiererPanel extends JPanel implements ModePanel
         bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, 0), "plus", "+");
         bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, 0), "minusPad", "-");
         bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "minus", "-");
+        bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_MULTIPLY, 0), "malPad", "×");
         bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_1, InputEvent.SHIFT_DOWN_MASK), "notShortcut", "NOT");
         bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_7, InputEvent.SHIFT_DOWN_MASK), "andShortcut", "AND");
         bindKey(inputMap, actionMap, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, InputEvent.ALT_GRAPH_DOWN_MASK), "orShortcut", "OR");
@@ -129,11 +139,27 @@ public class ProgrammiererPanel extends JPanel implements ModePanel
         });
     }
 
+    private void kippeBit(int bit)
+    {
+        logik.kippeBit(bit);
+        refreshAnzeige();
+    }
+
+    private void oeffneIeeeDialog()
+    {
+        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "IEEE-754-Ansicht");
+        dialog.setContentPane(new ProgrammiererIeeePanel(logik.getAnzeige(Basis.DEC), theme));
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
     private void refreshAnzeige()
     {
         displayPanel.refresh(logik, formatter);
         optionsPanel.refresh(logik.getBasis(), logik.getWortbreite());
         tastenPanel.refresh(logik.getBasis(), logik.isUnsigned());
+        bitLeiste.refresh(logik);
     }
 
     public void applyTheme(AppTheme theme)
@@ -142,6 +168,8 @@ public class ProgrammiererPanel extends JPanel implements ModePanel
         displayPanel.applyTheme(theme);
         optionsPanel.applyTheme(theme);
         tastenPanel.applyTheme(theme);
+        bitLeiste.applyTheme(theme, logik);
+        this.theme = theme;
 
         revalidate();
         repaint();

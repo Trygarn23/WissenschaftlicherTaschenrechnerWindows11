@@ -38,20 +38,33 @@ public class SettingsPersistence
         }
 
         Properties properties = geladen.get();
+        // Version 1 (ohne Eintrag) kannte die neuen Felder noch nicht – sie bekommen einfach ihre Standardwerte.
+        // Eine neuere Version von einer späteren App wird trotzdem gelesen, soweit die Felder bekannt sind.
+        settings.setGeleseneDateiVersion(leseInt(properties, "dateiVersion", 1));
         settings.setThemeType(leseEnum(properties, "theme", ThemeType.class, settings.getThemeType()));
         settings.setStartModus(leseEnum(properties, "startModus", RechnerModus.class, settings.getStartModus()));
         settings.setWinkelModus(leseEnum(properties, "winkelModus", WinkelModus.class, settings.getWinkelModus()));
-        settings.setHistoryEnabled(Boolean.parseBoolean(properties.getProperty("historyEnabled", Boolean.toString(settings.isHistoryEnabled()))));
+        settings.setHistoryEnabled(leseBoolean(properties, "historyEnabled", settings.isHistoryEnabled()));
         settings.setNachkommastellen(leseInt(properties, "nachkommastellen", settings.getNachkommastellen()));
         settings.setZahlenFormatModus(leseEnum(properties, "zahlenFormat", ZahlenFormatModus.class, settings.getZahlenFormatModus()));
         settings.setFensterBreite(leseInt(properties, "fensterBreite", settings.getFensterBreite()));
         settings.setFensterHoehe(leseInt(properties, "fensterHoehe", settings.getFensterHoehe()));
+        settings.setWenigerBewegung(leseBoolean(properties, "wenigerBewegung", settings.isWenigerBewegung()));
+        settings.setPruefungsModus(leseBoolean(properties, "pruefungsModus", settings.isPruefungsModus()));
+        settings.setThemeVomSystem(leseBoolean(properties, "themeVomSystem", settings.isThemeVomSystem()));
         return settings;
+    }
+
+    private static boolean leseBoolean(Properties properties, String key, boolean standard)
+    {
+        String wert = properties.getProperty(key);
+        return wert == null ? standard : Boolean.parseBoolean(wert.trim());
     }
 
     public void speichere(AppSettings settings)
     {
         Properties properties = new Properties();
+        properties.setProperty("dateiVersion", Integer.toString(AppSettings.DATEI_VERSION));
         properties.setProperty("theme", settings.getThemeType().name());
         properties.setProperty("startModus", settings.getStartModus().name());
         properties.setProperty("winkelModus", settings.getWinkelModus().name());
@@ -60,6 +73,9 @@ public class SettingsPersistence
         properties.setProperty("zahlenFormat", settings.getZahlenFormatModus().name());
         properties.setProperty("fensterBreite", Integer.toString(settings.getFensterBreite()));
         properties.setProperty("fensterHoehe", Integer.toString(settings.getFensterHoehe()));
+        properties.setProperty("wenigerBewegung", Boolean.toString(settings.isWenigerBewegung()));
+        properties.setProperty("pruefungsModus", Boolean.toString(settings.isPruefungsModus()));
+        properties.setProperty("themeVomSystem", Boolean.toString(settings.isThemeVomSystem()));
 
         DateiPersistenz.speichereProperties(datei, properties, "Wissenschaftlicher Taschenrechner Einstellungen");
     }

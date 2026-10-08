@@ -47,6 +47,16 @@ class HistoryFilterTest
         assertEquals(0, HistoryFilter.filter(entries, "sin", "Suche...", RechnerModus.STANDARD, false).size());
     }
 
+    @Test
+    void zusammenfassen_ShouldKeepEachCalculationOnceAtItsNewestPosition()
+    {
+        VerlaufEintrag alt = new VerlaufEintrag("1+1", "2", RechnerModus.STANDARD, ZEITPUNKT, false);
+        VerlaufEintrag anderes = new VerlaufEintrag("2+2", "4", RechnerModus.STANDARD, ZEITPUNKT.plusMinutes(1), false);
+        VerlaufEintrag neu = new VerlaufEintrag("1+1", "2", RechnerModus.STANDARD, ZEITPUNKT.plusMinutes(2), true);
+
+        assertEquals(List.of(anderes, neu), HistoryFilter.zusammenfassen(List.of(alt, anderes, neu)));
+    }
+
     private List<VerlaufEintrag> entries()
     {
         return List.of(

@@ -13,6 +13,13 @@ import java.util.Set;
 
 final class GraphFunktionsResolver
 {
+    private Map<String, Double> parameter = Map.of();
+
+    void setParameter(Map<String, Double> parameter)
+    {
+        this.parameter = parameter;
+    }
+
     double auswerten(
             String ausdruck,
             double x,
@@ -36,7 +43,7 @@ final class GraphFunktionsResolver
             Set<String> aufrufKette)
     {
         String aufgeloest = ersetzeFunktionsVerweise(ausdruck, x, winkelModus, definitionen, aufrufKette);
-        return AusdruckParser.auswerten(aufgeloest, 0.0, winkelModus, Map.of("x", x));
+        return AusdruckParser.auswerten(aufgeloest, 0.0, winkelModus, GraphEvaluator.variablen(parameter, x));
     }
 
     private String ersetzeFunktionsVerweise(

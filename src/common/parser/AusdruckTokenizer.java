@@ -3,25 +3,18 @@ package common.parser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+import java.util.regex.Pattern;
 
 public final class AusdruckTokenizer
 {
-    static final String UNARY_MINUS = "u-";
     static final String OPEN = "(";
     static final String CLOSE = ")";
     static final String MUL = "*";
+    /** Trennt Funktionsargumente, z. B. nCr(5;2) – das Komma ist schon Dezimaltrennzeichen. */
+    static final String SEMIKOLON = ";";
 
-    private static final Set<String> OPERATORS = Set.of("+", "-", "*", "/", "%", "^", UNARY_MINUS);
-
-    static final Set<String> FUNCTIONS = Set.of(
-            "sin", "cos", "tan",
-            "asin", "acos", "atan",
-            "sinh", "cosh", "tanh",
-            "ln", "log", "sqrt", "abs", "exp",
-            "floor", "ceil", "round",
-            "rand"
-    );
+    private static final Pattern ZAHL = Pattern.compile("-?(?:[0-9]+(?:[.,][0-9]+)?|[.,][0-9]+)(?:[eE][+-]?[0-9]+)?");
+    private static final Pattern NAME = Pattern.compile("[a-zA-Z]+");
 
     private AusdruckTokenizer()
     {
@@ -31,149 +24,147 @@ public final class AusdruckTokenizer
     {
         if (expr == null)
         {
-            throw parserFehler(ParserFehler.SYNTAX, "expr is null");
+            throw new AusdruckParserException(ParserFehler.SYNTAX, "Kein Ausdruck vorhanden.");
         }
 
-        return tokenize(ensureTrailingZero(normalize(expr)));
+        // Normalisieren, dabei für jedes Zeichen die Stelle im Original merken.
+        StringBuilder text = new StringBuilder(expr.length() + 1);
+        int[] original = new int[expr.length() + 1];
+        for (int i = 0; i < expr.length(); i++)
+        {
+            char c = expr.charAt(i);
+            if (Character.isWhitespace(c)) continue;
+            original[text.length()] = i;
+            text.append(normalisiere(c));
+        }
+
+        if (!text.isEmpty())
+        {
+            char letztes = text.charAt(text.length() - 1);
+            if (letztes == ',' || letztes == '.')
+            {
+                original[text.length()] = expr.length();
+                text.append('0');
+            }
+        }
+
+        return tokenize(text.toString(), original);
     }
 
-    static boolean isFunction(String text)
+    static boolean istZahl(String text)
     {
-        return FUNCTIONS.contains(text);
+        return text != null && ZAHL.matcher(text).matches();
     }
 
-    private static String normalize(String expr)
+    static boolean istName(String text)
     {
-        return expr
-                .replace('\u00d7', '*')
-                .replace('\u00f7', '/')
-                .replace('\u2212', '-')
-                .replace('\u2013', '-')
-                .replace('\u2014', '-')
-                .replaceAll("\\s+", "");
+        return text != null && NAME.matcher(text).matches();
     }
 
-    private static String ensureTrailingZero(String expr)
+    private static char normalisiere(char c)
     {
-        if (expr.isEmpty()) return expr;
-        char last = expr.charAt(expr.length() - 1);
-        if (last == ',' || last == '.') return expr + "0";
-        return expr;
+        return switch (c)
+        {
+            case '×' -> '*';
+            case '÷' -> '/';
+            case '−', '–', '—' -> '-';
+            default -> c;
+        };
     }
 
-    private static List<AusdruckToken> tokenize(String expr)
+    private static List<AusdruckToken> tokenize(String expr, int[] original)
     {
         List<AusdruckToken> tokens = new ArrayList<>();
-        StringBuilder number = new StringBuilder();
-        StringBuilder ident = new StringBuilder();
         String prev = null;
 
         for (int i = 0; i < expr.length(); i++)
         {
             char c = expr.charAt(i);
+            int start = i;
 
             if (isIdentifierChar(c))
             {
-                String flushedNumber = flush(number, tokens);
-                if (flushedNumber != null) prev = flushedNumber;
+                if (isValue(prev)) tokens.add(new AusdruckToken(MUL, original[start]));
 
-                if (isValue(prev)) tokens.add(new AusdruckToken(MUL));
-
-                ident.append(c);
                 while (i + 1 < expr.length() && isIdentifierChar(expr.charAt(i + 1)))
                 {
-                    ident.append(expr.charAt(++i));
+                    i++;
                 }
 
-                String id = ident.toString().toLowerCase(Locale.ROOT).replace("\u03c0", "pi");
-                tokens.add(new AusdruckToken(id));
-                ident.setLength(0);
+                String id = expr.substring(start, i + 1).toLowerCase(Locale.ROOT).replace("π", "pi");
+                tokens.add(new AusdruckToken(id, original[start]));
                 prev = id;
                 continue;
             }
 
-            boolean unaryNumber =
-                    c == '-' && number.isEmpty() &&
-                            (prev == null || isOperator(prev) || OPEN.equals(prev)) &&
-                            i + 1 < expr.length() &&
-                            (Character.isDigit(expr.charAt(i + 1)) || expr.charAt(i + 1) == ',');
+            boolean unaryNumber = c == '-' && erwartetWert(prev)
+                    && i + 1 < expr.length()
+                    && (Character.isDigit(expr.charAt(i + 1)) || expr.charAt(i + 1) == ',');
 
             if (Character.isDigit(c) || c == ',' || c == '.' || unaryNumber)
             {
-                String flushedIdent = flush(ident, tokens);
-                if (flushedIdent != null) prev = flushedIdent;
+                if (isValue(prev)) tokens.add(new AusdruckToken(MUL, original[start]));
 
-                if (number.isEmpty() && isValue(prev)) tokens.add(new AusdruckToken(MUL));
-
-                number.append(c);
-                while (i + 1 < expr.length() && istTeilVonZahl(expr, i + 1, number))
+                while (i + 1 < expr.length() && istTeilVonZahl(expr, start, i + 1))
                 {
-                    number.append(expr.charAt(++i));
+                    i++;
                 }
 
-                prev = null;
+                String zahl = expr.substring(start, i + 1);
+                if (c == '-' && i + 1 < expr.length() && expr.charAt(i + 1) == '^')
+                {
+                    // -2^2 = -(2^2): Vorzeichen als unäres Minus, damit ^ stärker bindet.
+                    tokens.add(new AusdruckToken(OperatorRegistry.UNAERES_MINUS, original[start]));
+                    zahl = zahl.substring(1);
+                    start++;
+                }
+                tokens.add(new AusdruckToken(zahl, original[start]));
+                prev = zahl;
                 continue;
             }
 
-            String flushedNumber = flush(number, tokens);
-            if (flushedNumber != null) prev = flushedNumber;
-
-            String flushedIdent = flush(ident, tokens);
-            if (flushedIdent != null) prev = flushedIdent;
-
             String t = String.valueOf(c);
 
-            if (OPEN.equals(t) && isValue(prev) && !isFunction(prev)) tokens.add(new AusdruckToken(MUL));
-
-            if ("-".equals(t) &&
-                    (prev == null || isOperator(prev) || OPEN.equals(prev)) &&
-                    i + 1 < expr.length() &&
-                    !Character.isDigit(expr.charAt(i + 1)))
+            if (OPEN.equals(t) && isValue(prev) && !FunktionsRegistry.istFunktion(prev))
             {
-                t = UNARY_MINUS;
+                tokens.add(new AusdruckToken(MUL, original[start]));
             }
 
-            if (isOperator(t) || OPEN.equals(t) || CLOSE.equals(t))
+            if ("-".equals(t) && erwartetWert(prev) && i + 1 < expr.length() && !Character.isDigit(expr.charAt(i + 1)))
             {
-                tokens.add(new AusdruckToken(t));
+                t = OperatorRegistry.UNAERES_MINUS;
+            }
+
+            if (OperatorRegistry.istOperator(t) || OPEN.equals(t) || CLOSE.equals(t) || SEMIKOLON.equals(t))
+            {
+                tokens.add(new AusdruckToken(t, original[start]));
                 prev = t;
-            } else
+            }
+            else
             {
-                throw parserFehler(ParserFehler.SYNTAX, "Unknown token: " + t);
+                throw new AusdruckParserException(ParserFehler.SYNTAX, "Unerwartetes Zeichen „" + t + "“", original[start]);
             }
         }
 
-        flush(number, tokens);
-        flush(ident, tokens);
         return tokens;
     }
 
-    private static boolean isOperator(String text)
+    private static boolean erwartetWert(String prev)
     {
-        return OPERATORS.contains(text);
-    }
-
-    private static boolean isIdentifier(String text)
-    {
-        return text != null && text.matches("[a-zA-Z]+");
+        return prev == null || OperatorRegistry.istOperator(prev) || OPEN.equals(prev) || SEMIKOLON.equals(prev);
     }
 
     private static boolean isIdentifierChar(char c)
     {
-        return Character.isLetter(c) || c == '\u03c0';
+        return Character.isLetter(c) || c == 'π';
     }
 
     private static boolean isValue(String text)
     {
-        return text != null && (isNumber(text) || isIdentifier(text) || CLOSE.equals(text));
+        return istZahl(text) || istName(text) || CLOSE.equals(text);
     }
 
-    private static boolean isNumber(String text)
-    {
-        return text != null && text.matches("-?(?:[0-9]+(?:[.,][0-9]+)?|[.,][0-9]+)(?:[eE][+-]?[0-9]+)?");
-    }
-
-    private static boolean istTeilVonZahl(String expr, int index, StringBuilder number)
+    private static boolean istTeilVonZahl(String expr, int start, int index)
     {
         char c = expr.charAt(index);
 
@@ -182,7 +173,7 @@ public final class AusdruckTokenizer
             return true;
         }
 
-        String bisher = number.toString();
+        String bisher = expr.substring(start, index);
 
         if ((c == 'e' || c == 'E') && !bisher.contains("e") && !bisher.contains("E"))
         {
@@ -195,23 +186,6 @@ public final class AusdruckTokenizer
             return exponentStart < expr.length() && Character.isDigit(expr.charAt(exponentStart));
         }
 
-        return (c == '+' || c == '-')
-                && !bisher.isEmpty()
-                && (bisher.endsWith("e") || bisher.endsWith("E"));
-    }
-
-    private static String flush(StringBuilder sb, List<AusdruckToken> out)
-    {
-        if (sb.isEmpty()) return null;
-
-        String token = sb.toString();
-        out.add(new AusdruckToken(token));
-        sb.setLength(0);
-        return token;
-    }
-
-    private static AusdruckParserException parserFehler(ParserFehler fehler, String message)
-    {
-        return new AusdruckParserException(fehler, message);
+        return (c == '+' || c == '-') && (bisher.endsWith("e") || bisher.endsWith("E"));
     }
 }

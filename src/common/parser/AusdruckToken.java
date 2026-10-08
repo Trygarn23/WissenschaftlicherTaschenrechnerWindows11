@@ -1,6 +1,9 @@
 package common.parser;
 
-public record AusdruckToken(String text)
+/**
+ * @param position 0-basierte Stelle im Original-Ausdruck, -1 wenn unbekannt.
+ */
+public record AusdruckToken(String text, int position)
 {
     public AusdruckToken
     {
@@ -8,5 +11,10 @@ public record AusdruckToken(String text)
         {
             throw new IllegalArgumentException("Token darf nicht leer sein.");
         }
+    }
+
+    public AusdruckToken(String text)
+    {
+        this(text, -1);
     }
 }

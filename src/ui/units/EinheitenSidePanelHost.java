@@ -1,5 +1,6 @@
 package ui.units;
 
+import ui.animation.AnimationSupport;
 import ui.theme.AppTheme;
 
 import javax.swing.JPanel;
@@ -42,6 +43,13 @@ public class EinheitenSidePanelHost extends JPanel
     {
         this.geoeffnet = geoeffnet;
         targetWidth = geoeffnet ? OPEN_WIDTH : 0;
+        if (AnimationSupport.isWenigerBewegung())
+        {
+            animationTimer.stop();
+            currentWidth = targetWidth;
+            uebernehmeBreite();
+            return;
+        }
         if (!animationTimer.isRunning())
         {
             animationTimer.start();
@@ -80,6 +88,11 @@ public class EinheitenSidePanelHost extends JPanel
             currentWidth = Math.max(targetWidth, currentWidth - STEP);
         }
 
+        uebernehmeBreite();
+    }
+
+    private void uebernehmeBreite()
+    {
         Dimension size = new Dimension(currentWidth, 1);
         setPreferredSize(size);
         setMinimumSize(size);

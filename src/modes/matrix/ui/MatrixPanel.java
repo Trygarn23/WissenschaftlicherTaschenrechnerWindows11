@@ -1,9 +1,13 @@
 package modes.matrix.ui;
 
 import common.formatting.ZahlenEingabe;
+import modes.matrix.formatting.MatrixCsv;
 import modes.matrix.formatting.MatrixFormatter;
 import modes.matrix.logic.MatrixRechnerService;
+import modes.matrix.model.InverseErgebnis;
+import modes.matrix.model.LgsLoesung;
 import modes.matrix.model.Matrix;
+import modes.matrix.model.RechenSchritt;
 import common.state.RechnerModus;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
@@ -13,33 +17,30 @@ import ui.shell.StatusAnzeige;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MatrixPanel extends JPanel implements ModePanel
 {
-    private static final Integer[] GROESSEN = {1, 2, 3};
-
     private final MatrixRechnerService service = new MatrixRechnerService();
     private final MatrixFormatter formatter = new MatrixFormatter();
 
-    private final JComboBox<Integer> aZeilenBox = new JComboBox<>(GROESSEN);
-    private final JComboBox<Integer> aSpaltenBox = new JComboBox<>(GROESSEN);
-    private final JComboBox<Integer> bZeilenBox = new JComboBox<>(GROESSEN);
-    private final JComboBox<Integer> bSpaltenBox = new JComboBox<>(GROESSEN);
+    private final MatrixEingabeGitter matrixA = new MatrixEingabeGitter("Matrix A", "A");
+    private final MatrixEingabeGitter matrixB = new MatrixEingabeGitter("Matrix B", "B");
     private final JTextField skalarField = new JTextField("2");
+    private final JCheckBox schritteBox = new JCheckBox("Rechenschritte zeigen");
     private final JTextArea resultArea = new JTextArea("Bereit");
     private final JLabel statusLabel = new JLabel("Matrixmodus bereit");
     private final StatusAnzeige statusAnzeige = new StatusAnzeige(statusLabel, resultArea);
-    private final JPanel matrixAHost = new JPanel(new BorderLayout());
-    private final JPanel matrixBHost = new JPanel(new BorderLayout());
-    private final List<JTextField> fields = new ArrayList<>();
     private final List<JButton> buttons = new ArrayList<>();
-    private final List<JComboBox<Integer>> sizeBoxes = List.of(aZeilenBox, aSpaltenBox, bZeilenBox, bSpaltenBox);
 
-    private JTextField[][] aFields = new JTextField[0][0];
-    private JTextField[][] bFields = new JTextField[0][0];
     private AppTheme theme;
 
     public MatrixPanel()
@@ -47,14 +48,8 @@ public class MatrixPanel extends JPanel implements ModePanel
         setLayout(new BorderLayout(14, 0));
         setOpaque(true);
 
-        aZeilenBox.setSelectedItem(2);
-        aSpaltenBox.setSelectedItem(2);
-        bZeilenBox.setSelectedItem(2);
-        bSpaltenBox.setSelectedItem(2);
-
         add(buildInputArea(), BorderLayout.CENTER);
         add(buildResultArea(), BorderLayout.EAST);
-        rebuildMatrices();
     }
 
     @Override
@@ -72,19 +67,16 @@ public class MatrixPanel extends JPanel implements ModePanel
         resultArea.setForeground(theme.displayForeground());
         resultArea.setCaretColor(theme.displayForeground());
         statusAnzeige.setTheme(theme);
+        matrixA.applyTheme(theme);
+        matrixB.applyTheme(theme);
 
-        for (JTextField field : fields)
-        {
-            styleField(field);
-        }
+        skalarField.setFont(AppFonts.normal(15));
+        ModernButtonStyler.styleInput(skalarField, theme);
+        skalarField.setCaretColor(theme.displayForeground());
 
-        for (JComboBox<Integer> box : sizeBoxes)
-        {
-            box.setFont(AppFonts.normal(13));
-            box.setBackground(theme.inputBackground());
-            box.setForeground(theme.displayForeground());
-            box.setFocusable(false);
-        }
+        schritteBox.setOpaque(false);
+        schritteBox.setFont(AppFonts.normal(13));
+        schritteBox.setForeground(theme.displayForeground());
 
         for (JButton button : buttons)
         {
@@ -99,58 +91,40 @@ public class MatrixPanel extends JPanel implements ModePanel
 
         JPanel matrices = new JPanel(new GridLayout(1, 2, 12, 0));
         matrices.setOpaque(false);
-        matrices.add(buildMatrixSection("Matrix A", aZeilenBox, aSpaltenBox, matrixAHost));
-        matrices.add(buildMatrixSection("Matrix B", bZeilenBox, bSpaltenBox, matrixBHost));
+        matrices.add(matrixA);
+        matrices.add(matrixB);
 
         JPanel controls = new JPanel(new GridLayout(0, 4, 8, 8));
         controls.setOpaque(false);
-        controls.add(createButton("A + B", () -> showMatrix(service.addiere(readA(), readB()), "Addition")));
-        controls.add(createButton("A - B", () -> showMatrix(service.subtrahiere(readA(), readB()), "Subtraktion")));
-        controls.add(createButton("A × B", () -> showMatrix(service.multipliziere(readA(), readB()), "Multiplikation")));
-        controls.add(createButton("k × A", () -> showMatrix(service.skalarMultiplizieren(readA(), parse(skalarField)), "Skalarmultiplikation")));
-        controls.add(createButton("A^T", () -> showMatrix(service.transponiere(readA()), "Transponieren A")));
-        controls.add(createButton("B^T", () -> showMatrix(service.transponiere(readB()), "Transponieren B")));
-        controls.add(createButton("spur A", () -> showScalar(service.spur(readA()), "Spur A")));
-        controls.add(createButton("spur B", () -> showScalar(service.spur(readB()), "Spur B")));
-        controls.add(createButton("rang A", () -> showScalar(service.rang(readA()), "Rang A")));
-        controls.add(createButton("rang B", () -> showScalar(service.rang(readB()), "Rang B")));
-        controls.add(createButton("det A", () -> showScalar(service.determinante(readA()), "Determinante A")));
-        controls.add(createButton("det B", () -> showScalar(service.determinante(readB()), "Determinante B")));
+        controls.add(createButton("A + B", () -> showMatrix(service.addiere(matrixA.lese(), matrixB.lese()), "Addition")));
+        controls.add(createButton("A - B", () -> showMatrix(service.subtrahiere(matrixA.lese(), matrixB.lese()), "Subtraktion")));
+        controls.add(createButton("A × B", () -> showMatrix(service.multipliziere(matrixA.lese(), matrixB.lese()), "Multiplikation")));
+        controls.add(createButton("k × A", () -> showMatrix(service.skalarMultiplizieren(matrixA.lese(), ZahlenEingabe.lese(skalarField.getText())), "Skalarmultiplikation")));
+        controls.add(createButton("A^T", () -> showMatrix(service.transponiere(matrixA.lese()), "Transponieren A")));
+        controls.add(createButton("B^T", () -> showMatrix(service.transponiere(matrixB.lese()), "Transponieren B")));
+        controls.add(createButton("spur A", () -> showScalar(service.spur(matrixA.lese()), "Spur A")));
+        controls.add(createButton("spur B", () -> showScalar(service.spur(matrixB.lese()), "Spur B")));
+        controls.add(createButton("rang A", () -> showScalar(service.rang(matrixA.lese()), "Rang A")));
+        controls.add(createButton("rang B", () -> showScalar(service.rang(matrixB.lese()), "Rang B")));
+        controls.add(createButton("det A", () -> showScalar(service.determinante(matrixA.lese()), "Determinante A")));
+        controls.add(createButton("det B", () -> showScalar(service.determinante(matrixB.lese()), "Determinante B")));
+        controls.add(createButton("A⁻¹", () -> showInverse(matrixA, "Inverse A")));
+        controls.add(createButton("B⁻¹", () -> showInverse(matrixB, "Inverse B")));
+        controls.add(createButton("Ax = b", this::showGleichungssystem));
+        controls.add(schritteBox);
+        controls.add(createButton("A → CSV", () -> exportCsv(matrixA, "matrix-a.csv")));
+        controls.add(createButton("CSV → A", () -> importCsv(matrixA, "A")));
+        controls.add(createButton("B → CSV", () -> exportCsv(matrixB, "matrix-b.csv")));
+        controls.add(createButton("CSV → B", () -> importCsv(matrixB, "B")));
         controls.add(wrapScalarInput());
         controls.add(createButton("Leeren", this::clearMatrices));
+
+        schritteBox.setFocusable(false);
+        schritteBox.setToolTipText("Zeigt bei Inverse und Ax = b jeden Gauß-Jordan-Schritt");
 
         panel.add(matrices, BorderLayout.CENTER);
         panel.add(controls, BorderLayout.SOUTH);
         return panel;
-    }
-
-    private JPanel buildMatrixSection(String title, JComboBox<Integer> zeilenBox, JComboBox<Integer> spaltenBox, JPanel matrixHost)
-    {
-        JPanel section = new JPanel(new BorderLayout(0, 10));
-        section.setOpaque(false);
-
-        JLabel label = new JLabel(title);
-        label.setFont(AppFonts.fett(18));
-
-        JPanel sizePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        sizePanel.setOpaque(false);
-        sizePanel.add(new JLabel("Zeilen"));
-        sizePanel.add(zeilenBox);
-        sizePanel.add(new JLabel("Spalten"));
-        sizePanel.add(spaltenBox);
-
-        zeilenBox.addActionListener(e -> rebuildMatrices());
-        spaltenBox.addActionListener(e -> rebuildMatrices());
-
-        JPanel top = new JPanel(new BorderLayout(0, 6));
-        top.setOpaque(false);
-        top.add(label, BorderLayout.NORTH);
-        top.add(sizePanel, BorderLayout.CENTER);
-
-        matrixHost.setOpaque(false);
-        section.add(top, BorderLayout.NORTH);
-        section.add(matrixHost, BorderLayout.CENTER);
-        return section;
     }
 
     private JPanel buildResultArea()
@@ -178,10 +152,8 @@ public class MatrixPanel extends JPanel implements ModePanel
     {
         JPanel panel = new JPanel(new BorderLayout(6, 0));
         panel.setOpaque(false);
-        JLabel label = new JLabel("k");
-        panel.add(label, BorderLayout.WEST);
+        panel.add(new JLabel("k"), BorderLayout.WEST);
         panel.add(skalarField, BorderLayout.CENTER);
-        fields.add(skalarField);
         return panel;
     }
 
@@ -192,77 +164,6 @@ public class MatrixPanel extends JPanel implements ModePanel
         button.addActionListener(e -> runSafely(action));
         buttons.add(button);
         return button;
-    }
-
-    private void rebuildMatrices()
-    {
-        fields.clear();
-        fields.add(skalarField);
-        aFields = rebuildMatrix(matrixAHost, selected(aZeilenBox), selected(aSpaltenBox), "A");
-        bFields = rebuildMatrix(matrixBHost, selected(bZeilenBox), selected(bSpaltenBox), "B");
-        if (theme != null)
-        {
-            applyTheme(theme);
-        }
-        revalidate();
-        repaint();
-    }
-
-    private JTextField[][] rebuildMatrix(JPanel host, int zeilen, int spalten, String prefix)
-    {
-        host.removeAll();
-        JPanel grid = new JPanel(new GridLayout(zeilen, spalten, 6, 6));
-        grid.setOpaque(false);
-
-        JTextField[][] result = new JTextField[zeilen][spalten];
-        for (int z = 0; z < zeilen; z++)
-        {
-            for (int s = 0; s < spalten; s++)
-            {
-                JTextField field = new JTextField("0");
-                field.setName(prefix + (z + 1) + (s + 1));
-                fields.add(field);
-                result[z][s] = field;
-                grid.add(field);
-            }
-        }
-
-        host.add(grid, BorderLayout.NORTH);
-        return result;
-    }
-
-    private Matrix readA()
-    {
-        return readMatrix(aFields);
-    }
-
-    private Matrix readB()
-    {
-        return readMatrix(bFields);
-    }
-
-    private Matrix readMatrix(JTextField[][] input)
-    {
-        double[][] values = new double[input.length][input[0].length];
-        for (int z = 0; z < input.length; z++)
-        {
-            for (int s = 0; s < input[z].length; s++)
-            {
-                values[z][s] = parse(input[z][s]);
-            }
-        }
-        return new Matrix(values);
-    }
-
-    private double parse(JTextField field)
-    {
-        return ZahlenEingabe.lese(field.getText());
-    }
-
-    private int selected(JComboBox<Integer> box)
-    {
-        Object selected = box.getSelectedItem();
-        return selected instanceof Integer value ? value : 2;
     }
 
     private void runSafely(Runnable action)
@@ -290,34 +191,100 @@ public class MatrixPanel extends JPanel implements ModePanel
         statusAnzeige.zeigeErfolg(status + " berechnet");
     }
 
+    private void showInverse(MatrixEingabeGitter gitter, String status)
+    {
+        InverseErgebnis ergebnis = service.invertiere(gitter.lese());
+        showMitSchritten(formatter.formatiere(ergebnis.inverse()), ergebnis.schritte());
+        statusAnzeige.zeigeErfolg(status + " berechnet");
+    }
+
+    private void showGleichungssystem()
+    {
+        LgsLoesung loesung = service.loese(matrixA.lese(), matrixB.lese());
+        String text = loesung.art() == LgsLoesung.Art.EINDEUTIG
+                ? formatter.formatiereLoesung(loesung.loesung())
+                : "Stufenform (A|b):" + System.lineSeparator() + formatter.formatiere(loesung.stufenform());
+        showMitSchritten(text, loesung.schritte());
+        statusAnzeige.zeigeErfolg(loesung.meldung());
+    }
+
+    private void showMitSchritten(String ergebnis, List<RechenSchritt> schritte)
+    {
+        String text = ergebnis;
+        if (schritteBox.isSelected() && !schritte.isEmpty())
+        {
+            text += System.lineSeparator() + System.lineSeparator() + formatter.formatiereSchritte(schritte);
+        }
+        resultArea.setText(text);
+        resultArea.setCaretPosition(0);
+    }
+
+    private void exportCsv(MatrixEingabeGitter gitter, String vorschlag)
+    {
+        String csv = MatrixCsv.schreibe(gitter.lese());
+        JFileChooser chooser = csvChooser("Matrix als CSV exportieren");
+        chooser.setSelectedFile(new File(vorschlag));
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+        {
+            return;
+        }
+
+        Path file = chooser.getSelectedFile().toPath();
+        if (!file.getFileName().toString().toLowerCase().endsWith(".csv"))
+        {
+            file = file.resolveSibling(file.getFileName() + ".csv");
+        }
+
+        try
+        {
+            // BOM, damit Excel UTF-8 erkennt (wie beim Verlauf-Export).
+            Files.writeString(file, "﻿" + csv, StandardCharsets.UTF_8);
+            statusAnzeige.zeigeErfolg("Gespeichert: " + file.getFileName());
+        }
+        catch (IOException e)
+        {
+            statusAnzeige.zeigeFehler("Datei konnte nicht gespeichert werden.");
+        }
+    }
+
+    private void importCsv(MatrixEingabeGitter gitter, String name)
+    {
+        JFileChooser chooser = csvChooser("CSV in Matrix " + name + " laden");
+        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
+        {
+            return;
+        }
+
+        try
+        {
+            gitter.setze(MatrixCsv.lese(Files.readString(chooser.getSelectedFile().toPath(), StandardCharsets.UTF_8)));
+            statusAnzeige.zeigeErfolg("Matrix " + name + " geladen");
+        }
+        catch (IOException e)
+        {
+            statusAnzeige.zeigeFehler("Datei konnte nicht gelesen werden (UTF-8 erwartet).");
+        }
+    }
+
+    private JFileChooser csvChooser(String titel)
+    {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(titel);
+        chooser.setFileFilter(new FileNameExtensionFilter("CSV-Datei", "csv"));
+        return chooser;
+    }
+
     private void clearMatrices()
     {
-        for (JTextField field : fields)
-        {
-            field.setText(field == skalarField ? "2" : "0");
-        }
+        matrixA.leeren();
+        matrixB.leeren();
+        skalarField.setText("2");
         resultArea.setText("Bereit");
         statusAnzeige.zeigeErfolg("Matrixmodus bereit");
     }
 
-    private void styleField(JTextField field)
-    {
-        if (theme == null)
-        {
-            return;
-        }
-        field.setFont(AppFonts.normal(15));
-        ModernButtonStyler.styleInput(field, theme);
-        field.setCaretColor(theme.displayForeground());
-    }
-
     private void applyThemeRecursively(Component component)
     {
-        if (theme == null)
-        {
-            return;
-        }
-
         if (component instanceof JLabel label)
         {
             label.setForeground(theme.displayForeground());

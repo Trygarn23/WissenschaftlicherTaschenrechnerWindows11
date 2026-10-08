@@ -4,6 +4,8 @@ import common.history.VerlaufEintrag;
 import common.state.RechnerModus;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.List;
 
 final class HistoryFilter
@@ -39,5 +41,18 @@ final class HistoryFilter
             }
         }
         return result;
+    }
+
+    /** Gleiche Rechnung (Ausdruck und Ergebnis) nur einmal, und zwar an der Stelle ihres neuesten Auftretens. */
+    static List<VerlaufEintrag> zusammenfassen(List<VerlaufEintrag> entries)
+    {
+        Map<String, VerlaufEintrag> neuester = new LinkedHashMap<>();
+        for (VerlaufEintrag entry : entries)
+        {
+            String schluessel = entry.toLegacyText();
+            neuester.remove(schluessel);
+            neuester.put(schluessel, entry);
+        }
+        return new ArrayList<>(neuester.values());
     }
 }

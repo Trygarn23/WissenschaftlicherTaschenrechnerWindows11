@@ -1,9 +1,13 @@
 package modes.matrix.logic;
 
+import modes.matrix.model.InverseErgebnis;
+import modes.matrix.model.LgsLoesung;
 import modes.matrix.model.Matrix;
 
 public class MatrixRechnerService
 {
+    private final GaussJordan gaussJordan = new GaussJordan();
+
     public Matrix addiere(Matrix a, Matrix b)
     {
         return a.addiere(b);
@@ -42,5 +46,16 @@ public class MatrixRechnerService
     public int rang(Matrix matrix)
     {
         return matrix.rang();
+    }
+
+    public InverseErgebnis invertiere(Matrix matrix)
+    {
+        return gaussJordan.invertiere(matrix);
+    }
+
+    /** Löst Ax = b, b ist die letzte Spalte von B. */
+    public LgsLoesung loese(Matrix a, Matrix b)
+    {
+        return gaussJordan.loese(a, b.spalte(b.getSpalten() - 1));
     }
 }

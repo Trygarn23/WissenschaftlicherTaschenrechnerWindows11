@@ -481,6 +481,97 @@ public class ProgrammiererLogikTest
     }
 
     @Test
+    void kippeBit_ShouldSetAndClearBit()
+    {
+        // Arrange
+        logik.setBasis(Basis.HEX);
+
+        // Act
+        logik.kippeBit(4);
+        String gesetzt = logik.getAnzeige(Basis.HEX);
+        logik.kippeBit(4);
+
+        // Assert
+        assertEquals("10", gesetzt);
+        assertEquals("0", logik.getAnzeige(Basis.HEX));
+        assertEquals("0", logik.getAktuelleEingabe());
+    }
+
+    @Test
+    void kippeBit_ShouldMakeValueNegative_WhenSignBitIsFlippedInSignedByte()
+    {
+        // Arrange
+        logik.setWortbreite(Wortbreite.BYTE);
+
+        // Act
+        logik.kippeBit(7);
+
+        // Assert
+        assertEquals("-128", logik.getAnzeige(Basis.DEC));
+        assertTrue(logik.istBitGesetzt(7));
+        assertEquals(0x80, logik.getUnsignedWert());
+    }
+
+    @Test
+    void kippeBit_ShouldFlipTopBitOfQword()
+    {
+        // Arrange
+        logik.setUnsigned(true);
+
+        // Act
+        logik.kippeBit(63);
+
+        // Assert
+        assertEquals("9223372036854775808", logik.getAnzeige(Basis.DEC));
+    }
+
+    @Test
+    void kippeBit_ShouldThrow_WhenBitIsOutsideWordWidth()
+    {
+        // Arrange
+        logik.setWortbreite(Wortbreite.BYTE);
+
+        // Act
+        IllegalArgumentException fehler = assertThrows(IllegalArgumentException.class, () -> logik.kippeBit(8));
+
+        // Assert
+        assertTrue(fehler.getMessage().contains("außerhalb"));
+        assertThrows(IllegalArgumentException.class, () -> logik.kippeBit(-1));
+    }
+
+    @Test
+    void kippeBit_ShouldBecomeRightOperand_WhenOperationIsPending()
+    {
+        // Arrange
+        logik.digitEingeben("5");
+        logik.plus();
+
+        // Act
+        logik.kippeBit(0);
+        logik.berechne();
+
+        // Assert
+        assertEquals("9", logik.getAnzeige(Basis.DEC));
+    }
+
+    @Test
+    void mal_ShouldShowMultiplicationSign_WhenPending()
+    {
+        // Arrange
+        logik.digitEingeben("6");
+
+        // Act
+        logik.mal();
+        logik.digitEingeben("7");
+        String pending = logik.getPendingOperationText();
+        logik.berechne();
+
+        // Assert
+        assertEquals("×", pending);
+        assertEquals("42", logik.getAnzeige(Basis.DEC));
+    }
+
+    @Test
     void digitEingeben_ShouldLimitInputLength_WhenByteBinaryIsFull()
     {
         // Arrange

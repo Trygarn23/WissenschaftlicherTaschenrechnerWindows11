@@ -34,7 +34,7 @@
   - [x] Umlaute in Fehlermeldungen und Einheitennamen korrigiert (z. B. „benötigt“, „Länge“, „Fuß“).
 - [ ] In-App-Hilfe planen, aber ohne nerviges Tutorial-Gedöns.
 - [ ] Performance bei langen Ausdrücken, vielen History-Einträgen und großen Matrizen messen.
-- [ ] Letzte Eingabe nach einem Absturz wieder anbieten, damit nicht alles einfach weg ist.
+- [x] Letzte Eingabe nach einem Absturz wieder anbieten, damit nicht alles einfach weg ist. → `LetzteEingabeSicherung`, Statuszeile meldet „Letzte Eingabe wiederhergestellt“.
 - [x] Einmal Rückgängig anbieten, wenn man aus Versehen den Ausdruck gelöscht hat. → Strg+Z nach C/CE, solange noch nichts Neues getippt wurde.
 - [ ] Klammerpaare beim Tippen sichtbar zusammengehörig markieren.
 - [x] Stern-Button im Verlauf zeigt nur ein Kästchen → Stern wird jetzt selbst gemalt (`StarIcon`), klappt in jeder Schrift und jedem Theme.
@@ -119,8 +119,8 @@
 - [ ] Wissenschaftliches `f(x)`-Popup optisch in allen Themes angleichen.
 - [ ] Wissenschaftliches Panel bei kleiner Fenstergröße stabilisieren.
 - [ ] S⇔D-Taste wie beim Casio: Ergebnis exakt anzeigen, z. B. 0,333… → 1/3 oder 1,414… → √2.
-- [ ] `nCr` und `nPr` ergänzen.
-- [ ] ggT, kgV und Primfaktorzerlegung ergänzen.
+- [x] `nCr` und `nPr` ergänzen. → Parser: `nCr(n;k)`, `nPr(n;k)` (Trennzeichen `;`, weil Komma das Dezimalzeichen ist). Buttons fehlen noch.
+- [x] ggT, kgV und Primfaktorzerlegung ergänzen. → `ggT(a;b)`, `kgV(a;b)` im Parser, `Zahlentheorie.primfaktoren` (360 = 2³ · 3² · 5). Buttons/Anzeige fehlen noch.
 - [ ] Variablen A–F zum Speichern (STO/RCL), weil ein M-Speicher auf Dauer echt wenig ist.
 - [ ] `2nd`-Taste wie beim TI überlegen: sin ↔ asin, x² ↔ √x usw. → könnte das `f(x)`-Popup ersetzen?
 
@@ -199,9 +199,9 @@
 - [x] PRG-Disabled-Zustände pro Theme lesbar machen.
 - [x] PRG-Hover-/Pressed-Zustände pro Theme angleichen.
 - [x] Unit Tests nachziehen: Themewechsel verändert den Programmierermodus sichtbar.
-- [ ] Bit-Leiste mit 64 klickbaren Kästchen, ein Klick kippt das Bit.
-- [ ] Wert zusätzlich als ASCII-/Unicode-Zeichen anzeigen.
-- [ ] IEEE-754-Ansicht: Wie sieht die Zahl intern als `float`/`double` aus? → Vorzeichen, Exponent, Mantisse.
+- [x] Bit-Leiste mit 64 klickbaren Kästchen, ein Klick kippt das Bit.
+- [x] Wert zusätzlich als ASCII-/Unicode-Zeichen anzeigen.
+- [x] IEEE-754-Ansicht: Wie sieht die Zahl intern als `float`/`double` aus? → Vorzeichen, Exponent, Mantisse.
 
 ---
 
@@ -258,15 +258,15 @@
 - [ ] Graph-Kurvendiskussion später mit symbolischen Ergebnissen anreichern, numerische Näherung bleibt Fallback.
 - [ ] Graphmodus später für Statistik-Regressionen wiederverwenden.
 - [x] Mauszeiger im Graphen zeigt die aktuellen x- und y-Werte. → 0.5 Sekunden kein Bewegen → Hover Feld?
-- [ ] Funktionslisten speichern und später wieder öffnen.
+- [x] Funktionslisten speichern und später wieder öffnen.
 - [x] Wichtigen Punkt im Graphen anklicken und seine Werte übernehmen. → Rechtsclick
 - [x] Mehrere Funktionen hinzufügbar machen
 - [x] Kurvendiskussion für Graphen durch anclicken machen, Automatisch erster Graph
 - [x] GraphenBuchstaben ineinander nutzen können: f(x) = 2x ; g(x) = x^2 + f(x) ; ...
 - [x] Scrolling bzw UI etwas überarbeiten → Zeichnen knöpfe etwas kleiner und generell etwas verbessern
-- [ ] Schieberegler für Parameter: f(x) = a·x², a am Regler ziehen und die Kurve wackelt live mit.
-- [ ] Tangente an einem angeklickten Punkt einzeichnen.
-- [ ] Fläche unter der Kurve berechnen (Integral, numerisch reicht) und schraffiert anzeigen.
+- [x] Schieberegler für Parameter: f(x) = a·x², a am Regler ziehen und die Kurve wackelt live mit.
+- [x] Tangente an einem angeklickten Punkt einzeichnen.
+- [x] Fläche unter der Kurve berechnen (Integral, numerisch reicht) und schraffiert anzeigen.
 
 ---
 
@@ -303,7 +303,7 @@
 - [x] Kopieren des Ergebnisses als Text unterstützen.
 - [x] Unit Tests nachgezogen: Rundung und Formatierung absichern.
 - [x] Unit Tests nachgezogen: Sonderfälle absichern: rein reell, rein imaginär, null.
-- [ ] Gaußsche Zahlenebene: z1, z2 und das Ergebnis als Pfeile zeichnen.
+- [x] Gaußsche Zahlenebene: z1, z2 und das Ergebnis als Pfeile zeichnen.
 
 ---
 
@@ -315,10 +315,10 @@
 - [x] Matrix-Grundoperationen planen: Addition, Subtraktion, Skalarmultiplikation.
 - [x] Matrixmultiplikation mit Dimensionsprüfung planen.
 - [x] Determinante für 2x2 und 3x3 starten, größere Matrizen später über Gauß.
-- [ ] Inverse Matrix über Gauß-Jordan planen.
-- [ ] Bei Gauß-Jordan auf Wunsch die einzelnen Rechenschritte mitzeigen.
+- [x] Inverse Matrix über Gauß-Jordan planen.
+- [x] Bei Gauß-Jordan auf Wunsch die einzelnen Rechenschritte mitzeigen.
 - [x] Rang, Transponieren und Spur umsetzen.
-- [ ] Lineare Gleichungssysteme `Ax = b` als späteres Overkill-Feature planen.
+- [x] Lineare Gleichungssysteme `Ax = b` als späteres Overkill-Feature planen.
 - [x] Matrixformatierung planen: kompakte Anzeige, Copy/Paste als Tabellenformat, CSV-kompatibel.
 - [x] Unit Tests nachziehen: Matrixmodus mit Dimensionsfehlern, Rundung, singulären Matrizen und großen Werten absichern.
 
@@ -332,83 +332,83 @@
 - [x] Regressionsfunktionen planen: linear, quadratisch optional später.
 - [x] Diagramme planen: Histogramm, Boxplot, Streudiagramm.
 - [x] Statistikmodus sauber von Graphmodus trennen.
-- [ ] Statistikdaten als Tabelle wieder herauskopieren.
-- [ ] Auffällige Ausreißer in Statistikdaten sichtbar markieren.
-- [ ] Regression mit Gleichung und Gütemaß verständlich anzeigen.
-- [ ] Normalverteilung und Binomialverteilung als kleine Rechner → typischer Abi-Kram.
+- [x] Statistikdaten als Tabelle wieder herauskopieren.
+- [x] Auffällige Ausreißer in Statistikdaten sichtbar markieren.
+- [x] Regression mit Gleichung und Gütemaß verständlich anzeigen.
+- [x] Normalverteilung und Binomialverteilung als kleine Rechner → typischer Abi-Kram.
 
 ---
 
 ## Gleichungsmodus
-- [ ] Gleichungsmodus als ruhigen Helfer planen: lineare und quadratische Gleichungen zuerst, kein vollwertiges CAS.
-- [ ] Eingabeform festlegen: klassische Form `ax + b = c`, Koeffizientenfelder oder beides.
-- [ ] Lineare Gleichungen mit einer Variable lösen.
-- [ ] Quadratische Gleichungen mit reellen und komplexen Lösungen lösen.
-- [ ] Ergebnis mit kurzem Rechenweg anzeigen, aber nicht den Bildschirm volltexten.
-- [ ] Fehlerfälle menschlich formulieren: keine Lösung, unendlich viele Lösungen, ungültige Eingabe.
-- [ ] Gleichungsmodus vom normalen Parser wiederverwenden, ohne Parser-Sonderfälle quer durchs Projekt zu ziehen.
-- [ ] Unit Tests nachziehen: lineare Gleichungen, quadratische Gleichungen, Sonderfälle.
+- [x] Gleichungsmodus als ruhigen Helfer planen: lineare und quadratische Gleichungen zuerst, kein vollwertiges CAS.
+- [x] Eingabeform festlegen: klassische Form `ax + b = c`, Koeffizientenfelder oder beides.
+- [x] Lineare Gleichungen mit einer Variable lösen.
+- [x] Quadratische Gleichungen mit reellen und komplexen Lösungen lösen.
+- [x] Ergebnis mit kurzem Rechenweg anzeigen, aber nicht den Bildschirm volltexten.
+- [x] Fehlerfälle menschlich formulieren: keine Lösung, unendlich viele Lösungen, ungültige Eingabe.
+- [x] Gleichungsmodus vom normalen Parser wiederverwenden, ohne Parser-Sonderfälle quer durchs Projekt zu ziehen.
+- [x] Unit Tests nachziehen: lineare Gleichungen, quadratische Gleichungen, Sonderfälle.
 
 ---
 
 ## Bruchmodus
-- [ ] Bruchmodus planen für exakte Rechnungen mit Brüchen statt gerundeten Dezimalzahlen.
-- [ ] Bruchmodell bauen: Zähler, Nenner, Kürzen, Vorzeichen normalisieren.
-- [ ] Grundrechenarten für Brüche implementieren: Addition, Subtraktion, Multiplikation, Division.
-- [ ] Gemischte Zahlen optional planen, aber nicht direkt erzwingen.
-- [ ] Dezimalzahl in Bruch umwandeln und Bruch als Dezimalzahl anzeigen.
-- [ ] Bruchmodus mit Standard/Wissenschaftlich verbinden: Ergebnis übernehmen, ohne beide Modi zu vermischen.
-- [ ] Unit Tests nachziehen: Kürzen, negative Brüche, Nenner 0, große Zahlen.
+- [x] Bruchmodus planen für exakte Rechnungen mit Brüchen statt gerundeten Dezimalzahlen.
+- [x] Bruchmodell bauen: Zähler, Nenner, Kürzen, Vorzeichen normalisieren.
+- [x] Grundrechenarten für Brüche implementieren: Addition, Subtraktion, Multiplikation, Division.
+- [x] Gemischte Zahlen optional planen, aber nicht direkt erzwingen.
+- [x] Dezimalzahl in Bruch umwandeln und Bruch als Dezimalzahl anzeigen.
+- [x] Bruchmodus mit Standard/Wissenschaftlich verbinden: Ergebnis übernehmen, ohne beide Modi zu vermischen.
+- [x] Unit Tests nachziehen: Kürzen, negative Brüche, Nenner 0, große Zahlen.
 
 ---
 
 ## Vektor-/Geometriemodus
-- [ ] Vektormodus klein starten: 2D- und 3D-Vektoren eingeben und anzeigen.
-- [ ] Vektoraddition, Subtraktion und Skalierung implementieren.
-- [ ] Skalarprodukt, Betrag und Winkel zwischen zwei Vektoren berechnen.
-- [ ] Kreuzprodukt nur für 3D ergänzen.
-- [ ] Einfache Geometrie-Helfer planen: Abstand zweier Punkte, Mittelpunkt, Steigung.
-- [ ] UI nicht überfrachten: Eingabefelder und Ergebnisbereich reichen am Anfang.
-- [ ] Unit Tests nachziehen: 2D/3D-Rechnungen, Nullvektor, Rundung.
+- [x] Vektormodus klein starten: 2D- und 3D-Vektoren eingeben und anzeigen.
+- [x] Vektoraddition, Subtraktion und Skalierung implementieren.
+- [x] Skalarprodukt, Betrag und Winkel zwischen zwei Vektoren berechnen.
+- [x] Kreuzprodukt nur für 3D ergänzen.
+- [x] Einfache Geometrie-Helfer planen: Abstand zweier Punkte, Mittelpunkt, Steigung.
+- [x] UI nicht überfrachten: Eingabefelder und Ergebnisbereich reichen am Anfang.
+- [x] Unit Tests nachziehen: 2D/3D-Rechnungen, Nullvektor, Rundung.
 
 ---
 
 ## Finanzmodus
-- [ ] Finanzmodus als Alltagsrechner planen: Prozent, Rabatt, Steuer, Trinkgeld, Zinsen.
-- [ ] Einfache Zinsrechnung implementieren: Kapital, Zinssatz, Laufzeit, Endbetrag.
-- [ ] Prozentrechner mit klaren Fragen bauen: "Wie viel sind x Prozent von y?" und "x ist wie viel Prozent von y?".
-- [ ] Rabatt-/Mehrwertsteuer-Helfer ergänzen.
-- [ ] Monatsrate/Kreditrechner optional planen, aber erst nach den einfachen Fällen.
-- [ ] Ergebnisse nachvollziehbar anzeigen, damit es nicht wie eine schwarze Box wirkt.
-- [ ] Unit Tests nachziehen: Prozentfälle, Zinsen, Rundung auf Geldbeträge.
+- [x] Finanzmodus als Alltagsrechner planen: Prozent, Rabatt, Steuer, Trinkgeld, Zinsen.
+- [x] Einfache Zinsrechnung implementieren: Kapital, Zinssatz, Laufzeit, Endbetrag.
+- [x] Prozentrechner mit klaren Fragen bauen: "Wie viel sind x Prozent von y?" und "x ist wie viel Prozent von y?".
+- [x] Rabatt-/Mehrwertsteuer-Helfer ergänzen.
+- [x] Monatsrate/Kreditrechner optional planen, aber erst nach den einfachen Fällen.
+- [x] Ergebnisse nachvollziehbar anzeigen, damit es nicht wie eine schwarze Box wirkt.
+- [x] Unit Tests nachziehen: Prozentfälle, Zinsen, Rundung auf Geldbeträge.
 
 ---
 
 ## IT-/Netzwerkmodus
-- [ ] Subnetzrechner für IPv4: IP + CIDR rein, Netzadresse, Broadcast und Anzahl Hosts raus.
-- [ ] Subnetting: Netz in x gleich große Teilnetze aufteilen → Lernfeld Netzwerke / AP1 lässt grüßen.
-- [ ] Subnetzmaske zwischen `/24` und `255.255.255.0` hin und her umrechnen.
-- [ ] IP-Adresse binär anzeigen, damit man sieht, wo Netz- und Hostteil anfangen.
-- [ ] IPv6 erstmal nur kürzen/ausschreiben, alles andere später.
-- [ ] Unit Tests nachziehen: typische Prüfungsaufgaben, `/31`, `/32`, ungültige IPs.
+- [x] Subnetzrechner für IPv4: IP + CIDR rein, Netzadresse, Broadcast und Anzahl Hosts raus.
+- [x] Subnetting: Netz in x gleich große Teilnetze aufteilen → Lernfeld Netzwerke / AP1 lässt grüßen.
+- [x] Subnetzmaske zwischen `/24` und `255.255.255.0` hin und her umrechnen.
+- [x] IP-Adresse binär anzeigen, damit man sieht, wo Netz- und Hostteil anfangen.
+- [x] IPv6 erstmal nur kürzen/ausschreiben, alles andere später.
+- [x] Unit Tests nachziehen: typische Prüfungsaufgaben, `/31`, `/32`, ungültige IPs.
 
 ---
 
 ## Logikmodus
-- [ ] Ausdruck wie `A ∧ (B ∨ ¬C)` eingeben und die Wahrheitstabelle ausspucken lassen.
-- [ ] Eingabe auch mit `&&`, `||`, `!` bzw. AND/OR/NOT erlauben, damit man nicht nach Sonderzeichen suchen muss.
-- [ ] KV-Diagramm optional planen, aber erst wenn die Wahrheitstabelle sauber läuft.
-- [ ] Unit Tests nachziehen: Klammern, Vorrang, Variablen A–D.
+- [x] Ausdruck wie `A ∧ (B ∨ ¬C)` eingeben und die Wahrheitstabelle ausspucken lassen.
+- [x] Eingabe auch mit `&&`, `||`, `!` bzw. AND/OR/NOT erlauben, damit man nicht nach Sonderzeichen suchen muss.
+- [x] KV-Diagramm optional planen, aber erst wenn die Wahrheitstabelle sauber läuft.
+- [x] Unit Tests nachziehen: Klammern, Vorrang, Variablen A–D.
 
 ---
 
 ## Datums-/Zeitrechner
-- [ ] Tage zwischen zwei Daten ausrechnen.
-- [ ] Datum + n Tage / Wochen / Monate.
-- [ ] Wochentag zu einem Datum anzeigen.
-- [ ] Arbeitstage zählen, Wochenende raus → Feiertage optional später.
-- [ ] Stunden und Minuten zusammenrechnen, z. B. für das Berichtsheft.
-- [ ] Unit Tests nachziehen: Schaltjahre, Monatsende, Jahreswechsel.
+- [x] Tage zwischen zwei Daten ausrechnen.
+- [x] Datum + n Tage / Wochen / Monate.
+- [x] Wochentag zu einem Datum anzeigen.
+- [x] Arbeitstage zählen, Wochenende raus → Feiertage optional später.
+- [x] Stunden und Minuten zusammenrechnen, z. B. für das Berichtsheft.
+- [x] Unit Tests nachziehen: Schaltjahre, Monatsende, Jahreswechsel.
 
 ---
 
@@ -420,21 +420,21 @@
 - [x] Einheiten-SidePanel ans Theme-System anbinden.
 - [x] SidePanel mit Swing-Animation oeffnen und schliessen.
 - [x] Unit Tests nachziehen: Einheitenumrechnung und SidePanel absichern.
-- [ ] Konstantenbibliothek mit Kategorien planen: Mathematik, Physik, Informatik, Chemie.
-- [ ] Konstanten suchbar machen und in Standard/Wissenschaftlich einfügbar machen.
-- [ ] Favorisierte Konstanten persistent speichern.
-- [ ] Eigene Konstanten des Nutzers planen.
+- [x] Konstantenbibliothek mit Kategorien planen: Mathematik, Physik, Informatik, Chemie.
+- [x] Konstanten suchbar machen und in Standard/Wissenschaftlich einfügbar machen.
+- [x] Favorisierte Konstanten persistent speichern.
+- [x] Eigene Konstanten des Nutzers planen.
 
 ---
 
 ## CAS-light / Lernmodus
 - [ ] Schritt-für-Schritt-Auswertung erst nach Parser-Modularisierung starten.
-- [ ] Token- und Parserfehler mit Position im Ausdruck anzeigen.
+- [x] Token- und Parserfehler mit Position im Ausdruck anzeigen. → `AusdruckParserException.getPosition()`; die Shell zeigt die Stelle noch nicht an.
 - [ ] Einfache Umformungen planen: Klammern auflösen, Potenzregeln, Bruchvereinfachung.
 - [ ] Ableitungsregeln symbolisch für einfache Funktionen planen.
 - [ ] Benutzerdefinierte Funktionen mit Namen und Ausdruck speichern.
-- [ ] Benutzerdefinierte Funktionen validieren.
-- [ ] Benutzerdefinierte Funktionen im Parser registrieren.
+- [x] Benutzerdefinierte Funktionen validieren. → `FunktionsRegistry.registriereBenutzerfunktion(...)`.
+- [x] Benutzerdefinierte Funktionen im Parser registrieren. → `FunktionsRegistry.registriereBenutzerfunktion(...)`.
 - [ ] Lernmodus planen: Rechenweg anzeigen, aber normale Rechnerbedienung nicht verlangsamen.
 
 ---
@@ -454,7 +454,7 @@
 - [x] `HistoryPanel` auf strukturierte Anzeige vorbereiten.
 - [x] History-Suche über Ausdruck und Ergebnis ermöglichen.
 - [x] History-Suche über Modus ermöglichen.
-- [ ] History-Suche über Datum optional planen.
+- [x] History-Suche über Datum optional planen.
 - [x] Favoriten im UI anzeigen.
 - [x] Favoriten persistent speichern.
 - [x] Verlaufseinträge löschen: einzeln.
@@ -462,13 +462,13 @@
 - [x] Verlaufseinträge löschen: nur aktueller Modus. → gelöst als „Angezeigte Einträge löschen“: Filter auf den Modus stellen, dann löschen.
 - [x] Vor dem endgültigen Löschen kurz nachfragen. → bei mehreren Einträgen; ein einzelner geht ohne Rückfrage, dafür gibt es Rückgängig.
 - [x] Gerade gelöschte Verlaufseinträge für diesen Moment zurückholen. → „Löschen rückgängig“, gilt bis zum nächsten neuen Eintrag.
-- [ ] Gleiche Rechnungen im Verlauf auf Wunsch zusammenfassen.
+- [x] Gleiche Rechnungen im Verlauf auf Wunsch zusammenfassen.
 - [x] Verlauf nach Modus filtern.
 - [x] Verlauf nach Favoriten filtern.
 - [x] Verlauf exportieren als `.txt`.
 - [x] Verlauf exportieren als `.csv`. → Semikolon-getrennt, mit BOM, damit Excel die Umlaute erkennt.
-- [ ] Verlauf exportieren als `.json` optional planen.
-- [ ] Verlauf importieren optional planen.
+- [x] Verlauf exportieren als `.json` optional planen.
+- [x] Verlauf importieren optional planen.
 - [x] Doppelklick-Verhalten bei strukturierten Einträgen neu implementieren.
 - [x] History bei Standard/Wissenschaftlich sichtbar lassen.
 - [x] History bei Programmierer/Graph/Komplex bewusst ausblenden oder modusspezifisch machen.
@@ -491,12 +491,12 @@
 - [ ] Modernisierung manuell in allen Themes und Modi in IntelliJ durchklicken.
 - [ ] Kleine UI-Politur: Scrollbereiche und Tabellen optisch weiter angleichen.
 - [ ] Kompakte Ansicht für kleine Fenster anbieten.
-- [ ] Verlauf ein-/ausklappbar machen, die Tasten sind eh riesig und der Verlauf winzig.
-- [ ] Befehlssuche mit Strg+K: Modus, Theme, Funktion oder Konstante tippen, Enter, fertig → Aktionen haben jetzt eh eindeutige Namen.
+- [x] Verlauf ein-/ausklappbar machen, die Tasten sind eh riesig und der Verlauf winzig.
+- [x] Befehlssuche mit Strg+K: Modus, Theme, Funktion oder Konstante tippen, Enter, fertig → Aktionen haben jetzt eh eindeutige Namen.
 - [x] Moduswechsel per Strg+1 bis Strg+9. → Strg+1–7 Modi, Strg+8 Einheiten, F1 bzw. Button „Tastenkürzel“ zeigt alle Kürzel an.
-- [ ] Zuletzt genutzte Modi in der Modusleiste weiter nach vorne holen.
+- [x] Zuletzt genutzte Modi in der Modusleiste weiter nach vorne holen.
 - [ ] Im Display irgendwo in den Ausdruck klicken und mittendrin weitertippen, statt nur hinten anhängen/löschen.
-- [ ] Mini-Rechner: kleines Fenster, das immer im Vordergrund bleibt → z. B. neben IntelliJ.
+- [x] Mini-Rechner: kleines Fenster, das immer im Vordergrund bleibt → z. B. neben IntelliJ.
 
 ---
 
@@ -507,8 +507,8 @@
 - [x] Moduswechsel über aktiven Button und Fade-Overlay weicher wirken lassen.
 - [x] History-Einträge und Favorit-Umschaltung mit kurzem Feedback versehen.
 - [x] Graph-, Matrix- und Statistik-Ergebnisbereiche dezent hervorheben.
-- [ ] Option zum Reduzieren von Animationen prüfen.
-- [ ] Einstellung „weniger Bewegung“ wirklich umsetzen, sobald klar ist, welche Animationen bleiben dürfen.
+- [x] Option zum Reduzieren von Animationen prüfen.
+- [x] Einstellung „weniger Bewegung“ wirklich umsetzen, sobald klar ist, welche Animationen bleiben dürfen.
 - [ ] Animationen manuell auf langsamen Geräten prüfen.
 
 ---
@@ -549,9 +549,9 @@
 - [x] Parser weiter modularisieren: Tokenizer.
 - [x] Parser weiter modularisieren: PostfixKonverter.
 - [x] Parser weiter modularisieren: PostfixAuswerter.
-- [ ] Parser weiter modularisieren: OperatorRegistry.
-- [ ] Parser weiter modularisieren: FunktionsRegistry.
-- [ ] Parser weiter modularisieren, bevor CAS-/Matrix-/Statistikfeatures auf ihn aufbauen.
+- [x] Parser weiter modularisieren: OperatorRegistry.
+- [x] Parser weiter modularisieren: FunktionsRegistry.
+- [x] Parser weiter modularisieren, bevor CAS-/Matrix-/Statistikfeatures auf ihn aufbauen.
 - [x] `RechnerZustand` stärker kapseln und direkte `StringBuilder`-Zugriffe reduzieren.
 - [x] Unit Tests nachziehen: `BerechnungsService` stärker über Ergebnisobjekte statt Strings absichern.
 - [x] Fehlerbehandlung vereinheitlichen: nur erwartete Exceptions fangen, IO-Fehler loggen (`DateiPersistenz`).
@@ -559,23 +559,23 @@
 
 ### Großes MVP-Refactoring
 - [x] Das große MVP-Refactoring planen, ohne die jetzige Modul-Struktur über den Haufen zu werfen.
-- [ ] Die einzelnen Rechner-Modi bleiben ihre eigenen kleinen Welten und bekommen nur intern eine klare MVP-Aufteilung.
-- [ ] Die Rollen simpel halten: Model kennt die Daten, View zeigt den Kram an und der Presenter kümmert sich um den Ablauf.
-- [ ] Den Komplexmodus als erstes Versuchskaninchen umbauen, weil dort Model, State, Service und Formatter schon vorhanden sind.
-- [ ] Nach dem ersten Umbau ehrlich prüfen: Ist der Code wirklich einfacher geworden oder haben wir nur mehr Dateien gebaut?
-- [ ] Nur weitermachen, wenn der MVP-Aufbau beim Komplexmodus übersichtlicher und leichter testbar ist.
+- [x] Die einzelnen Rechner-Modi bleiben ihre eigenen kleinen Welten und bekommen nur intern eine klare MVP-Aufteilung.
+- [x] Die Rollen simpel halten: Model kennt die Daten, View zeigt den Kram an und der Presenter kümmert sich um den Ablauf.
+- [x] Den Komplexmodus als erstes Versuchskaninchen umbauen, weil dort Model, State, Service und Formatter schon vorhanden sind.
+- [x] Nach dem ersten Umbau ehrlich prüfen: Ist der Code wirklich einfacher geworden oder haben wir nur mehr Dateien gebaut?
+- [x] Nur weitermachen, wenn der MVP-Aufbau beim Komplexmodus übersichtlicher und leichter testbar ist. → Ergebnis Komplex: ~+50 % Zeilen, aber Presenter ohne Fenster testbar (9 Tests). Entscheidung: nur Modi mit echter Ablauflogik umbauen (Graph, Matrix, PRG), dünne Modi nicht.
 - [ ] Swing-Panels nach und nach abspecken: anzeigen, Eingaben annehmen und Klicks weitergeben sollte dort möglichst reichen.
 - [ ] Berechnungen, Zustandsänderungen und längere Abläufe aus den Panels in den Presenter oder passende Services verschieben.
-- [ ] Presenter ohne `JButton`, `JPanel` und sonstiges Swing-Zeug halten, damit man sie ohne echtes Fenster testen kann.
-- [ ] Services und States von außen übergeben, statt sie irgendwo versteckt im Panel mit `new` zu erstellen.
-- [ ] Keine Monster-Presenter bauen, die am Ende wieder alles können und nur anders heißen.
-- [ ] Keine leeren Interfaces oder Mini-Klassen nur deshalb anlegen, weil MVP auf dem Papier danach aussieht.
+- [x] Presenter ohne `JButton`, `JPanel` und sonstiges Swing-Zeug halten, damit man sie ohne echtes Fenster testen kann.
+- [x] Services und States von außen übergeben, statt sie irgendwo versteckt im Panel mit `new` zu erstellen.
+- [x] Keine Monster-Presenter bauen, die am Ende wieder alles können und nur anders heißen.
+- [x] Keine leeren Interfaces oder Mini-Klassen nur deshalb anlegen, weil MVP auf dem Papier danach aussieht.
 - [ ] Standard und Wissenschaftlich gemeinsam betrachten, weil beide viel Rechnerlogik und dasselbe Display teilen.
 - [ ] Danach Matrix, Statistik, Graph und PRG Stück für Stück umbauen – nicht alles in einem riesigen Rundumschlag.
 - [ ] `TaschenrechnerUI` am Ende möglichst nur noch die Bauteile zusammenstecken lassen.
 - [ ] Moduswechsel, Settings, Session und History in eine kleine Shell-Steuerung verschieben, wenn es dadurch wirklich ruhiger wird.
-- [ ] Für jeden Presenter verständliche Unit Tests schreiben; die vorhandenen Paneltests bleiben als Sicherheitsnetz bestehen.
-- [ ] Alten Misch-Code erst entfernen, wenn der jeweilige Modus nach dem Umbau genauso funktioniert wie vorher.
+- [x] Für jeden Presenter verständliche Unit Tests schreiben; die vorhandenen Paneltests bleiben als Sicherheitsnetz bestehen.
+- [x] Alten Misch-Code erst entfernen, wenn der jeweilige Modus nach dem Umbau genauso funktioniert wie vorher.
 - [ ] Eine kurze Architektur-Seite schreiben: Wo gehört neuer Code hin und wie sieht ein einfacher MVP-Modus bei uns aus?
 
 - [ ] Gemeinsames `ModeState`-Konzept entwerfen, ohne Spezialzustände wie Graph/Komplex/PRG in `RechnerZustand` zu quetschen.
@@ -644,9 +644,9 @@ Ergänzt die Punkte aus Refactoring und MVP oben.
 - [x] Setting MenüButtons im Untermenü Clickable machen
 - [x] Funktionalität geben
 - [x] Settings-Dialog: Änderungen optional mit Speichern/Abbrechen statt Sofortübernahme anbieten.
-- [ ] Settings-Datei versionieren, falls später neue Felder dazukommen.
-- [ ] Einstellungen mit einem Klick auf einen sicheren Standard zurücksetzen.
-- [ ] Bei neuen Einstellungen kurz erklären, was sie verändern.
+- [x] Settings-Datei versionieren, falls später neue Felder dazukommen.
+- [x] Einstellungen mit einem Klick auf einen sicheren Standard zurücksetzen.
+- [x] Bei neuen Einstellungen kurz erklären, was sie verändern.
 - [x] Einstellungen-Dialog planen.
 - [x] Einstellungen persistent speichern.
 - [x] Einstellungen für Präzision ergänzen.
@@ -672,13 +672,13 @@ Ergänzt die Punkte aus Refactoring und MVP oben.
 - [ ] Druck-/Report-Ansicht optional planen.
 - [ ] Lokale Projektdateien für komplexere Arbeiten planen, z. B. Graphen + Tabellen + Notizen.
 - [ ] Lokalisierung Deutsch/Englisch optional planen.
-- [ ] Dark/Light-Systemtheme automatisch übernehmen optional planen.
+- [x] Dark/Light-Systemtheme automatisch übernehmen optional planen.
 - [ ] Auto-Update oder Release-Paket optional planen.
 - [ ] `.jar`-Build oder Installer optional planen.
 - [ ] GitHub Releases vorbereiten.
 - [ ] Changelog führen.
 - [x] Version im UI anzeigen.
-- [ ] Prüfungsmodus: nur Standard + Wissenschaftlich, Verlauf und Graph gesperrt, und man sieht direkt, dass er an ist.
+- [x] Prüfungsmodus: nur Standard + Wissenschaftlich, Verlauf und Graph gesperrt, und man sieht direkt, dass er an ist. → Einstellungen › Schule, Titel + Statuszeile zeigen PRÜFUNGSMODUS.
 - [ ] Rechner-Statistik als Spaß-Feature: „Deine Lieblingsfunktion: sin (42×)“ xD
 - [ ] GitHub Actions: Tests bei jedem Push automatisch laufen lassen → geht erst nach Maven/Gradle.
 
@@ -686,37 +686,37 @@ Ergänzt die Punkte aus Refactoring und MVP oben.
 Große Brocken zuerst, kleine als Lückenfüller.
 
 ### Refactoring (größte Klassen zuerst)
-- [ ] `HistoryPanel` (~600 Zeilen) aufteilen: Filter-/Suchleiste, Liste, Export-/Lösch-Aktionen in eigene Teile.
-- [ ] `GraphPanel` (~580 Zeilen) aufteilen: Funktionsliste, Steuerleiste (Zoom/Bereich), Analyse-Ausgabe getrennt.
+- [x] `HistoryPanel` (~600 Zeilen) aufteilen: Filter-/Suchleiste, Liste, Export-/Lösch-Aktionen in eigene Teile.
+- [x] `GraphPanel` (~580 Zeilen) aufteilen: Funktionsliste, Steuerleiste (Zoom/Bereich), Analyse-Ausgabe getrennt.
 - [ ] `AusdruckEditor` (~510 Zeilen) prüfen: Cursor/Klammer-Logik von Undo/Redo trennen.
-- [ ] `TaschenrechnerUI` (~430 Zeilen) weiter entschlacken: Aufbau des Fensters vs. Verdrahtung der Aktionen.
-- [ ] `StatistikPanel` (~400 Zeilen): Eingabetabelle und Ergebnisanzeige trennen.
-- [ ] `SettingsDialog` (~340 Zeilen): je Einstellungsbereich ein eigenes kleines Panel.
-- [ ] `MatrixPanel` (~340 Zeilen): Matrix-Eingabegitter als eigene Komponente.
-- [ ] Nach jedem Aufteilen: alle Tests grün, Zeilenzahl vorher/nachher hier notieren.
+- [ ] `TaschenrechnerUI` (~430 Zeilen) weiter entschlacken: Aufbau des Fensters vs. Verdrahtung der Aktionen. → Modus-Panels sind nach `ModusPanels` und die Befehle nach `ShellBefehle` gewandert, durch Prüfungsmodus, Konstanten, Mini-Rechner usw. ist die Klasse trotzdem auf ~550 Zeilen gewachsen. Nächster Schritt: Session laden/speichern und Prüfungsmodus-Logik auslagern.
+- [x] `StatistikPanel` (~400 Zeilen): Eingabetabelle und Ergebnisanzeige trennen.
+- [x] `SettingsDialog` (~340 Zeilen): je Einstellungsbereich ein eigenes kleines Panel.
+- [x] `MatrixPanel` (~340 Zeilen): Matrix-Eingabegitter als eigene Komponente.
+- [x] Nach jedem Aufteilen: alle Tests grün, Zeilenzahl vorher/nachher hier notieren. → HistoryPanel 603→538, GraphPanel 583→487, StatistikPanel 401→326, MatrixPanel 338→305, SettingsDialog 342→255, TaschenrechnerUI gewachsen (siehe oben).
 - [ ] Toten Code suchen (unbenutzte Methoden/Klassen/Imports) und löschen.
 - [ ] Magische Zahlen (Pixelgrößen, Abstände, Grenzwerte) in benannte Konstanten.
 - [ ] Alle `catch (Exception e)` durchgehen: konkrete Ausnahme oder bewusst kommentieren.
 
 ### Features
-- [ ] Prüfungsmodus umsetzen (siehe Spätere Features) inkl. sichtbarem Hinweis in der Statuszeile.
-- [ ] Graph als PNG exportieren.
-- [ ] Matrix als CSV exportieren und importieren.
-- [ ] Statistik-Daten aus CSV importieren.
-- [ ] Verlauf zusätzlich als JSON exportieren.
+- [x] Prüfungsmodus umsetzen (siehe Spätere Features) inkl. sichtbarem Hinweis in der Statuszeile.
+- [x] Graph als PNG exportieren.
+- [x] Matrix als CSV exportieren und importieren.
+- [x] Statistik-Daten aus CSV importieren.
+- [x] Verlauf zusätzlich als JSON exportieren.
 - [ ] Einheiten: Favoriten-Umrechnungen merken.
 - [ ] Wissenschaftlich: Ergebnis als Bruch anzeigen (z. B. 0,75 → 3/4), wo sinnvoll.
 - [ ] Wissenschaftlich: Ans-Taste / letztes Ergebnis in neuen Ausdruck übernehmen (falls nicht vorhanden).
-- [ ] Gleichungsmodus: lineare und quadratische Gleichungen lösen (Grundversion).
-- [ ] Bruchmodus: Grundrechenarten mit Kürzen (Grundversion).
-- [ ] Datumsrechner: Tage zwischen zwei Daten, Datum ± Tage.
+- [x] Gleichungsmodus: lineare und quadratische Gleichungen lösen (Grundversion).
+- [x] Bruchmodus: Grundrechenarten mit Kürzen (Grundversion).
+- [x] Datumsrechner: Tage zwischen zwei Daten, Datum ± Tage.
 - [ ] Rechner-Statistik („Lieblingsfunktion“) aus dem Verlauf berechnen.
 - [ ] Lokalisierung DE/EN: alle UI-Texte an einer Stelle sammeln (erst sammeln, dann übersetzen).
 
 ### Tests
 - [ ] Tests für die neuen Exporte (PNG nur „Datei entsteht“, CSV Inhalt prüfen).
-- [ ] Parser-Grenzfälle: sehr lange Ausdrücke, verschachtelte Klammern, leere Eingabe, nur Operatoren.
-- [ ] Programmierer: Überlauf an jeder Wortbreite testen.
+- [x] Parser-Grenzfälle: sehr lange Ausdrücke, verschachtelte Klammern, leere Eingabe, nur Operatoren.
+- [x] Programmierer: Überlauf an jeder Wortbreite testen.
 - [ ] Session laden mit kaputter/alter Datei als Test absichern.
 - [ ] Testabdeckung grob schätzen: welche Klasse in `src/common` hat noch gar keinen Test?
 
@@ -734,6 +734,17 @@ Große Brocken zuerst, kleine als Lückenfüller.
 - [ ] Skills ausprobieren und Beschreibungen nachschärfen, wenn sie nicht von selbst anspringen.
 - [ ] Skill `java-test-schreiben` (JUnit-Stil dieses Projekts) überlegen.
 
+
+### Neu gefunden beim Abarbeiten
+- [x] Parser: `-x^2` wird als `(-x)^2` gerechnet, richtig wäre `-(x^2)` → Parser-Agent hatte den Auftrag, Ergebnis prüfen. → behoben: `-2^2 = -4`, `2^-2 = 0,25`, `(-2)^2 = 4`.
+- [ ] Parser: Leerzeichen werden entfernt, dadurch wird `a x` zu `ax` (ungültig) statt `a·x`.
+- [ ] Graph: `istGueltig` prüft nur bei x = 0, deshalb gilt z. B. `1/x` beim Zeichnen als ungültig.
+- [ ] PRG: Multiplikation gibt es jetzt (Numpad *), aber keinen Button – Tastenraster ist voll.
+- [ ] Tastenkürzel-Übersicht um Strg+K, Strg+Shift+K und PRG-Numpad-* ergänzen.
+- [ ] Mini-Rechner übernimmt Theme-Wechsel erst beim nächsten Öffnen.
+- [ ] Konstanten-Dialog: Favoriten als Stern statt Checkbox (dafür `StarIcon` public machen).
+- [ ] Alle neuen Modi einmal in der echten App durchklicken (nur über Tests geprüft, Layout nicht angeschaut).
+- [ ] Wissenschaftlich: neue Parserfunktionen (nCr, nPr, ggT, kgV) als Buttons/f(x)-Menü anbieten, sobald der Parser-Teil fertig ist.
 ---
 
 ## Legende

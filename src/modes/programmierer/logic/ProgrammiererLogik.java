@@ -4,6 +4,8 @@ import modes.programmierer.model.Basis;
 import modes.programmierer.model.ProgrammiererState;
 import modes.programmierer.model.Wortbreite;
 
+import java.math.BigInteger;
+
 public class ProgrammiererLogik
 {
     private enum Operation
@@ -11,6 +13,7 @@ public class ProgrammiererLogik
         NONE,
         ADD,
         SUB,
+        MUL,
         AND,
         OR,
         XOR
@@ -113,12 +116,14 @@ public class ProgrammiererLogik
             neuesEingabefeld = false;
         }
 
-        if (eingabe.toString().equals("0"))
+        // Das Minus zählt nicht als Stelle, sonst ließe sich z. B. -128 im BYTE nicht eintippen.
+        int vorzeichenLaenge = !eingabe.isEmpty() && eingabe.charAt(0) == '-' ? 1 : 0;
+        if ("0".contentEquals(eingabe.subSequence(vorzeichenLaenge, eingabe.length())))
         {
-            eingabe.setLength(0);
+            eingabe.setLength(vorzeichenLaenge);
         }
 
-        if (eingabe.length() >= maximaleEingabeLaenge())
+        if (eingabe.length() - vorzeichenLaenge >= maximaleEingabeLaenge())
         {
             return;
         }
@@ -182,7 +187,9 @@ public class ProgrammiererLogik
 
     public void shiftRightArithmetic()
     {
-        state.setWert(maskiere(state.getWert() >> 1));
+        // Unsigned hat kein Vorzeichen zum Nachschieben; bei QWORD würde >> sonst wieder 1en einschieben.
+        long verschoben = state.isUnsigned() ? state.getWert() >>> 1 : state.getWert() >> 1;
+        state.setWert(maskiere(verschoben));
         pendingOperation = Operation.NONE;
         neuesEingabefeld = true;
         eingabeSetzenAusWert();
@@ -206,6 +213,11 @@ public class ProgrammiererLogik
     public void minus()
     {
         setzeOperation(Operation.SUB);
+    }
+
+    public void mal()
+    {
+        setzeOperation(Operation.MUL);
     }
 
     public void and()
@@ -235,6 +247,7 @@ public class ProgrammiererLogik
         {
             case ADD -> linkerOperand + rechterOperand;
             case SUB -> linkerOperand - rechterOperand;
+            case MUL -> linkerOperand * rechterOperand;
             case AND -> linkerOperand & rechterOperand;
             case OR -> linkerOperand | rechterOperand;
             case XOR -> linkerOperand ^ rechterOperand;
@@ -245,6 +258,31 @@ public class ProgrammiererLogik
         pendingOperation = Operation.NONE;
         neuesEingabefeld = true;
         eingabeSetzenAusWert();
+    }
+
+    /** Kippt ein Bit (0 = niederwertigstes) des aktuellen Werts; zählt danach als eingegebener Wert. */
+    public void kippeBit(int bit)
+    {
+        int bits = state.getWortbreite().getBits();
+        if (bit < 0 || bit >= bits)
+        {
+            throw new IllegalArgumentException("Bit " + bit + " liegt außerhalb der Wortbreite (0 bis " + (bits - 1) + ").");
+        }
+
+        state.setWert(maskiere(state.getWert() ^ (1L << bit)));
+        neuesEingabefeld = false;
+        eingabeSetzenAusWert();
+    }
+
+    public boolean istBitGesetzt(int bit)
+    {
+        return ((state.getWert() >>> bit) & 1) != 0;
+    }
+
+    /** Bitmuster ohne Vorzeichenerweiterung; bei QWORD mit gesetztem Bit 63 als negativer long. */
+    public long getUnsignedWert()
+    {
+        return unsignedDarstellung(state.getWert());
     }
 
     public String getAnzeige(Basis basis)
@@ -273,6 +311,7 @@ public class ProgrammiererLogik
         {
             case ADD -> "+";
             case SUB -> "-";
+            case MUL -> "×";
             case AND -> "AND";
             case OR -> "OR";
             case XOR -> "XOR";
@@ -302,27 +341,9 @@ public class ProgrammiererLogik
 
         String text = eingabe.toString();
 
-        try
-        {
-            long wert = parseEingabe(text);
-            state.setWert(maskiere(wert));
-        }
-        catch (NumberFormatException ex)
-        {
-            state.setWert(0);
-        }
-    }
-
-    private long parseEingabe(String text)
-    {
-        if (state.getBasis() == Basis.DEC)
-        {
-            return state.isUnsigned()
-                    ? Long.parseUnsignedLong(text)
-                    : Long.parseLong(text);
-        }
-
-        return Long.parseUnsignedLong(text, state.getBasis().getRadix());
+        // longValue() behält die unteren 64 Bit: zu große Eingaben laufen bei QWORD genauso über wie bei BYTE.
+        long wert = new BigInteger(text, state.getBasis().getRadix()).longValue();
+        state.setWert(maskiere(wert));
     }
 
     private void eingabeSetzenAusWert()

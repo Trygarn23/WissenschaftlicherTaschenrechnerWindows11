@@ -1,9 +1,8 @@
 package modes.statistik.ui;
 
-import common.formatting.ZahlenEingabe;
 import common.state.RechnerModus;
-import modes.statistik.formatting.StatistikFormatter;
 import modes.statistik.logic.StatistikRechnerService;
+import modes.statistik.logic.StatistikTabellenText;
 import modes.statistik.model.StatistikDatenpunkt;
 import modes.statistik.model.StatistikDiagrammTyp;
 import modes.statistik.model.StatistikErgebnis;
@@ -12,59 +11,67 @@ import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 import ui.shell.ModePanel;
-import ui.shell.StatusAnzeige;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
 public class StatistikPanel extends JPanel implements ModePanel
 {
-    private static final String[] TABLE_COLUMNS = {"x", "y", "Gewicht"};
-
     private final StatistikState state = new StatistikState();
     private final StatistikRechnerService service = new StatistikRechnerService();
-    private final StatistikFormatter formatter = new StatistikFormatter();
+    private final StatistikTabellenText tabellenText = new StatistikTabellenText();
     private final JTextArea textInput = new JTextArea("1\n2\n2\n4\n5\n8");
-    private final JTextArea resultArea = new JTextArea("Bereit");
-    private final JLabel statusLabel = new JLabel("Statistikmodus bereit");
     private final JTextField klassenField = new JTextField("0");
     private final JCheckBox sortierenBox = new JCheckBox("Daten sortieren");
     private final JComboBox<StatistikDiagrammTyp> diagrammBox = new JComboBox<>(StatistikDiagrammTyp.values());
-    private final DefaultTableModel tableModel = new DefaultTableModel(TABLE_COLUMNS, 18);
-    private final JTable dataTable = new JTable(tableModel);
     private final StatistikDiagrammPanel diagrammPanel = new StatistikDiagrammPanel();
-    private final StatusAnzeige statusAnzeige = new StatusAnzeige(statusLabel, resultArea, diagrammPanel);
+    private final StatistikTabellenPanel tabellenPanel = new StatistikTabellenPanel();
+    private final StatistikErgebnisPanel ergebnisPanel = new StatistikErgebnisPanel(diagrammPanel);
+    private final VerteilungsPanel verteilungsPanel = new VerteilungsPanel();
+    private final JTabbedPane tabs = new JTabbedPane();
     private final List<JButton> buttons = new ArrayList<>();
-    private final List<JTextField> fields = List.of(klassenField);
 
     private AppTheme theme;
-    private StatistikErgebnis aktuellesErgebnis;
 
     public StatistikPanel()
     {
-        setLayout(new BorderLayout(14, 0));
+        setLayout(new BorderLayout());
         setOpaque(true);
 
-        add(buildInputArea(), BorderLayout.WEST);
-        add(buildResultArea(), BorderLayout.CENTER);
-        add(buildDiagrammArea(), BorderLayout.EAST);
-        fuelleBeispielTabelle();
+        JPanel datenTab = new JPanel(new BorderLayout(14, 0));
+        datenTab.setOpaque(false);
+        datenTab.add(buildInputArea(), BorderLayout.WEST);
+        datenTab.add(buildResultArea(), BorderLayout.CENTER);
+        datenTab.add(buildDiagrammArea(), BorderLayout.EAST);
+
+        tabs.setFocusable(false);
+        tabs.addTab("Daten", datenTab);
+        tabs.addTab("Verteilungen", verteilungsPanel);
+        add(tabs, BorderLayout.CENTER);
+
+        tabellenPanel.fuelleBeispiel();
     }
 
     @Override
@@ -79,31 +86,24 @@ public class StatistikPanel extends JPanel implements ModePanel
         setBackground(theme.windowBackground());
         applyThemeRecursively(this);
 
+        tabs.setBackground(theme.panelBackground());
+        tabs.setForeground(theme.displayForeground());
         textInput.setBackground(theme.inputBackground());
         textInput.setForeground(theme.displayForeground());
         textInput.setCaretColor(theme.displayForeground());
         textInput.setBorder(ModernButtonStyler.cardBorder(theme));
-        resultArea.setBackground(theme.displayBackground());
-        resultArea.setForeground(theme.displayForeground());
-        resultArea.setCaretColor(theme.displayForeground());
-        dataTable.setBackground(theme.inputBackground());
-        dataTable.setForeground(theme.displayForeground());
-        dataTable.setGridColor(theme.modeBorder());
-        dataTable.getTableHeader().setBackground(theme.toggleButtonBackground());
-        dataTable.getTableHeader().setForeground(theme.toggleButtonForeground());
-        statusAnzeige.setTheme(theme);
+        tabellenPanel.applyTheme(theme);
+        ergebnisPanel.applyTheme(theme);
+        verteilungsPanel.applyTheme(theme);
         sortierenBox.setForeground(theme.displayForeground());
         sortierenBox.setBackground(theme.panelBackground());
         diagrammBox.setBackground(theme.toggleButtonBackground());
         diagrammBox.setForeground(theme.toggleButtonForeground());
         diagrammPanel.applyTheme(theme);
 
-        for (JTextField field : fields)
-        {
-            field.setFont(AppFonts.normal(14));
-            ModernButtonStyler.styleInput(field, theme);
-            field.setCaretColor(theme.displayForeground());
-        }
+        klassenField.setFont(AppFonts.normal(14));
+        ModernButtonStyler.styleInput(klassenField, theme);
+        klassenField.setCaretColor(theme.displayForeground());
 
         for (JButton button : buttons)
         {
@@ -129,6 +129,8 @@ public class StatistikPanel extends JPanel implements ModePanel
         controls.add(createButton("Tabelle auswerten", this::werteTabelleAus));
         controls.add(createButton("Beispiel", this::beispiel));
         controls.add(createButton("Leeren", this::clear));
+        controls.add(createButton("Als Tabelle kopieren", this::kopiereTabelle));
+        controls.add(createButton("CSV importieren", this::importiereCsv));
         controls.add(wrapField("Klassen", klassenField));
         controls.add(sortierenBox);
 
@@ -140,23 +142,11 @@ public class StatistikPanel extends JPanel implements ModePanel
 
     private JPanel buildResultArea()
     {
-        JPanel panel = new JPanel(new BorderLayout(0, 12));
-        panel.setOpaque(false);
-
-        dataTable.setFillsViewportHeight(true);
-        dataTable.setRowHeight(24);
-
-        resultArea.setEditable(false);
-        resultArea.setFont(AppFonts.festeBreite(14));
-
         JPanel split = new JPanel(new GridLayout(2, 1, 0, 10));
         split.setOpaque(false);
-        split.add(new JScrollPane(dataTable));
-        split.add(new JScrollPane(resultArea));
-
-        panel.add(split, BorderLayout.CENTER);
-        panel.add(statusLabel, BorderLayout.SOUTH);
-        return panel;
+        split.add(tabellenPanel);
+        split.add(ergebnisPanel);
+        return split;
     }
 
     private JPanel buildDiagrammArea()
@@ -195,14 +185,18 @@ public class StatistikPanel extends JPanel implements ModePanel
 
     private void werteTextAus()
     {
-        List<StatistikDatenpunkt> daten = service.parseText(textInput.getText());
-        aktualisiereAuswertung(daten, "Textdaten ausgewertet");
-        fuelleTabelleAusDaten(daten);
+        werteAusUndZeige(service.parseText(textInput.getText()), "Textdaten ausgewertet");
     }
 
     private void werteTabelleAus()
     {
-        aktualisiereAuswertung(readTableData(), "Tabellendaten ausgewertet");
+        aktualisiereAuswertung(tabellenPanel.leseDaten(), "Tabellendaten ausgewertet");
+    }
+
+    private void werteAusUndZeige(List<StatistikDatenpunkt> daten, String status)
+    {
+        aktualisiereAuswertung(daten, status);
+        tabellenPanel.zeigeDaten(daten);
     }
 
     private void aktualisiereAuswertung(List<StatistikDatenpunkt> daten, String status)
@@ -211,33 +205,10 @@ public class StatistikPanel extends JPanel implements ModePanel
         state.setSortiert(sortierenBox.isSelected());
         state.setDatenpunkte(daten);
 
-        aktuellesErgebnis = service.berechne(state.getDatenpunkte());
-        if (state.getKlassenAnzahl() > 0)
-        {
-            aktuellesErgebnis = new StatistikErgebnis(
-                    aktuellesErgebnis.getDatenpunkte(),
-                    aktuellesErgebnis.getModalwerte(),
-                    service.histogramm(aktuellesErgebnis.getDatenpunkte(), state.getKlassenAnzahl()),
-                    aktuellesErgebnis.getAnzahl(),
-                    aktuellesErgebnis.getSumme(),
-                    aktuellesErgebnis.getMinimum(),
-                    aktuellesErgebnis.getMaximum(),
-                    aktuellesErgebnis.getMittelwert(),
-                    aktuellesErgebnis.getMedian(),
-                    aktuellesErgebnis.getQ1(),
-                    aktuellesErgebnis.getQ3(),
-                    aktuellesErgebnis.getVarianzPopulation(),
-                    aktuellesErgebnis.getVarianzStichprobe(),
-                    aktuellesErgebnis.getStandardabweichungPopulation(),
-                    aktuellesErgebnis.getStandardabweichungStichprobe(),
-                    aktuellesErgebnis.getLineareRegression(),
-                    aktuellesErgebnis.getQuadratischeRegression()
-            );
-        }
-
-        resultArea.setText(formatter.formatiereErgebnis(aktuellesErgebnis));
-        diagrammPanel.setErgebnis(aktuellesErgebnis);
-        statusAnzeige.zeigeErfolg(status + " | n = " + aktuellesErgebnis.getAnzahl());
+        StatistikErgebnis ergebnis = service.berechne(state.getDatenpunkte(), state.getKlassenAnzahl());
+        ergebnisPanel.zeigeErgebnis(ergebnis, status);
+        tabellenPanel.markiereAusreisser(ergebnis);
+        diagrammPanel.setErgebnis(ergebnis);
     }
 
     private int parseKlassenAnzahl()
@@ -252,112 +223,58 @@ public class StatistikPanel extends JPanel implements ModePanel
         }
     }
 
-    private List<StatistikDatenpunkt> readTableData()
+    private void kopiereTabelle()
     {
-        List<StatistikDatenpunkt> daten = new ArrayList<>();
-        int fallbackX = 1;
-
-        for (int row = 0; row < tableModel.getRowCount(); row++)
+        List<StatistikDatenpunkt> daten = tabellenPanel.leseDaten();
+        if (daten.isEmpty())
         {
-            String xText = cell(row, 0);
-            String yText = cell(row, 1);
-            String gewichtText = cell(row, 2);
-
-            if (xText.isBlank() && yText.isBlank() && gewichtText.isBlank())
-            {
-                continue;
-            }
-
-            double x;
-            double y;
-            if (yText.isBlank())
-            {
-                x = fallbackX;
-                y = parseZahl(xText);
-            }
-            else
-            {
-                x = xText.isBlank() ? fallbackX : parseZahl(xText);
-                y = parseZahl(yText);
-            }
-
-            double gewicht = gewichtText.isBlank() ? 1.0 : parseZahl(gewichtText);
-            daten.add(new StatistikDatenpunkt(x, y, gewicht));
-            fallbackX++;
+            throw new IllegalArgumentException("Die Tabelle ist leer.");
         }
 
-        return daten;
+        String text = tabellenText.alsTabellenText(daten);
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
+        ergebnisPanel.zeigeStatus(daten.size() + " Zeilen als Tabelle kopiert");
     }
 
-    private String cell(int row, int column)
+    private void importiereCsv()
     {
-        Object value = tableModel.getValueAt(row, column);
-        return value == null ? "" : value.toString().trim();
-    }
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Statistikdaten importieren");
+        chooser.setFileFilter(new FileNameExtensionFilter("CSV- oder Textdatei", "csv", "txt", "tsv"));
+        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
+        {
+            return;
+        }
 
-    private double parseZahl(String text)
-    {
-        return ZahlenEingabe.lese(text);
+        String inhalt;
+        try
+        {
+            // Bytes statt readString: kaputte Umlaute in einer ANSI-Kopfzeile sollen den Import nicht abbrechen.
+            inhalt = new String(Files.readAllBytes(chooser.getSelectedFile().toPath()), StandardCharsets.UTF_8);
+        }
+        catch (IOException e)
+        {
+            throw new UncheckedIOException(e);
+        }
+
+        List<StatistikDatenpunkt> daten = tabellenText.liesCsv(inhalt);
+        werteAusUndZeige(daten, chooser.getSelectedFile().getName() + " importiert");
     }
 
     private void beispiel()
     {
         textInput.setText("1\n2\n2\n4\n5\n8");
-        fuelleBeispielTabelle();
+        tabellenPanel.fuelleBeispiel();
         werteTextAus();
     }
 
     private void clear()
     {
         textInput.setText("");
-        clearTable(18);
-        resultArea.setText("Bereit");
-        statusAnzeige.zeigeErfolg("Statistikmodus bereit");
-        aktuellesErgebnis = null;
+        tabellenPanel.leeren();
+        tabellenPanel.markiereAusreisser(null);
+        ergebnisPanel.leeren();
         diagrammPanel.setErgebnis(null);
-    }
-
-    private void fuelleBeispielTabelle()
-    {
-        clearTable(18);
-        double[][] beispiel = {
-                {1, 2, 1},
-                {2, 3, 1},
-                {3, 5, 1},
-                {4, 8, 1},
-                {5, 13, 1}
-        };
-
-        for (int i = 0; i < beispiel.length; i++)
-        {
-            tableModel.setValueAt(beispiel[i][0], i, 0);
-            tableModel.setValueAt(beispiel[i][1], i, 1);
-            tableModel.setValueAt(beispiel[i][2], i, 2);
-        }
-    }
-
-    private void fuelleTabelleAusDaten(List<StatistikDatenpunkt> daten)
-    {
-        clearTable(Math.max(18, daten.size()));
-        for (int i = 0; i < daten.size(); i++)
-        {
-            StatistikDatenpunkt punkt = daten.get(i);
-            tableModel.setValueAt(formatter.formatiereZahl(punkt.x()), i, 0);
-            tableModel.setValueAt(formatter.formatiereZahl(punkt.y()), i, 1);
-            tableModel.setValueAt(formatter.formatiereZahl(punkt.gewicht()), i, 2);
-        }
-    }
-
-    private void clearTable(int rows)
-    {
-        tableModel.setRowCount(rows);
-        for (int row = 0; row < tableModel.getRowCount(); row++)
-        {
-            for (int column = 0; column < tableModel.getColumnCount(); column++)
-            {
-                tableModel.setValueAt(null, row, column);
-            }
-        }
     }
 
     private void runSafely(Runnable action)
@@ -368,9 +285,17 @@ public class StatistikPanel extends JPanel implements ModePanel
         }
         catch (IllegalArgumentException | ArithmeticException e)
         {
-            resultArea.setText("Fehler");
+            ergebnisPanel.zeigeFehler(e.getMessage());
+            tabellenPanel.markiereAusreisser(null);
             diagrammPanel.setErgebnis(null);
-            statusAnzeige.zeigeFehler(e.getMessage(), "Ungültige Statistikdaten");
+        }
+        catch (UncheckedIOException e)
+        {
+            ergebnisPanel.zeigeFehler("Datei konnte nicht gelesen werden: " + e.getCause().getMessage());
+        }
+        catch (IllegalStateException e)
+        {
+            ergebnisPanel.zeigeFehler("Zwischenablage ist gerade nicht verfügbar.");
         }
     }
 

@@ -260,6 +260,66 @@ class HistoryPanelTest
     }
 
     // Das Menü hängt am „Mehr“-Button, so wie es auch beim Klicken aufgeht.
+    @Test
+    void historyPanel_ShouldMergeEqualCalculations_WhenOptionIsChecked()
+    {
+        // Arrange
+        HistoryPanel panel = new HistoryPanel(frage -> true);
+        LocalDateTime zeit = LocalDateTime.of(2026, 5, 12, 10, 30);
+        panel.setAllStructuredEntries(List.of(
+                new VerlaufEintrag("1+1", "2", RechnerModus.STANDARD, zeit, false),
+                new VerlaufEintrag("1+1", "2", RechnerModus.STANDARD, zeit.plusMinutes(1), false)
+        ));
+
+        // Act
+        menuePunkt(panel, "Gleiche Rechnungen zusammenfassen").doClick();
+
+        // Assert
+        assertEquals(1, liste(panel).getModel().getSize());
+        assertEquals(2, panel.getAllStructuredEntries().size());
+    }
+
+    @Test
+    void historyPanel_ShouldImportWithoutDuplicatesAndNotify()
+    {
+        // Arrange
+        HistoryPanel panel = new HistoryPanel(frage -> true);
+        List<String> events = new ArrayList<>();
+        panel.setEntriesChangedListener(e -> events.add(e.getActionCommand()));
+        VerlaufEintrag vorhanden = new VerlaufEintrag("1+1", "2", RechnerModus.STANDARD, LocalDateTime.of(2026, 5, 12, 10, 30), false);
+        VerlaufEintrag aelter = new VerlaufEintrag("3*3", "9", RechnerModus.STANDARD, LocalDateTime.of(2025, 1, 1, 8, 0), false);
+        panel.setAllStructuredEntries(List.of(vorhanden));
+
+        // Act
+        panel.importEntries(List.of(vorhanden, aelter));
+
+        // Assert
+        assertEquals(List.of(aelter, vorhanden), panel.getAllStructuredEntries());
+        assertEquals(1, events.size());
+    }
+
+    @Test
+    void historyPanel_ShouldCollapseToNarrowStripAndExpandAgain()
+    {
+        // Arrange
+        HistoryPanel panel = new HistoryPanel();
+
+        // Act
+        SwingSuche.button(panel, "›").doClick();
+
+        // Assert
+        assertTrue(panel.isEingeklappt());
+        assertFalse(liste(panel).getParent().getParent().isVisible());
+        assertTrue(panel.getPreferredSize().width < 60);
+
+        // Act
+        SwingSuche.button(panel, "‹").doClick();
+
+        // Assert
+        assertFalse(panel.isEingeklappt());
+        assertTrue(liste(panel).getParent().getParent().isVisible());
+    }
+
     private static javax.swing.JMenuItem menuePunkt(HistoryPanel panel, String text)
     {
         javax.swing.JPopupMenu menue = SwingSuche.button(panel, "Mehr").getComponentPopupMenu();

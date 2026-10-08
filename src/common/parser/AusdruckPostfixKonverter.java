@@ -4,23 +4,28 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
-import java.util.Map;
 
+/**
+ * Shunting-Yard ohne Rekursion – deshalb auch bei tief verschachtelten Klammern kein StackOverflow.
+ */
 final class AusdruckPostfixKonverter
 {
-    private static final String UNARY_MINUS = AusdruckTokenizer.UNARY_MINUS;
     private static final String OPEN = AusdruckTokenizer.OPEN;
     private static final String CLOSE = AusdruckTokenizer.CLOSE;
+    private static final String SEMIKOLON = AusdruckTokenizer.SEMIKOLON;
 
-    private static final Map<String, Integer> PRIORITY = Map.of(
-            "+", 1,
-            "-", 1,
-            "*", 2,
-            "/", 2,
-            "%", 2,
-            "^", 3,
-            UNARY_MINUS, 4
-    );
+    /** Eine offene Klammer; {@code funktion} ist null bei einer normalen Klammer. */
+    private static final class Klammer
+    {
+        private final AusdruckToken funktion;
+        private int argumente;
+
+        private Klammer(AusdruckToken funktion, int argumente)
+        {
+            this.funktion = funktion;
+            this.argumente = argumente;
+        }
+    }
 
     private AusdruckPostfixKonverter()
     {
@@ -30,11 +35,13 @@ final class AusdruckPostfixKonverter
     {
         List<AusdruckToken> out = new ArrayList<>();
         Deque<AusdruckToken> stack = new ArrayDeque<>();
+        Deque<Klammer> klammern = new ArrayDeque<>();
 
         for (int i = 0; i < tokens.size(); i++)
         {
             AusdruckToken token = tokens.get(i);
             String text = token.text();
+            String vorher = i > 0 ? tokens.get(i - 1).text() : null;
 
             if (istZahl(text))
             {
@@ -44,7 +51,7 @@ final class AusdruckPostfixKonverter
             {
                 boolean istFunktion = i + 1 < tokens.size()
                         && OPEN.equals(tokens.get(i + 1).text())
-                        && AusdruckTokenizer.isFunction(text);
+                        && FunktionsRegistry.istFunktion(text);
 
                 if (istFunktion)
                 {
@@ -57,12 +64,14 @@ final class AusdruckPostfixKonverter
             }
             else if (istOperator(text))
             {
-                while (!stack.isEmpty() && istOperator(stack.peek().text()))
+                // Ein Präfix-Operator hat keinen linken Operanden, darf also nichts vom Stack holen (2^-2).
+                boolean praefix = OperatorRegistry.stelligkeit(text) == 1;
+                while (!praefix && !stack.isEmpty() && istOperator(stack.peek().text()))
                 {
                     String top = stack.peek().text();
-                    boolean pop = istRechtsassoziativ(text)
-                            ? PRIORITY.get(top) > PRIORITY.get(text)
-                            : PRIORITY.get(top) >= PRIORITY.get(text);
+                    boolean pop = OperatorRegistry.istRechtsassoziativ(text)
+                            ? OperatorRegistry.prioritaet(top) > OperatorRegistry.prioritaet(text)
+                            : OperatorRegistry.prioritaet(top) >= OperatorRegistry.prioritaet(text);
 
                     if (!pop) break;
                     out.add(stack.pop());
@@ -71,10 +80,36 @@ final class AusdruckPostfixKonverter
             }
             else if (OPEN.equals(text))
             {
+                // Der Funktionsname direkt davor liegt schon oben auf dem Stack (siehe Identifier-Zweig).
+                boolean funktionsKlammer = istIdentifier(vorher) && FunktionsRegistry.istFunktion(vorher);
+                AusdruckToken funktion = funktionsKlammer ? stack.peek() : null;
+                boolean leer = i + 1 < tokens.size() && CLOSE.equals(tokens.get(i + 1).text());
+                klammern.push(new Klammer(funktion, leer ? 0 : 1));
                 stack.push(token);
+            }
+            else if (SEMIKOLON.equals(text))
+            {
+                if (klammern.isEmpty() || klammern.peek().funktion == null)
+                {
+                    throw new AusdruckParserException(ParserFehler.SYNTAX,
+                            "„;“ ist nur zwischen Funktionsargumenten erlaubt", token.position());
+                }
+                if (OPEN.equals(vorher) || SEMIKOLON.equals(vorher))
+                {
+                    throw new AusdruckParserException(ParserFehler.SYNTAX, "Hier fehlt ein Argument", token.position());
+                }
+                while (!OPEN.equals(stack.peek().text()))
+                {
+                    out.add(stack.pop());
+                }
+                klammern.peek().argumente++;
             }
             else if (CLOSE.equals(text))
             {
+                if (SEMIKOLON.equals(vorher))
+                {
+                    throw new AusdruckParserException(ParserFehler.SYNTAX, "Hier fehlt ein Argument", token.position());
+                }
                 while (!stack.isEmpty() && !OPEN.equals(stack.peek().text()))
                 {
                     out.add(stack.pop());
@@ -82,19 +117,22 @@ final class AusdruckPostfixKonverter
 
                 if (stack.isEmpty())
                 {
-                    throw parserFehler(ParserFehler.KLAMMERN_UNAUSGEGLICHEN, "Unbalanced parentheses");
+                    throw new AusdruckParserException(ParserFehler.KLAMMERN_UNAUSGEGLICHEN,
+                            "Zu dieser „)“ fehlt die öffnende Klammer", token.position());
                 }
 
                 stack.pop();
+                Klammer klammer = klammern.pop();
 
-                if (!stack.isEmpty() && AusdruckTokenizer.isFunction(stack.peek().text()))
+                if (klammer.funktion != null)
                 {
+                    pruefeArgumentAnzahl(klammer);
                     out.add(stack.pop());
                 }
             }
             else
             {
-                throw parserFehler(ParserFehler.SYNTAX, "Unknown token: " + text);
+                throw new AusdruckParserException(ParserFehler.SYNTAX, "Unbekanntes Zeichen „" + text + "“", token.position());
             }
         }
 
@@ -103,7 +141,8 @@ final class AusdruckPostfixKonverter
             AusdruckToken token = stack.pop();
             if (OPEN.equals(token.text()))
             {
-                throw parserFehler(ParserFehler.KLAMMERN_UNAUSGEGLICHEN, "Unbalanced parentheses");
+                throw new AusdruckParserException(ParserFehler.KLAMMERN_UNAUSGEGLICHEN,
+                        "Diese „(“ wird nicht geschlossen", token.position());
             }
             out.add(token);
         }
@@ -111,28 +150,30 @@ final class AusdruckPostfixKonverter
         return out;
     }
 
-    static boolean istOperator(String text)
+    private static void pruefeArgumentAnzahl(Klammer klammer)
     {
-        return PRIORITY.containsKey(text);
+        String name = klammer.funktion.text();
+        int erwartet = FunktionsRegistry.stelligkeit(name);
+        if (klammer.argumente != erwartet)
+        {
+            String argumente = erwartet == 1 ? "1 Argument" : erwartet + " Argumente";
+            throw new AusdruckParserException(ParserFehler.SYNTAX,
+                    name + " erwartet " + argumente + ", gefunden: " + klammer.argumente, klammer.funktion.position());
+        }
     }
 
-    static boolean istZahl(String text)
+    private static boolean istOperator(String text)
     {
-        return text != null && text.matches("-?(?:[0-9]+(?:[.,][0-9]+)?|[.,][0-9]+)(?:[eE][+-]?[0-9]+)?");
+        return OperatorRegistry.istOperator(text);
     }
 
-    static boolean istIdentifier(String text)
+    private static boolean istZahl(String text)
     {
-        return text != null && text.matches("[a-zA-Z]+");
+        return AusdruckTokenizer.istZahl(text);
     }
 
-    private static boolean istRechtsassoziativ(String operator)
+    private static boolean istIdentifier(String text)
     {
-        return "^".equals(operator) || UNARY_MINUS.equals(operator);
-    }
-
-    private static AusdruckParserException parserFehler(ParserFehler fehler, String message)
-    {
-        return new AusdruckParserException(fehler, message);
+        return AusdruckTokenizer.istName(text);
     }
 }

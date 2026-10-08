@@ -6,7 +6,6 @@ import common.state.WinkelModus;
 import ui.animation.AnimationSupport;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
-import ui.theme.ModernButtonStyler;
 import ui.theme.ThemeType;
 import ui.theme.custom.CustomThemeColors;
 import ui.theme.custom.CustomThemePersistence;
@@ -15,10 +14,12 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 public final class SettingsDialog extends JDialog
 {
     private final AppTheme theme;
+    private final SettingsRows rows;
     private AppSettings workingSettings;
     private AppSettings appliedSettings;
     private final Consumer<AppSettings> settingsListener;
@@ -39,6 +40,7 @@ public final class SettingsDialog extends JDialog
     {
         super(owner, "Einstellungen", false);
         this.theme = theme;
+        this.rows = new SettingsRows(theme);
         this.workingSettings = settings.copy();
         this.appliedSettings = settings.copy();
         this.settingsListener = settingsListener;
@@ -49,9 +51,9 @@ public final class SettingsDialog extends JDialog
         this.appliedCustomThemeColors = customThemeColors;
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setContentPane(createContent());
-        setMinimumSize(new Dimension(520, 430));
-        pack();
+        rebuildContent();
+        setMinimumSize(new Dimension(600, 520));
+        setSize(new Dimension(640, 720));
         setLocationRelativeTo(owner);
     }
 
@@ -72,9 +74,16 @@ public final class SettingsDialog extends JDialog
                 new CustomThemePersistence()).setVisible(true);
     }
 
+    private void rebuildContent()
+    {
+        setContentPane(createContent());
+        revalidate();
+        repaint();
+    }
+
     private JPanel createContent()
     {
-        JPanel content = new JPanel(new BorderLayout(0, 18));
+        JPanel content = new JPanel(new BorderLayout(0, 14));
         content.setBorder(new EmptyBorder(18, 20, 18, 20));
         content.setBackground(theme.windowBackground());
 
@@ -91,222 +100,134 @@ public final class SettingsDialog extends JDialog
         header.add(title, BorderLayout.NORTH);
         header.add(hint, BorderLayout.SOUTH);
 
-        JPanel settingsGrid = new JPanel(new GridLayout(0, 1, 0, 10));
-        settingsGrid.setOpaque(false);
-        settingsGrid.add(createComboRow("Theme", ThemeType.values(), workingSettings.getThemeType(),
-                workingSettings::setThemeType));
-        settingsGrid.add(createCustomThemeSection());
-        settingsGrid.add(createComboRow("Startmodus", RechnerModus.values(), workingSettings.getStartModus(),
-                workingSettings::setStartModus));
-        settingsGrid.add(createComboRow("Winkelmodus", WinkelModus.values(), workingSettings.getWinkelModus(),
-                workingSettings::setWinkelModus));
-        settingsGrid.add(createSpinnerRow("Präzision", workingSettings.getNachkommastellen()));
-        settingsGrid.add(createComboRow("Zahlenformat", ZahlenFormatModus.values(), workingSettings.getZahlenFormatModus(),
-                workingSettings::setZahlenFormatModus));
-        settingsGrid.add(createCheckRow("Verlauf speichern", workingSettings.isHistoryEnabled()));
-        settingsGrid.add(createSessionRow());
-        settingsGrid.add(createValueRow("Version", AppSettings.VERSION));
+        JPanel settingsList = new JPanel();
+        settingsList.setLayout(new BoxLayout(settingsList, BoxLayout.Y_AXIS));
+        settingsList.setOpaque(false);
+        addSection(settingsList, "Aussehen", createAussehen());
+        addSection(settingsList, "Rechnen", createRechnen());
+        addSection(settingsList, "Verlauf und Session", createVerlauf());
+        addSection(settingsList, "Schule", createSchule());
+        settingsList.add(rows.value("Version", AppSettings.VERSION));
+
+        // Oben ausrichten, sonst zieht das Scrollfenster die Zeilen auf volle Höhe.
+        JPanel top = new JPanel(new BorderLayout());
+        top.setOpaque(false);
+        top.add(settingsList, BorderLayout.NORTH);
+
+        JScrollPane scroll = new JScrollPane(top);
+        scroll.setBorder(null);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
 
         content.add(header, BorderLayout.NORTH);
-        content.add(settingsGrid, BorderLayout.CENTER);
+        content.add(scroll, BorderLayout.CENTER);
         content.add(createFooter(), BorderLayout.SOUTH);
         return content;
     }
 
-    private JPanel createFooter()
+    private void addSection(JPanel list, String title, JComponent... rowsInSection)
     {
-        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        footer.setOpaque(false);
-
-        JButton resetButton = new JButton("Zurücksetzen");
-        resetButton.addActionListener(e -> resetToAppliedValues());
-        styleButton(resetButton);
-
-        JButton cancelButton = new JButton("Abbrechen");
-        cancelButton.addActionListener(e -> dispose());
-        styleButton(cancelButton);
-
-        JButton applyButton = new JButton("Anwenden");
-        applyButton.addActionListener(e -> {
-            publish();
-            AnimationSupport.pulseBackground(applyButton, theme.successPulseColor(), 180);
-        });
-        styleButton(applyButton);
-
-        JButton saveButton = new JButton("Speichern");
-        saveButton.addActionListener(e -> {
-            publish();
-            dispose();
-        });
-        styleButton(saveButton);
-
-        footer.add(resetButton);
-        footer.add(cancelButton);
-        footer.add(applyButton);
-        footer.add(saveButton);
-        return footer;
+        JLabel label = rows.sectionTitle(title);
+        label.setAlignmentX(LEFT_ALIGNMENT);
+        list.add(label);
+        list.add(Box.createVerticalStrut(6));
+        for (JComponent row : rowsInSection)
+        {
+            row.setAlignmentX(LEFT_ALIGNMENT);
+            row.setMaximumSize(new Dimension(Integer.MAX_VALUE, row.getPreferredSize().height));
+            list.add(row);
+            list.add(Box.createVerticalStrut(8));
+        }
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> JPanel createComboRow(String name, T[] values, T selected, Consumer<T> listener)
+    private JComponent[] createAussehen()
     {
-        JComboBox<T> comboBox = new JComboBox<>(values);
-        comboBox.setSelectedItem(selected);
-        comboBox.addActionListener(e -> listener.accept((T) comboBox.getSelectedItem()));
-        styleComboBox(comboBox);
-        return createSettingRow(name, comboBox);
+        return new JComponent[]{
+                rows.combo("Theme", "Farbschema der ganzen App.", ThemeType.values(), workingSettings.getThemeType(),
+                        workingSettings::setThemeType),
+                rows.check("Hell/Dunkel vom System", "Beim Start Light oder Dark passend zu Windows wählen.",
+                        workingSettings.isThemeVomSystem(), workingSettings::setThemeVomSystem),
+                CustomThemeSection.create(this, theme, () -> customThemeColors, this::changeCustomColors),
+                rows.check("Weniger Bewegung", "Keine Übergänge und kein Aufblinken – angenehmer bei Reizempfindlichkeit oder langsamen Rechnern.",
+                        workingSettings.isWenigerBewegung(), workingSettings::setWenigerBewegung)
+        };
     }
 
-    private JPanel createSpinnerRow(String name, int selected)
+    private JComponent[] createRechnen()
     {
-        JSpinner spinner = new JSpinner(new SpinnerNumberModel(selected, 2, 15, 1));
-        spinner.addChangeListener(e -> workingSettings.setNachkommastellen((Integer) spinner.getValue()));
-        spinner.setFont(AppFonts.normal(13));
-        return createSettingRow(name, spinner);
+        return new JComponent[]{
+                rows.combo("Startmodus", "Mit diesem Modus startet die App.", RechnerModus.values(), workingSettings.getStartModus(),
+                        workingSettings::setStartModus),
+                rows.combo("Winkelmodus", "DEG = Grad (sin 90 = 1), RAD = Bogenmaß (sin π/2 = 1).", WinkelModus.values(),
+                        workingSettings.getWinkelModus(), workingSettings::setWinkelModus),
+                rows.spinner("Präzision", "Wie viele Nachkommastellen höchstens angezeigt werden.",
+                        workingSettings.getNachkommastellen(), 2, 15, workingSettings::setNachkommastellen),
+                rows.combo("Zahlenformat", "AUTO wählt selbst, ob normal oder wissenschaftlich (1,2e-5) angezeigt wird.",
+                        ZahlenFormatModus.values(), workingSettings.getZahlenFormatModus(), workingSettings::setZahlenFormatModus)
+        };
     }
 
-    private JPanel createCheckRow(String name, boolean selected)
-    {
-        JCheckBox checkBox = new JCheckBox();
-        checkBox.setSelected(selected);
-        checkBox.setOpaque(false);
-        checkBox.setForeground(theme.displayForeground());
-        checkBox.addActionListener(e -> workingSettings.setHistoryEnabled(checkBox.isSelected()));
-        return createSettingRow(name, checkBox);
-    }
-
-    private JPanel createCustomThemeSection()
-    {
-        JPanel section = new JPanel(new BorderLayout(0, 10));
-        section.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(theme.cardBorder(), 1, true),
-                new EmptyBorder(10, 12, 12, 12)
-        ));
-        section.setBackground(theme.cardBackground());
-
-        JLabel title = new JLabel("Custom Theme");
-        title.setFont(AppFonts.fett(14));
-        title.setForeground(theme.displayForeground());
-
-        JLabel hint = new JLabel("Farben selber mischen: offiziell erlaubt, optisch auf eigene Gefahr.");
-        hint.setFont(theme.secondaryDisplayFont().deriveFont(Font.PLAIN, 12f));
-        hint.setForeground(theme.secondaryDisplayForeground());
-
-        JPanel header = new JPanel(new BorderLayout(0, 3));
-        header.setOpaque(false);
-        header.add(title, BorderLayout.NORTH);
-        header.add(hint, BorderLayout.SOUTH);
-
-        JPanel colorsGrid = new JPanel(new GridLayout(0, 2, 8, 8));
-        colorsGrid.setOpaque(false);
-        colorsGrid.add(createColorButton("Fenster/Panel", customThemeColors.panelBackground(),
-                color -> customThemeColors = customThemeColors.withPanelBackground(color)));
-        colorsGrid.add(createColorButton("Display", customThemeColors.displayBackground(),
-                color -> customThemeColors = customThemeColors.withDisplayBackground(color)));
-        colorsGrid.add(createColorButton("Display-Text", customThemeColors.displayForeground(),
-                color -> customThemeColors = customThemeColors.withDisplayForeground(color)));
-        colorsGrid.add(createColorButton("Zahlen", customThemeColors.numberButtonBackground(),
-                color -> customThemeColors = customThemeColors.withNumberButtonBackground(color)));
-        colorsGrid.add(createColorButton("Operatoren", customThemeColors.operatorButtonBackground(),
-                color -> customThemeColors = customThemeColors.withOperatorButtonBackground(color)));
-        colorsGrid.add(createColorButton("Funktionen", customThemeColors.functionButtonBackground(),
-                color -> customThemeColors = customThemeColors.withFunctionButtonBackground(color)));
-        colorsGrid.add(createColorButton("Akzent/Toggle", customThemeColors.accentBackground(),
-                color -> customThemeColors = customThemeColors.withAccentBackground(color)));
-
-        section.add(header, BorderLayout.NORTH);
-        section.add(colorsGrid, BorderLayout.CENTER);
-        return section;
-    }
-
-    private JButton createColorButton(String label, Color initialColor, Consumer<Color> updater)
-    {
-        JButton button = new JButton(label + " " + formatColor(initialColor));
-        styleColorButton(button, initialColor);
-        button.addActionListener(e -> {
-            Color selected = JColorChooser.showDialog(this, label + " auswählen", button.getBackground());
-            if (selected == null)
-            {
-                return;
-            }
-
-            updater.accept(selected);
-            workingSettings.setThemeType(ThemeType.CUSTOM);
-            button.setText(label + " " + formatColor(selected));
-            styleColorButton(button, selected);
-        });
-        return button;
-    }
-
-    private void styleColorButton(JButton button, Color color)
-    {
-        button.setFont(AppFonts.normal(12));
-        ModernButtonStyler.styleButton(button, theme, color, contrastFor(color));
-    }
-
-    private Color contrastFor(Color color)
-    {
-        double luminance = (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255.0;
-        return luminance > 0.58 ? Color.BLACK : Color.WHITE;
-    }
-
-    private String formatColor(Color color)
-    {
-        return String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
-    }
-
-    private JPanel createValueRow(String name, String value)
-    {
-        JLabel valueLabel = new JLabel(value);
-        valueLabel.setFont(AppFonts.normal(13));
-        valueLabel.setForeground(theme.secondaryDisplayForeground());
-        return createSettingRow(name, valueLabel);
-    }
-
-    private JPanel createSessionRow()
+    private JComponent[] createVerlauf()
     {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actions.setOpaque(false);
+        actions.add(rows.button("Session speichern", () -> runIfSet(sessionSaveListener)));
+        actions.add(rows.button("Session laden", () -> runIfSet(sessionLoadListener)));
 
-        JButton saveButton = new JButton("Session speichern");
-        saveButton.addActionListener(e -> {
-            if (sessionSaveListener != null)
-            {
-                sessionSaveListener.run();
-            }
-        });
-        styleButton(saveButton);
-
-        JButton loadButton = new JButton("Session laden");
-        loadButton.addActionListener(e -> {
-            if (sessionLoadListener != null)
-            {
-                sessionLoadListener.run();
-            }
-        });
-        styleButton(loadButton);
-
-        actions.add(saveButton);
-        actions.add(loadButton);
-        return createSettingRow("Session", actions);
+        return new JComponent[]{
+                rows.check("Verlauf speichern", "Rechnungen bleiben nach dem Neustart erhalten.",
+                        workingSettings.isHistoryEnabled(), workingSettings::setHistoryEnabled),
+                rows.row("Session", "Aktuellen Stand (Modus, Ausdruck, Speicher) sichern oder zurückholen.", actions)
+        };
     }
 
-    private JPanel createSettingRow(String name, JComponent control)
+    private JComponent[] createSchule()
     {
-        JPanel row = new JPanel(new BorderLayout(12, 0));
-        row.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(theme.cardBorder(), 1, true),
-                new EmptyBorder(9, 12, 9, 12)
-        ));
-        row.setBackground(theme.cardBackground());
+        return new JComponent[]{
+                rows.check("Prüfungsmodus", "Nur Standard und Wissenschaftlich, kein Verlauf. Oben steht dann gut sichtbar „PRÜFUNGSMODUS“.",
+                        workingSettings.isPruefungsModus(), workingSettings::setPruefungsModus)
+        };
+    }
 
-        JLabel nameLabel = new JLabel(name);
-        nameLabel.setFont(AppFonts.fett(14));
-        nameLabel.setForeground(theme.displayForeground());
+    private void changeCustomColors(UnaryOperator<CustomThemeColors> change)
+    {
+        customThemeColors = change.apply(customThemeColors);
+        workingSettings.setThemeType(ThemeType.CUSTOM);
+    }
 
-        row.add(nameLabel, BorderLayout.WEST);
-        row.add(control, BorderLayout.EAST);
-        return row;
+    private JPanel createFooter()
+    {
+        JPanel footer = new JPanel(new BorderLayout());
+        footer.setOpaque(false);
+
+        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        left.setOpaque(false);
+        left.add(rows.button("Alles auf Standard", this::resetToDefaults));
+
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        right.setOpaque(false);
+        right.add(rows.button("Zurücksetzen", this::resetToAppliedValues));
+        right.add(rows.button("Abbrechen", this::dispose));
+        JButton applyButton = rows.button("Anwenden", this::publish);
+        applyButton.addActionListener(e -> AnimationSupport.pulseBackground(applyButton, theme.successPulseColor(), 180));
+        right.add(applyButton);
+        right.add(rows.button("Speichern", () -> {
+            publish();
+            dispose();
+        }));
+
+        footer.add(left, BorderLayout.WEST);
+        footer.add(right, BorderLayout.EAST);
+        return footer;
+    }
+
+    private static void runIfSet(Runnable listener)
+    {
+        if (listener != null)
+        {
+            listener.run();
+        }
     }
 
     private void publish()
@@ -317,26 +238,18 @@ public final class SettingsDialog extends JDialog
         settingsListener.accept(appliedSettings.copy());
     }
 
+    /** Verwirft nur die noch nicht angewendeten Änderungen im Dialog. */
     private void resetToAppliedValues()
     {
         workingSettings = appliedSettings.copy();
         customThemeColors = appliedCustomThemeColors;
-        setContentPane(createContent());
-        pack();
-        revalidate();
-        repaint();
+        rebuildContent();
     }
 
-    private void styleComboBox(JComboBox<?> comboBox)
+    /** Sicherer Weg zurück, wenn man sich verstellt hat: alles wie beim ersten Start. Greift erst mit Anwenden/Speichern. */
+    private void resetToDefaults()
     {
-        comboBox.setFont(AppFonts.normal(13));
-        comboBox.setBackground(theme.toggleButtonBackground());
-        comboBox.setForeground(theme.toggleButtonForeground());
-        comboBox.setFocusable(false);
-    }
-
-    private void styleButton(JButton button)
-    {
-        ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
+        workingSettings = workingSettings.standardMitFenster();
+        rebuildContent();
     }
 }

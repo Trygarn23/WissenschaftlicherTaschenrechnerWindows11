@@ -57,6 +57,17 @@ public final class Matrix
         return werte[zeile][spalte];
     }
 
+    /** Eine Spalte als Spaltenvektor (Zeilen × 1). */
+    public Matrix spalte(int spalte)
+    {
+        double[][] result = new double[zeilen][1];
+        for (int z = 0; z < zeilen; z++)
+        {
+            result[z][0] = get(z, spalte);
+        }
+        return new Matrix(result);
+    }
+
     public double[][] toArray()
     {
         double[][] copy = new double[zeilen][spalten];
@@ -127,19 +138,25 @@ public final class Matrix
             throw new IllegalArgumentException("Determinante ist nur für quadratische Matrizen definiert.");
         }
 
-        if (zeilen == 2)
+        // Gauß mit Teilpivotisierung: det = Produkt der Pivots, jeder Zeilentausch dreht das Vorzeichen.
+        double[][] arbeitskopie = toArray();
+        double determinante = 1.0;
+        for (int i = 0; i < zeilen; i++)
         {
-            return werte[0][0] * werte[1][1] - werte[0][1] * werte[1][0];
+            int besteZeile = findePivotZeile(arbeitskopie, i, i);
+            if (Math.abs(arbeitskopie[besteZeile][i]) <= RANG_TOLERANZ)
+            {
+                return 0.0;
+            }
+            if (besteZeile != i)
+            {
+                tauscheZeilen(arbeitskopie, i, besteZeile);
+                determinante = -determinante;
+            }
+            determinante *= arbeitskopie[i][i];
+            eliminiereSpalte(arbeitskopie, i, i);
         }
-
-        if (zeilen == 3)
-        {
-            return werte[0][0] * (werte[1][1] * werte[2][2] - werte[1][2] * werte[2][1])
-                    - werte[0][1] * (werte[1][0] * werte[2][2] - werte[1][2] * werte[2][0])
-                    + werte[0][2] * (werte[1][0] * werte[2][1] - werte[1][1] * werte[2][0]);
-        }
-
-        throw new IllegalArgumentException("Determinante ist aktuell nur für 2x2 und 3x3 umgesetzt.");
+        return determinante;
     }
 
     public Matrix transponiere()

@@ -2,33 +2,28 @@ package ui.history;
 
 import common.history.VerlaufEintrag;
 import common.history.VerlaufExport;
+import common.history.VerlaufJson;
 import common.history.VerlaufTextMapper;
 import common.state.RechnerModus;
+import ui.shell.ModeVisibilityPolicy;
 import ui.animation.AnimationSupport;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class HistoryPanel extends JPanel
 {
-    private static final String SEARCH_PLACEHOLDER = "Suche...";
+    private static final int BREITE = 220;
+    private static final int BREITE_EINGEKLAPPT = 44;
 
     /** Eintrag in der Filterauswahl: alle, nur Favoriten oder ein bestimmter Modus. */
     private record FilterOption(String label, RechnerModus mode, boolean favoritesOnly)
@@ -43,20 +38,24 @@ public class HistoryPanel extends JPanel
     private final DefaultListModel<VerlaufEintrag> allHistoryModel = new DefaultListModel<>();
     private final DefaultListModel<VerlaufEintrag> filteredHistoryModel = new DefaultListModel<>();
 
-    private final JTextField historySearchField = new JTextField();
+    private final HistorySearchField historySearchField = new HistorySearchField(this::applyFilter);
     private final JComboBox<FilterOption> filterBox = new JComboBox<>();
     private final JButton favoriteButton = new JButton(new StarIcon(false, 14));
     private final JButton moreButton = new JButton("Mehr");
+    private final JButton collapseButton = new JButton("›");
     private final JPopupMenu moreMenu = new JPopupMenu();
     private final JMenuItem undoItem = new JMenuItem("Löschen rückgängig");
+    private final JCheckBoxMenuItem zusammenfassenItem = new JCheckBoxMenuItem("Gleiche Rechnungen zusammenfassen");
     private final JList<VerlaufEintrag> historyList = new JList<>(filteredHistoryModel);
     private final JScrollPane historyScroll = new JScrollPane(historyList);
     private final JLabel emptyLabel = new JLabel("Noch nix gerechnet. Mutig.");
+    private final JPanel historyTop = new JPanel(new BorderLayout(6, 6));
 
     private final Predicate<String> deleteConfirmation;
 
     /** Stand vor dem letzten Löschen. Gilt nur, bis sich der Verlauf wieder anders ändert. */
     private List<VerlaufEintrag> undoSnapshot;
+    private boolean eingeklappt;
 
     private ActionListener entriesChangedListener;
     private ActionListener favoriteChangedListener;
@@ -76,10 +75,9 @@ public class HistoryPanel extends JPanel
 
         setLayout(new BorderLayout(6, 6));
         setOpaque(false);
-        setPreferredSize(new Dimension(220, 0));
+        setPreferredSize(new Dimension(BREITE, 0));
 
         buildUi();
-        setupSearchFiltering();
         setupInteractions();
     }
 
@@ -90,9 +88,9 @@ public class HistoryPanel extends JPanel
         historyList.setFocusable(false);
         historyList.setFixedCellHeight(58);
         historyList.setCellRenderer(new HistoryEntryRenderer(
-                () -> historySearchField.getText(),
+                historySearchField::getText,
                 () -> currentTheme,
-                SEARCH_PLACEHOLDER
+                HistorySearchField.PLACEHOLDER
         ));
 
         historyScroll.setBorder(null);
@@ -100,7 +98,6 @@ public class HistoryPanel extends JPanel
         emptyLabel.setHorizontalAlignment(SwingConstants.CENTER);
         emptyLabel.setBorder(BorderFactory.createEmptyBorder(12, 10, 12, 10));
 
-        configureSearchField();
         configureFilterBox();
         buildMoreMenu();
 
@@ -109,23 +106,35 @@ public class HistoryPanel extends JPanel
         favoriteButton.addActionListener(e -> toggleSelectedFavorite());
 
         moreButton.setFocusable(false);
-        moreButton.setToolTipText("Löschen und Exportieren");
+        moreButton.setToolTipText("Löschen, Exportieren und Importieren");
         moreButton.setComponentPopupMenu(moreMenu);
         moreButton.addActionListener(e -> moreMenu.show(moreButton, 0, moreButton.getHeight()));
+
+        collapseButton.setFocusable(false);
+        collapseButton.setToolTipText("Verlauf einklappen");
+        collapseButton.addActionListener(e -> setEingeklappt(!eingeklappt));
 
         JPanel historyActions = new JPanel(new GridLayout(1, 2, 6, 0));
         historyActions.setOpaque(false);
         historyActions.add(favoriteButton);
         historyActions.add(moreButton);
 
+        JPanel searchRow = new JPanel(new BorderLayout(6, 0));
+        searchRow.setOpaque(false);
+        searchRow.add(historySearchField, BorderLayout.CENTER);
+
         // Suchfeld bekommt eine eigene Zeile, neben den Buttons blieb nur Platz für „Such“.
-        JPanel historyTop = new JPanel(new BorderLayout(6, 6));
         historyTop.setOpaque(false);
         historyTop.add(historySearchField, BorderLayout.NORTH);
         historyTop.add(filterBox, BorderLayout.CENTER);
         historyTop.add(historyActions, BorderLayout.SOUTH);
 
-        add(historyTop, BorderLayout.NORTH);
+        JPanel header = new JPanel(new BorderLayout(6, 6));
+        header.setOpaque(false);
+        header.add(collapseButton, BorderLayout.NORTH);
+        header.add(historyTop, BorderLayout.CENTER);
+
+        add(header, BorderLayout.NORTH);
         add(historyScroll, BorderLayout.CENTER);
         add(emptyLabel, BorderLayout.SOUTH);
     }
@@ -136,6 +145,8 @@ public class HistoryPanel extends JPanel
         filterBox.addItem(new FilterOption("Nur Favoriten", null, true));
         for (RechnerModus mode : RechnerModus.values())
         {
+            // Nur Modi, die überhaupt in den Verlauf schreiben – sonst wird die Liste lang und bleibt leer.
+            if (!ModeVisibilityPolicy.sollHistoryAnzeigen(mode)) continue;
             filterBox.addItem(new FilterOption("Nur " + mode.getLabel(), mode, false));
         }
         filterBox.setFont(AppFonts.normal(13));
@@ -153,8 +164,16 @@ public class HistoryPanel extends JPanel
         undoItem.addActionListener(e -> undoDelete());
         moreMenu.add(undoItem);
         moreMenu.addSeparator();
-        addMenuItem("Als TXT exportieren…", e -> export("txt", VerlaufExport::alsText));
-        addMenuItem("Als CSV exportieren…", e -> export("csv", VerlaufExport::alsCsv));
+        zusammenfassenItem.setToolTipText("Zeigt jede Rechnung nur einmal, und zwar die neueste");
+        zusammenfassenItem.addActionListener(e -> applyFilter());
+        moreMenu.add(zusammenfassenItem);
+        moreMenu.addSeparator();
+        // Exportiert werden immer die gerade angezeigten Einträge, also inklusive Suche und Filter.
+        addMenuItem("Als TXT exportieren…", e -> HistoryDateiDialoge.speichere(this, "txt", VerlaufExport.alsText(visibleEntries())));
+        // BOM, damit Excel die Umlaute in der CSV richtig erkennt.
+        addMenuItem("Als CSV exportieren…", e -> HistoryDateiDialoge.speichere(this, "csv", "﻿" + VerlaufExport.alsCsv(visibleEntries())));
+        addMenuItem("Als JSON exportieren…", e -> HistoryDateiDialoge.speichere(this, "json", VerlaufJson.schreibe(visibleEntries())));
+        addMenuItem("JSON importieren…", e -> HistoryDateiDialoge.ladeJson(this).ifPresent(this::importEntries));
     }
 
     private void addMenuItem(String text, ActionListener action)
@@ -162,60 +181,6 @@ public class HistoryPanel extends JPanel
         JMenuItem item = new JMenuItem(text);
         item.addActionListener(action);
         moreMenu.add(item);
-    }
-
-    private void configureSearchField()
-    {
-        historySearchField.setFont(AppFonts.normal(14));
-        historySearchField.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
-        historySearchField.setOpaque(true);
-        showPlaceholder();
-
-        historySearchField.addFocusListener(new FocusAdapter()
-        {
-            @Override
-            public void focusGained(FocusEvent e)
-            {
-                if (SEARCH_PLACEHOLDER.equals(historySearchField.getText()))
-                {
-                    historySearchField.setText("");
-                    historySearchField.setForeground(getHistoryForeground());
-                }
-            }
-
-            @Override
-            public void focusLost(FocusEvent e)
-            {
-                if (historySearchField.getText().isBlank())
-                {
-                    showPlaceholder();
-                }
-            }
-        });
-    }
-
-    private void setupSearchFiltering()
-    {
-        historySearchField.getDocument().addDocumentListener(new DocumentListener()
-        {
-            @Override
-            public void insertUpdate(DocumentEvent e)
-            {
-                applyFilter();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e)
-            {
-                applyFilter();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e)
-            {
-                applyFilter();
-            }
-        });
     }
 
     private void setupInteractions()
@@ -247,7 +212,7 @@ public class HistoryPanel extends JPanel
         });
     }
 
-    /** Wird aufgerufen, wenn Einträge gelöscht oder wiederhergestellt wurden. */
+    /** Wird aufgerufen, wenn Einträge gelöscht, importiert oder wiederhergestellt wurden. */
     public void setEntriesChangedListener(ActionListener listener)
     {
         this.entriesChangedListener = listener;
@@ -285,15 +250,26 @@ public class HistoryPanel extends JPanel
 
     public void clearSearch()
     {
-        if (historySearchField.isFocusOwner())
-        {
-            historySearchField.setText("");
-            historySearchField.setForeground(getHistoryForeground());
-        }
-        else
-        {
-            showPlaceholder();
-        }
+        historySearchField.clear();
+    }
+
+    public boolean isEingeklappt()
+    {
+        return eingeklappt;
+    }
+
+    /** Eingeklappt bleibt nur ein schmaler Streifen mit dem Aufklapp-Knopf, dann haben die Tasten mehr Platz. */
+    public void setEingeklappt(boolean eingeklappt)
+    {
+        this.eingeklappt = eingeklappt;
+        historyTop.setVisible(!eingeklappt);
+        historyScroll.setVisible(!eingeklappt);
+        emptyLabel.setVisible(!eingeklappt && allHistoryModel.isEmpty());
+        collapseButton.setText(eingeklappt ? "‹" : "›");
+        collapseButton.setToolTipText(eingeklappt ? "Verlauf ausklappen" : "Verlauf einklappen");
+        setPreferredSize(new Dimension(eingeklappt ? BREITE_EINGEKLAPPT : BREITE, 0));
+        revalidate();
+        repaint();
     }
 
     public void setAllEntries(List<String> entries)
@@ -367,6 +343,17 @@ public class HistoryPanel extends JPanel
         }
     }
 
+    /** Fügt importierte Einträge hinzu; was schon genauso im Verlauf steht, kommt nicht doppelt rein. */
+    void importEntries(List<VerlaufEintrag> imported)
+    {
+        LinkedHashSet<VerlaufEintrag> merged = new LinkedHashSet<>(getAllStructuredEntries());
+        merged.addAll(imported);
+        List<VerlaufEintrag> sorted = new ArrayList<>(merged);
+        sorted.sort((a, b) -> a.getZeitpunkt().compareTo(b.getZeitpunkt()));
+        setAllStructuredEntries(sorted);
+        fireEntriesChanged();
+    }
+
     public void applyTheme(AppTheme theme)
     {
         this.currentTheme = theme;
@@ -380,6 +367,7 @@ public class HistoryPanel extends JPanel
 
         ModernButtonStyler.styleButton(favoriteButton, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
         ModernButtonStyler.styleButton(moreButton, theme, theme.specialButtonBackground(), theme.specialButtonForeground());
+        ModernButtonStyler.styleButton(collapseButton, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
 
         filterBox.setBackground(theme.toggleButtonBackground());
         filterBox.setForeground(theme.toggleButtonForeground());
@@ -392,19 +380,9 @@ public class HistoryPanel extends JPanel
             item.setForeground(theme.popupForeground());
         }
 
-        ModernButtonStyler.styleInput(historySearchField, theme);
-        historySearchField.setCaretColor(theme.historyForeground());
+        historySearchField.applyTheme(theme);
         emptyLabel.setForeground(theme.placeholderForeground());
         emptyLabel.setFont(theme.secondaryDisplayFont().deriveFont(Font.PLAIN, 13f));
-
-        if (SEARCH_PLACEHOLDER.equals(historySearchField.getText()))
-        {
-            historySearchField.setForeground(theme.placeholderForeground());
-        }
-        else
-        {
-            historySearchField.setForeground(theme.historyForeground());
-        }
 
         repaint();
     }
@@ -420,7 +398,7 @@ public class HistoryPanel extends JPanel
 
     private void deleteVisibleEntries()
     {
-        List<VerlaufEintrag> visible = modelEntries(filteredHistoryModel);
+        List<VerlaufEintrag> visible = visibleEntries();
         if (!visible.isEmpty() && deleteConfirmation.test(visible.size() + " angezeigte Einträge löschen?"))
         {
             removeEntries(visible);
@@ -476,37 +454,6 @@ public class HistoryPanel extends JPanel
         }
     }
 
-    /** Exportiert die gerade angezeigten Einträge, also inklusive Suche und Filter. */
-    private void export(String extension, Function<List<VerlaufEintrag>, String> format)
-    {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Verlauf exportieren");
-        chooser.setFileFilter(new FileNameExtensionFilter(extension.toUpperCase() + "-Datei", extension));
-        chooser.setSelectedFile(new File("verlauf." + extension));
-        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
-        {
-            return;
-        }
-
-        Path file = chooser.getSelectedFile().toPath();
-        if (!file.getFileName().toString().toLowerCase().endsWith("." + extension))
-        {
-            file = file.resolveSibling(file.getFileName() + "." + extension);
-        }
-
-        // BOM, damit Excel die Umlaute in der CSV richtig erkennt.
-        String content = (extension.equals("csv") ? "﻿" : "") + format.apply(modelEntries(filteredHistoryModel));
-        try
-        {
-            Files.writeString(file, content, StandardCharsets.UTF_8);
-        }
-        catch (IOException ex)
-        {
-            JOptionPane.showMessageDialog(this, "Datei konnte nicht gespeichert werden:\n" + ex.getMessage(),
-                    "Export fehlgeschlagen", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
     private boolean askUser(String question)
     {
         return JOptionPane.showConfirmDialog(this, question, "Verlauf löschen",
@@ -554,20 +501,29 @@ public class HistoryPanel extends JPanel
         List<VerlaufEintrag> visible = HistoryFilter.filter(
                 getAllStructuredEntries(),
                 historySearchField.getText(),
-                SEARCH_PLACEHOLDER,
+                HistorySearchField.PLACEHOLDER,
                 option == null ? null : option.mode(),
                 option != null && option.favoritesOnly()
         );
+        if (zusammenfassenItem.isSelected())
+        {
+            visible = HistoryFilter.zusammenfassen(visible);
+        }
 
         filteredHistoryModel.clear();
         visible.forEach(filteredHistoryModel::addElement);
 
         int last = filteredHistoryModel.size() - 1;
-        emptyLabel.setVisible(allHistoryModel.isEmpty());
+        emptyLabel.setVisible(!eingeklappt && allHistoryModel.isEmpty());
         if (last >= 0)
         {
             historyList.ensureIndexIsVisible(last);
         }
+    }
+
+    private List<VerlaufEintrag> visibleEntries()
+    {
+        return modelEntries(filteredHistoryModel);
     }
 
     private static List<VerlaufEintrag> modelEntries(DefaultListModel<VerlaufEintrag> model)
@@ -579,21 +535,4 @@ public class HistoryPanel extends JPanel
         }
         return result;
     }
-
-    private void showPlaceholder()
-    {
-        historySearchField.setText(SEARCH_PLACEHOLDER);
-        historySearchField.setForeground(getPlaceholderForeground());
-    }
-
-    private Color getHistoryForeground()
-    {
-        return currentTheme != null ? currentTheme.historyForeground() : Color.WHITE;
-    }
-
-    private Color getPlaceholderForeground()
-    {
-        return currentTheme != null ? currentTheme.placeholderForeground() : Color.GRAY;
-    }
-
 }

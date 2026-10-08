@@ -1,6 +1,5 @@
 package modes.komplex.ui;
 
-import common.formatting.ZahlenEingabe;
 import common.state.RechnerModus;
 import modes.komplex.formatting.KomplexFormatter;
 import modes.komplex.logic.KomplexRechnerService;
@@ -19,14 +18,10 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BinaryOperator;
-import java.util.function.UnaryOperator;
 
-public class KomplexPanel extends JPanel implements ModePanel
+public class KomplexPanel extends JPanel implements ModePanel, KomplexView
 {
-    private final KomplexState state = new KomplexState();
-    private final KomplexRechnerService service = new KomplexRechnerService();
-    private final KomplexFormatter formatter = new KomplexFormatter();
+    private final KomplexPresenter presenter;
 
     private final JTextField aRealField = new JTextField("0");
     private final JTextField aImagField = new JTextField("0");
@@ -37,6 +32,7 @@ public class KomplexPanel extends JPanel implements ModePanel
     private final JLabel detailLabel = new JLabel("|z| = 0 | arg = 0°");
     private final JLabel statusLabel = new JLabel("Bereit");
     private final StatusAnzeige statusAnzeige = new StatusAnzeige(statusLabel);
+    private final KomplexEbenePanel ebene = new KomplexEbenePanel();
     private final List<JButton> buttons = new ArrayList<>();
     private final List<JTextField> fields = List.of(aRealField, aImagField, bRealField, bImagField);
 
@@ -44,13 +40,21 @@ public class KomplexPanel extends JPanel implements ModePanel
 
     public KomplexPanel()
     {
+        this(new KomplexState(), new KomplexRechnerService(), new KomplexFormatter());
+    }
+
+    public KomplexPanel(KomplexState state, KomplexRechnerService service, KomplexFormatter formatter)
+    {
+        presenter = new KomplexPresenter(this, state, service, formatter);
+        darstellungBox.setSelectedItem(state.getDarstellung());
+
         setLayout(new BorderLayout(14, 0));
         setOpaque(true);
         setBorder(new EmptyBorder(0, 0, 0, 0));
 
         add(buildInputPanel(), BorderLayout.WEST);
         add(buildResultPanel(), BorderLayout.CENTER);
-        refresh();
+        presenter.aktualisiere();
     }
 
     @Override
@@ -59,6 +63,7 @@ public class KomplexPanel extends JPanel implements ModePanel
         return RechnerModus.KOMPLEX;
     }
 
+    @Override
     public void applyTheme(AppTheme theme)
     {
         this.theme = theme;
@@ -84,6 +89,62 @@ public class KomplexPanel extends JPanel implements ModePanel
         resultLabel.setForeground(theme.displayForeground());
         detailLabel.setForeground(theme.secondaryDisplayForeground());
         statusAnzeige.setTheme(theme);
+        ebene.applyTheme(theme);
+    }
+
+    @Override
+    public String ersteReal()
+    {
+        return aRealField.getText();
+    }
+
+    @Override
+    public String ersteImaginaer()
+    {
+        return aImagField.getText();
+    }
+
+    @Override
+    public String zweiteReal()
+    {
+        return bRealField.getText();
+    }
+
+    @Override
+    public String zweiteImaginaer()
+    {
+        return bImagField.getText();
+    }
+
+    @Override
+    public void zeigeErgebnis(String ergebnis, String detail)
+    {
+        resultLabel.setText(ergebnis);
+        detailLabel.setText(detail);
+    }
+
+    @Override
+    public void zeigeStatus(String text)
+    {
+        statusAnzeige.zeigeErfolg(text);
+    }
+
+    @Override
+    public void zeigeFehler(String meldung)
+    {
+        statusAnzeige.zeigeFehler(meldung);
+    }
+
+    @Override
+    public void zeigeZahlenebene(KomplexeZahl z1, KomplexeZahl z2, KomplexeZahl ergebnis)
+    {
+        ebene.setZahlen(z1, z2, ergebnis);
+    }
+
+    @Override
+    public void kopiere(String text)
+    {
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
     }
 
     private JPanel buildInputPanel()
@@ -99,17 +160,14 @@ public class KomplexPanel extends JPanel implements ModePanel
 
         JPanel controls = new JPanel(new GridLayout(0, 2, 8, 8));
         controls.setOpaque(false);
-        controls.add(createButton("+", () -> calculateBinary(service::addiere, "Addition")));
-        controls.add(createButton("-", () -> calculateBinary(service::subtrahiere, "Subtraktion")));
-        controls.add(createButton("×", () -> calculateBinary(service::multipliziere, "Multiplikation")));
-        controls.add(createButton("÷", () -> calculateBinary(service::dividiere, "Division")));
-        controls.add(createButton("conj z1", () -> calculateUnary(service::konjugiert, "Konjugation")));
-        controls.add(createButton("Kopieren", this::copyResult));
+        controls.add(createButton("+", presenter::addiere));
+        controls.add(createButton("-", presenter::subtrahiere));
+        controls.add(createButton("×", presenter::multipliziere));
+        controls.add(createButton("÷", presenter::dividiere));
+        controls.add(createButton("conj z1", presenter::konjugiere));
+        controls.add(createButton("Kopieren", presenter::kopiere));
 
-        darstellungBox.addActionListener(e -> {
-            state.setDarstellung((KomplexDarstellung) darstellungBox.getSelectedItem());
-            refresh();
-        });
+        darstellungBox.addActionListener(e -> presenter.waehleDarstellung((KomplexDarstellung) darstellungBox.getSelectedItem()));
 
         panel.add(fieldsPanel, BorderLayout.NORTH);
         panel.add(controls, BorderLayout.CENTER);
@@ -146,9 +204,6 @@ public class KomplexPanel extends JPanel implements ModePanel
 
     private JPanel buildResultPanel()
     {
-        JPanel panel = new JPanel(new BorderLayout(0, 18));
-        panel.setOpaque(false);
-
         JLabel title = new JLabel("Komplex");
         title.setFont(AppFonts.fett(28));
 
@@ -161,8 +216,15 @@ public class KomplexPanel extends JPanel implements ModePanel
         resultBox.add(detailLabel);
         resultBox.add(statusLabel);
 
-        panel.add(title, BorderLayout.NORTH);
-        panel.add(resultBox, BorderLayout.CENTER);
+        JPanel header = new JPanel(new BorderLayout(0, 18));
+        header.setOpaque(false);
+        header.add(title, BorderLayout.NORTH);
+        header.add(resultBox, BorderLayout.CENTER);
+
+        JPanel panel = new JPanel(new BorderLayout(0, 18));
+        panel.setOpaque(false);
+        panel.add(header, BorderLayout.NORTH);
+        panel.add(ebene, BorderLayout.CENTER);
         return panel;
     }
 
@@ -173,54 +235,6 @@ public class KomplexPanel extends JPanel implements ModePanel
         button.addActionListener(e -> action.run());
         buttons.add(button);
         return button;
-    }
-
-    private void calculateBinary(BinaryOperator<KomplexeZahl> operation, String status)
-    {
-        try
-        {
-            readInputs();
-            state.setErgebnis(operation.apply(state.getErsteZahl(), state.getZweiteZahl()));
-            state.setStatus(status);
-            refresh();
-        }
-        catch (IllegalArgumentException | ArithmeticException e)
-        {
-            statusAnzeige.zeigeFehler(e.getMessage());
-            state.setStatus(statusLabel.getText());
-        }
-    }
-
-    private void calculateUnary(UnaryOperator<KomplexeZahl> operation, String status)
-    {
-        calculateBinary((erste, zweite) -> operation.apply(erste), status);
-    }
-
-    private void readInputs()
-    {
-        state.setErsteZahl(new KomplexeZahl(parse(aRealField), parse(aImagField)));
-        state.setZweiteZahl(new KomplexeZahl(parse(bRealField), parse(bImagField)));
-    }
-
-    private double parse(JTextField field)
-    {
-        return ZahlenEingabe.lese(field.getText());
-    }
-
-    private void refresh()
-    {
-        resultLabel.setText(formatter.formatiere(state.getErgebnis(), state.getDarstellung()));
-        detailLabel.setText("|z| = " + formatter.formatiereDouble(state.getErgebnis().betrag())
-                + " | arg = " + formatter.formatiereDouble(state.getErgebnis().phaseDeg()) + "°");
-        statusAnzeige.zeigeErfolg(state.getStatus());
-    }
-
-    private void copyResult()
-    {
-        StringSelection selection = new StringSelection(resultLabel.getText());
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
-        state.setStatus("Ergebnis kopiert");
-        refresh();
     }
 
     private void applyThemeToChildren(Component component)

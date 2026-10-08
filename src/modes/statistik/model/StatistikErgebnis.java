@@ -125,6 +125,21 @@ public final class StatistikErgebnis
         return q3 - q1;
     }
 
+    /** Tukey-Regel: außerhalb von [Q1 − 1,5·IQR; Q3 + 1,5·IQR]. */
+    public boolean istAusreisser(double wert)
+    {
+        double zaun = 1.5 * getInterquartilsabstand();
+        return wert < q1 - zaun || wert > q3 + zaun;
+    }
+
+    public List<Double> getAusreisser()
+    {
+        return datenpunkte.stream()
+                .map(StatistikDatenpunkt::y)
+                .filter(this::istAusreisser)
+                .toList();
+    }
+
     public double getVarianzPopulation()
     {
         return varianzPopulation;

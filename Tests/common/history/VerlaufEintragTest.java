@@ -66,4 +66,17 @@ public class VerlaufEintragTest
         assertEquals(eintrag.getErgebnis(), favorit.getErgebnis());
         assertEquals(eintrag.getZeitpunkt(), favorit.getZeitpunkt());
     }
+
+    @Test
+    void matchesSuchtext_ShouldFindDateOnlyWhenQueryLooksLikeDateOrTime()
+    {
+        // Arrange
+        VerlaufEintrag eintrag = new VerlaufEintrag("2+3", "5", RechnerModus.STANDARD, LocalDateTime.of(2026, 10, 8, 14, 30), false);
+
+        // Act & Assert
+        assertTrue(eintrag.matchesSuchtext("08.10."));
+        assertTrue(eintrag.matchesSuchtext("14:3"));
+        assertFalse(eintrag.matchesSuchtext("09.10."));
+        assertFalse(eintrag.matchesSuchtext("2026"));
+    }
 }

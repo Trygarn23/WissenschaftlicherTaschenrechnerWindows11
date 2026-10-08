@@ -1,9 +1,70 @@
 package modes.programmierer.formatting;
 
+import modes.programmierer.model.Ieee754Darstellung;
 import modes.programmierer.model.Wortbreite;
 
 public class ProgrammiererFormatter
 {
+    private static final String[] STEUERZEICHEN = {
+            "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", "BS", "HT", "LF", "VT", "FF", "CR", "SO", "SI",
+            "DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB", "CAN", "EM", "SUB", "ESC", "FS", "GS", "RS", "US"
+    };
+
+    /** Bitmuster als Unicode-Zeichen, z. B. „Zeichen: 'A' (U+0041)“ oder „Zeichen: LF (U+000A)“. */
+    public String formatZeichen(long unsignedWert)
+    {
+        if (unsignedWert < 0 || unsignedWert > Character.MAX_CODE_POINT)
+        {
+            return "Zeichen: –";
+        }
+
+        int codepoint = (int) unsignedWert;
+        String code = String.format("U+%04X", codepoint);
+
+        if (codepoint < STEUERZEICHEN.length)
+        {
+            return "Zeichen: " + STEUERZEICHEN[codepoint] + " (" + code + ")";
+        }
+
+        if (codepoint == 0x7F)
+        {
+            return "Zeichen: DEL (" + code + ")";
+        }
+
+        // Surrogate und C1-Steuerzeichen lassen sich nicht sinnvoll einzeln darstellen.
+        boolean surrogat = codepoint >= Character.MIN_SURROGATE && codepoint <= Character.MAX_SURROGATE;
+        if (surrogat || Character.isISOControl(codepoint))
+        {
+            return "Zeichen: – (" + code + ")";
+        }
+
+        return "Zeichen: '" + Character.toString(codepoint) + "' (" + code + ")";
+    }
+
+    public String formatIeee754(Ieee754Darstellung d)
+    {
+        int gesamtBits = 1 + d.exponentBits().length() + d.mantisseBits().length();
+        String exponentText = switch (d.art())
+        {
+            case NORMAL -> d.exponentRoh() + " − " + d.bias() + " = " + d.tatsaechlicherExponent();
+            case SUBNORMAL -> "subnormal, fest 1 − " + d.bias() + " = " + d.tatsaechlicherExponent();
+            case NULL -> "Null";
+            case UNENDLICH -> "alle Bits 1, Mantisse 0 → Unendlich";
+            case NAN -> "alle Bits 1, Mantisse ≠ 0 → NaN";
+        };
+        String mantisseText = switch (d.art())
+        {
+            case NORMAL -> "  → 1,… (verstecktes 1-Bit)";
+            case SUBNORMAL -> "  → 0,… (kein verstecktes Bit)";
+            case NULL, UNENDLICH, NAN -> "";
+        };
+
+        return d.formatName() + " (" + gesamtBits + " Bit), gespeichert: " + d.gespeicherterWert() + "\n"
+                + "  Vorzeichen  " + d.vorzeichenBit() + "  → " + (d.vorzeichenBit() == 0 ? "+" : "−") + "\n"
+                + "  Exponent    " + d.exponentBits() + "  → " + exponentText + "\n"
+                + "  Mantisse    " + d.mantisseBits() + mantisseText;
+    }
+
     public String emptyAsZero(String value)
     {
         return (value == null || value.isBlank()) ? "0" : value;

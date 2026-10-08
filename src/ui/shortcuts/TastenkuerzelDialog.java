@@ -51,6 +51,7 @@ public final class TastenkuerzelDialog extends JDialog
         List<Eintrag> modi = new ArrayList<>();
         for (RechnerModus modus : RechnerModus.values())
         {
+            if (!Tastenkuerzel.hatStrgZahl(modus)) continue;
             modi.add(new Eintrag(Tastenkuerzel.strgText(Tastenkuerzel.modusNummer(modus)), modus.getLabel()));
         }
         modi.add(new Eintrag(Tastenkuerzel.strgText(Tastenkuerzel.einheitenNummer()), "Einheiten ein-/ausblenden"));

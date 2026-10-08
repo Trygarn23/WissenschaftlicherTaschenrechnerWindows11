@@ -97,4 +97,24 @@ public class GraphStateTest
         assertEquals(1, state.getFunktionen().size());
         assertEquals("f", state.getAktiveFunktion().getName());
     }
+
+    @Test
+    void ersetzeFunktionen_ShouldReplaceListAndAvoidDuplicateNamesLater()
+    {
+        // Arrange
+        GraphState state = new GraphState();
+        state.setAktiveFunktion(1);
+
+        // Act
+        state.ersetzeFunktionen(java.util.List.of(
+                new FunktionsDefinition("f", "x", java.awt.Color.BLUE),
+                new FunktionsDefinition("h", "2x", java.awt.Color.RED)));
+        FunktionsDefinition neu = state.fuegeFunktionHinzu("x^2");
+
+        // Assert
+        assertEquals(3, state.getFunktionen().size());
+        assertEquals("h", state.getFunktion(1).getName());
+        assertEquals("i", neu.getName());
+        assertThrows(IllegalArgumentException.class, () -> state.ersetzeFunktionen(java.util.List.of()));
+    }
 }

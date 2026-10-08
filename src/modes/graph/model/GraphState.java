@@ -95,6 +95,19 @@ public class GraphState
         return true;
     }
 
+    /** Ersetzt die komplette Liste (z. B. beim Öffnen einer Datei); die erste Funktion wird aktiv. */
+    public void ersetzeFunktionen(List<FunktionsDefinition> neueFunktionen)
+    {
+        if (neueFunktionen == null || neueFunktionen.isEmpty())
+        {
+            throw new IllegalArgumentException("Mindestens eine Funktion wird gebraucht");
+        }
+        funktionen.clear();
+        funktionen.addAll(neueFunktionen);
+        aktiveFunktionIndex = 0;
+        naechsteFunktionNummer = funktionen.size();
+    }
+
     public double getXMin()
     {
         return xMin;
@@ -152,6 +165,11 @@ public class GraphState
         setBereich(-10.0, 10.0, -10.0, 10.0);
     }
 
+    private boolean istNameVergeben(String name)
+    {
+        return funktionen.stream().anyMatch(funktion -> funktion.getName().equalsIgnoreCase(name));
+    }
+
     private double begrenzeSpan(double span)
     {
         return Math.max(MIN_SPAN, Math.min(MAX_SPAN, span));
@@ -159,8 +177,14 @@ public class GraphState
 
     private FunktionsDefinition neueFunktion(String ausdruck)
     {
-        int nummer = naechsteFunktionNummer++;
-        String name = nummer < 21 ? Character.toString((char) ('f' + nummer)) : "f" + (nummer + 1);
+        int nummer;
+        String name;
+        do
+        {
+            nummer = naechsteFunktionNummer++;
+            name = nummer < 21 ? Character.toString((char) ('f' + nummer)) : "f" + (nummer + 1);
+        }
+        while (istNameVergeben(name));
         Color farbe = FUNKTIONS_FARBEN[nummer % FUNKTIONS_FARBEN.length];
         return new FunktionsDefinition(name, ausdruck, farbe);
     }

@@ -96,4 +96,41 @@ public class StatistikRechnerServiceTest
     {
         assertThrows(IllegalArgumentException.class, () -> new StatistikDatenpunkt(1, 2, 0));
     }
+
+    @Test
+    void berechne_ShouldFindOutliersWithTukeyFences()
+    {
+        // Arrange: Q1 = 2, Q3 = 6,5, IQR = 4,5 → Zaun oben bei 13,25
+        List<StatistikDatenpunkt> daten = service.parseText("1\n2\n2\n4\n5\n8\n40");
+
+        // Act
+        StatistikErgebnis ergebnis = service.berechne(daten);
+
+        // Assert
+        assertEquals(List.of(40.0), ergebnis.getAusreisser());
+        assertEquals(true, ergebnis.istAusreisser(13.3));
+        assertEquals(false, ergebnis.istAusreisser(13.25));
+        assertEquals(false, ergebnis.istAusreisser(-4.75));
+    }
+
+    @Test
+    void berechne_ShouldFindNoOutliersInEvenData()
+    {
+        // Act
+        StatistikErgebnis ergebnis = service.berechne(service.parseText("1\n2\n2\n4\n5\n8"));
+
+        // Assert
+        assertEquals(List.of(), ergebnis.getAusreisser());
+    }
+
+    @Test
+    void berechne_ShouldUseGivenHistogramClassCount()
+    {
+        // Act
+        StatistikErgebnis ergebnis = service.berechne(service.parseText("1\n2\n3\n4\n5\n6\n7\n8\n9"), 2);
+
+        // Assert
+        assertEquals(2, ergebnis.getHistogramm().size());
+        assertEquals(3, service.berechne(service.parseText("1\n2\n3\n4\n5\n6\n7\n8\n9")).getHistogramm().size());
+    }
 }

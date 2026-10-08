@@ -14,9 +14,22 @@ public final class AnimationSupport
     {
     }
 
+    /** Einstellung „Weniger Bewegung“: Übergänge springen sofort ans Ende, Aufblinken entfällt ganz. */
+    private static volatile boolean wenigerBewegung;
+
+    public static void setWenigerBewegung(boolean aktiv)
+    {
+        wenigerBewegung = aktiv;
+    }
+
+    public static boolean isWenigerBewegung()
+    {
+        return wenigerBewegung;
+    }
+
     public static Timer animate(int durationMs, Consumer<Double> frame, Runnable onDone)
     {
-        int duration = Math.max(0, durationMs);
+        int duration = wenigerBewegung ? 0 : Math.max(0, durationMs);
         if (duration == 0)
         {
             frame.accept(1.0);
@@ -65,6 +78,10 @@ public final class AnimationSupport
 
     public static void pulseBackground(JComponent component, Color pulseColor, int durationMs)
     {
+        if (wenigerBewegung)
+        {
+            return;
+        }
         Color original = component.getBackground();
         int half = Math.max(1, durationMs / 2);
         stopComponentAnimation(component);

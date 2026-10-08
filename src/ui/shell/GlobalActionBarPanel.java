@@ -26,10 +26,14 @@ public class GlobalActionBarPanel extends JPanel
     private final JButton themeButton = new JButton("Theme");
     private final JButton settingsButton = new JButton("Einstellungen");
     private final JButton shortcutsButton = new JButton("Tastenkürzel");
+    private final JButton befehleButton = new JButton("Befehle");
+    private final JButton konstantenButton = new JButton("Konstanten");
+    private final JButton miniButton = new JButton("Mini");
 
     private final JPopupMenu themePopupMenu = new JPopupMenu();
     private final Map<ThemeType, JButton> themeOptionButtons = new LinkedHashMap<>();
     private AppTheme currentTheme;
+    private boolean pruefungsModus;
 
     private Consumer<ThemeType> themeSelectionListener;
 
@@ -46,6 +50,12 @@ public class GlobalActionBarPanel extends JPanel
         themeButton.setFocusable(false);
         settingsButton.setFocusable(false);
         shortcutsButton.setFocusable(false);
+        befehleButton.setFocusable(false);
+        konstantenButton.setFocusable(false);
+        miniButton.setFocusable(false);
+        befehleButton.setToolTipText("Befehl, Modus, Theme oder Konstante suchen (Strg+K)");
+        konstantenButton.setToolTipText("Konstanten-Bibliothek: suchen und in den Ausdruck einfügen (Strg+Shift+K)");
+        miniButton.setToolTipText("Kleiner Rechner, der immer im Vordergrund bleibt");
         shortcutsButton.setToolTipText("Alle Tastenkürzel anzeigen (F1)");
         settingsButton.setToolTipText("Einstellungen öffnen");
 
@@ -53,6 +63,9 @@ public class GlobalActionBarPanel extends JPanel
 
         themeButton.addActionListener(e -> themePopupMenu.show(themeButton, 0, themeButton.getHeight()));
 
+        actionsPanel.add(befehleButton);
+        actionsPanel.add(konstantenButton);
+        actionsPanel.add(miniButton);
         actionsPanel.add(shortcutsButton);
         actionsPanel.add(angleModeButton);
         actionsPanel.add(themeButton);
@@ -135,6 +148,45 @@ public class GlobalActionBarPanel extends JPanel
         shortcutsButton.addActionListener(listener);
     }
 
+    /** Für die Befehlssuche: dieselbe Aktion wie ein Klick auf den Knopf. */
+    public void clickSettings()
+    {
+        settingsButton.doClick();
+    }
+
+    public void clickAngleMode()
+    {
+        angleModeButton.doClick();
+    }
+
+    public void setBefehleListener(java.awt.event.ActionListener listener)
+    {
+        befehleButton.addActionListener(listener);
+    }
+
+    public void setKonstantenListener(java.awt.event.ActionListener listener)
+    {
+        konstantenButton.addActionListener(listener);
+    }
+
+    public void setMiniListener(java.awt.event.ActionListener listener)
+    {
+        miniButton.addActionListener(listener);
+    }
+
+    /** Im Prüfungsmodus steht es groß im Titel, und die Hilfswerkzeuge sind aus. */
+    public void setPruefungsModus(boolean aktiv)
+    {
+        pruefungsModus = aktiv;
+        titleLabel.setText(aktiv ? "Taschenrechner · " + PruefungsModus.HINWEIS : "Taschenrechner");
+        konstantenButton.setEnabled(!aktiv);
+        miniButton.setEnabled(!aktiv);
+        if (currentTheme != null)
+        {
+            titleLabel.setForeground(aktiv ? currentTheme.errorPulseColor() : currentTheme.displayForeground());
+        }
+    }
+
     public void highlightSelectedTheme(ThemeType selectedTheme)
     {
         for (Map.Entry<ThemeType, JButton> entry : themeOptionButtons.entrySet())
@@ -169,6 +221,10 @@ public class GlobalActionBarPanel extends JPanel
         styleActionButton(themeButton, theme);
         styleActionButton(settingsButton, theme);
         styleActionButton(shortcutsButton, theme);
+        styleActionButton(befehleButton, theme);
+        styleActionButton(konstantenButton, theme);
+        styleActionButton(miniButton, theme);
+        titleLabel.setForeground(pruefungsModus ? theme.errorPulseColor() : theme.displayForeground());
     }
 
     private void styleActionButton(JButton button, AppTheme theme)

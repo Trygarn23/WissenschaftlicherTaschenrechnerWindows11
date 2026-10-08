@@ -1,6 +1,8 @@
 package modes.graph.formatting;
 
+import modes.graph.model.Flaeche;
 import modes.graph.model.GraphPunkt;
+import modes.graph.model.Tangente;
 import modes.graph.model.KurvendiskussionResult;
 
 import java.util.List;
@@ -56,6 +58,23 @@ public class GraphFormatter
                 + "Wendestellen: " + formatierePunkte(result.getWendestellen()) + "\n"
                 + "Schnitt mit anderen: " + formatierePunkte(schnittpunkte) + "\n"
                 + "Hinweis: numerische Näherung im sichtbaren x-Bereich.";
+    }
+
+    /** z. B. „Tangente an x = 1: t(x) = 2·x − 1“. */
+    public String formatiereTangente(Tangente tangente)
+    {
+        double n = tangente.achsenabschnitt();
+        String rest = Math.abs(n) < NULL_TOLERANZ ? "" : (n < 0 ? " − " : " + ") + formatiereZahl(Math.abs(n));
+        return "Tangente an x = " + formatiereZahl(tangente.x0()) + ": t(x) = "
+                + formatiereZahl(tangente.steigung()) + "·x" + rest;
+    }
+
+    public String formatiereFlaeche(Flaeche flaeche)
+    {
+        return "Integral von " + formatiereZahl(flaeche.a()) + " bis " + formatiereZahl(flaeche.b())
+                + " = " + formatiereZahl(flaeche.integral()) + "\n"
+                + "Flächeninhalt (Betrag) = " + formatiereZahl(flaeche.flaecheninhalt()) + "\n"
+                + "Hinweis: Flächen unter der x-Achse zählen im Integral negativ.";
     }
 
     private boolean istGanzzahl(double value)

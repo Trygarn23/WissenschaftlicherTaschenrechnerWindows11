@@ -1,32 +1,34 @@
 package ui.shell;
 
 import common.history.VerlaufEintrag;
-import common.state.RechnerModus;
-import modes.graph.ui.GraphPanel;
-import modes.komplex.ui.KomplexPanel;
-import modes.matrix.ui.MatrixPanel;
-import modes.programmierer.ui.ProgrammiererPanel;
-import modes.statistik.ui.StatistikPanel;
-import modes.standard.ui.StandardPanel;
+import common.konstanten.EigeneKonstanten;
+import common.konstanten.KonstantenFavoriten;
 import common.logic.BerechnungsErgebnis;
 import common.logic.RechnerService;
+import common.persistence.AppDateien;
+import common.state.RechnerModus;
 import modes.wissenschaftlich.logic.WissenschaftlichOperationen;
-import modes.wissenschaftlich.ui.WissenschaftlichPanel;
-import ui.theme.AppTheme;
+import ui.animation.AnimationSupport;
+import ui.befehle.BefehlsDialog;
+import ui.mini.MiniRechnerFenster;
 import ui.history.HistoryPanel;
+import ui.konstanten.KonstantenDialog;
 import ui.settings.AppSettings;
-import ui.theme.ThemeManager;
-import ui.theme.ThemeType;
 import ui.settings.SettingsDialog;
 import ui.shortcuts.TastenkuerzelDialog;
+import ui.theme.AppTheme;
+import ui.theme.SystemTheme;
+import ui.theme.ThemeManager;
+import ui.theme.ThemeType;
 import ui.units.EinheitenSidePanelHost;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.EnumMap;
 import java.util.Map;
 
 public class TaschenrechnerUI extends JFrame
@@ -36,8 +38,13 @@ public class TaschenrechnerUI extends JFrame
     private AppSettings appSettings = persistenceService.ladeSettings();
     private final RechnerService rechner = new RechnerService();
     private final WissenschaftlichOperationen wissenschaftlichOperationen = new WissenschaftlichOperationen(rechner.getAusdruckEditor());
+    private final LetzteEingabeSicherung letzteEingabe = new LetzteEingabeSicherung(AppDateien.wiederherstellung());
+    private final KonstantenFavoriten konstantenFavoriten = new KonstantenFavoriten(AppDateien.konstantenFavoriten());
+    private final EigeneKonstanten eigeneKonstanten = new EigeneKonstanten(AppDateien.eigeneKonstanten());
 
     private RechnerModus aktuellerModus = appSettings.getStartModus();
+    /** Wohin Ergebnisse aus Hilfsmodi (z. B. Brüche) übernommen werden: der zuletzt benutzte Ausdrucksrechner. */
+    private RechnerModus letzterAusdrucksModus = RechnerModus.STANDARD;
 
     private final GlobalActionBarPanel globalActionBarPanel = new GlobalActionBarPanel();
     private final ModeBarPanel modeBarPanel = new ModeBarPanel();
@@ -45,7 +52,7 @@ public class TaschenrechnerUI extends JFrame
     private final ModeContentHostPanel modeContentHostPanel = new ModeContentHostPanel();
     private final HistoryPanel historyPanel = new HistoryPanel();
     private final EinheitenSidePanelHost einheitenSidePanelHost = new EinheitenSidePanelHost();
-    private final Map<RechnerModus, JPanel> modePanels = new EnumMap<>(RechnerModus.class);
+    private Map<RechnerModus, JPanel> modePanels;
 
     private ShellActionRegistry shellActionRegistry;
     private KeyboardShortcutBinder keyboardShortcutBinder;
@@ -53,7 +60,7 @@ public class TaschenrechnerUI extends JFrame
     public TaschenrechnerUI()
     {
         applySettingsToServices();
-        themeManager.setTheme(appSettings.getThemeType());
+        themeManager.setTheme(effektiverThemeTyp());
         configureFrame();
         buildLayout();
 
@@ -70,10 +77,16 @@ public class TaschenrechnerUI extends JFrame
         );
         keyboardShortcutBinder.setupKeyboard();
         keyboardShortcutBinder.setupSearchFieldKeyForwarding();
-        keyboardShortcutBinder.setupGlobaleTasten(this::setAktuellerModus, einheitenSidePanelHost::toggle, this::zeigeTastenkuerzel);
+        keyboardShortcutBinder.setupGlobaleTasten(this::setAktuellerModus, this::toggleEinheiten, this::zeigeTastenkuerzel);
+        keyboardShortcutBinder.bindeWerkzeugTaste(KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_DOWN_MASK),
+                "befehlssuche", this::zeigeBefehlssuche);
+        keyboardShortcutBinder.bindeWerkzeugTaste(KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK),
+                "konstanten", this::zeigeKonstanten);
 
         ladeVerlauf();
+        applyPruefungsModus();
         refresh();
+        stelleLetzteEingabeWiederHer();
         applyCurrentTheme();
 
         SwingUtilities.invokeLater(() -> getRootPane().requestFocusInWindow());
@@ -92,6 +105,7 @@ public class TaschenrechnerUI extends JFrame
             public void windowClosing(WindowEvent e)
             {
                 speichereFenstergroesse();
+                letzteEingabe.loesche();
             }
         });
     }
@@ -99,6 +113,14 @@ public class TaschenrechnerUI extends JFrame
     private AppTheme theme()
     {
         return themeManager.getCurrentTheme();
+    }
+
+    /** Mit „Hell/Dunkel vom System“ entscheidet Windows über Light oder Dark, sonst das gewählte Theme. */
+    private ThemeType effektiverThemeTyp()
+    {
+        return appSettings.isThemeVomSystem()
+                ? SystemTheme.passendesTheme(appSettings.getThemeType())
+                : appSettings.getThemeType();
     }
 
     private void buildLayout()
@@ -132,43 +154,29 @@ public class TaschenrechnerUI extends JFrame
 
     private void initModeContent()
     {
-        registerMode(RechnerModus.STANDARD, new StandardPanel());
-
-        WissenschaftlichPanel wissenschaftlichPanel = new WissenschaftlichPanel();
-        wissenschaftlichPanel.setFunctionSelectionListener(shellActionRegistry::handleScientificMenuAction);
-
-        registerMode(RechnerModus.WISSENSCHAFTLICH, wissenschaftlichPanel);
-        registerMode(RechnerModus.PROGRAMMIERER, new ProgrammiererPanel());
-        registerMode(RechnerModus.GRAPH, new GraphPanel());
-        registerMode(RechnerModus.KOMPLEX, new KomplexPanel());
-        registerMode(RechnerModus.MATRIX, new MatrixPanel());
-        registerMode(RechnerModus.STATISTIK, new StatistikPanel());
-
-        setAktuellerModus(aktuellerModus);
-    }
-
-    private void registerMode(RechnerModus modus, JPanel panel)
-    {
-        modePanels.put(modus, panel);
-
-        if (modus == RechnerModus.STANDARD || modus == RechnerModus.WISSENSCHAFTLICH)
+        modePanels = ModusPanels.erstelle(shellActionRegistry::handleScientificMenuAction, this::uebernimmInAusdrucksRechner);
+        for (Map.Entry<RechnerModus, JPanel> entry : modePanels.entrySet())
         {
-            shellActionRegistry.attachCalculatorButtonActions(panel);
+            if (ModeVisibilityPolicy.sindStandardShortcutsAktiv(entry.getKey()))
+            {
+                shellActionRegistry.attachCalculatorButtonActions(entry.getValue());
+            }
+            modeContentHostPanel.registerMode(entry.getKey(), entry.getValue());
         }
 
-        modeContentHostPanel.registerMode(modus, panel);
+        setAktuellerModus(PruefungsModus.erlaubterModus(appSettings.isPruefungsModus(), aktuellerModus));
     }
 
     private void wireShellEvents()
     {
         modeBarPanel.setModeListener(this::setAktuellerModus);
-        modeBarPanel.setUnitsListener(einheitenSidePanelHost::toggle);
+        modeBarPanel.setUnitsListener(this::toggleEinheiten);
 
         globalActionBarPanel.setAngleModeListener(e -> {
             rechner.winkelModusUmschalten();
             appSettings.setWinkelModus(rechner.getWinkelModus());
             persistenceService.speichereSettings(appSettings);
-            aktualisiereGraphWinkelmodus();
+            aktualisiereWinkelmodusInModi();
             globalActionBarPanel.setAngleModeText(rechner.getWinkelModus().name());
             refreshWithExtraInfo(rechner.getWinkelModus().name());
         });
@@ -183,6 +191,9 @@ public class TaschenrechnerUI extends JFrame
                 this::ladeSession
         ));
         globalActionBarPanel.setShortcutsListener(e -> zeigeTastenkuerzel());
+        globalActionBarPanel.setBefehleListener(e -> zeigeBefehlssuche());
+        globalActionBarPanel.setKonstantenListener(e -> zeigeKonstanten());
+        globalActionBarPanel.setMiniListener(e -> zeigeMiniRechner());
         historyPanel.setEntriesChangedListener(e -> speichereVerlauf());
         historyPanel.setFavoriteChangedListener(e -> speichereVerlauf());
         historyPanel.setEntryDoubleClickListener(this::useHistoryEntryResult);
@@ -191,22 +202,27 @@ public class TaschenrechnerUI extends JFrame
 
     private void setAktuellerModus(RechnerModus modus)
     {
+        if (!PruefungsModus.istModusErlaubt(appSettings.isPruefungsModus(), modus))
+        {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
         aktuellerModus = modus;
+        if (ModeVisibilityPolicy.sindStandardShortcutsAktiv(modus))
+        {
+            letzterAusdrucksModus = modus;
+        }
         appSettings.setStartModus(modus);
         persistenceService.speichereSettings(appSettings);
 
         modeBarPanel.setSelectedMode(modus, themeManager.getCurrentTheme());
         modeContentHostPanel.showMode(modus, theme());
 
-        ModePanel modePanel = modePanels.get(modus) instanceof ModePanel panel ? panel : null;
-        boolean zeigtDisplay = modePanel == null
-                ? ModeVisibilityPolicy.sollGlobalesDisplayAnzeigen(modus)
-                : modePanel.zeigtGlobalesDisplay();
-        boolean zeigtHistory = modePanel == null
-                ? ModeVisibilityPolicy.sollHistoryAnzeigen(modus)
-                : modePanel.zeigtHistory();
+        ModePanel modePanel = (ModePanel) modePanels.get(modus);
+        boolean zeigtHistory = modePanel.zeigtHistory() && PruefungsModus.sindWerkzeugeErlaubt(appSettings.isPruefungsModus());
 
-        displayPanel.setVisible(zeigtDisplay);
+        displayPanel.setVisible(modePanel.zeigtGlobalesDisplay());
         historyPanel.setVisible(zeigtHistory);
         if (!zeigtHistory && keyboardShortcutBinder != null)
         {
@@ -218,17 +234,83 @@ public class TaschenrechnerUI extends JFrame
         repaint();
     }
 
+    private void toggleEinheiten()
+    {
+        if (werkzeugGesperrt())
+        {
+            return;
+        }
+        einheitenSidePanelHost.toggle();
+    }
+
     private void zeigeTastenkuerzel()
     {
         TastenkuerzelDialog.showDialog(this, theme());
     }
 
+    private void zeigeKonstanten()
+    {
+        if (werkzeugGesperrt())
+        {
+            return;
+        }
+        KonstantenDialog.showDialog(this, theme(), konstantenFavoriten, eigeneKonstanten, this::fuegeInAusdruckEin);
+    }
+
+    private void zeigeBefehlssuche()
+    {
+        ShellBefehle.Aktionen aktionen = new ShellBefehle.Aktionen(
+                this::setAktuellerModus,
+                this::setTheme,
+                this::fuegeInAusdruckEin,
+                () -> globalActionBarPanel.clickSettings(),
+                this::zeigeTastenkuerzel,
+                this::toggleEinheiten,
+                this::zeigeKonstanten,
+                this::zeigeMiniRechner,
+                () -> historyPanel.setEingeklappt(!historyPanel.isEingeklappt()),
+                globalActionBarPanel::clickAngleMode
+        );
+        BefehlsDialog.showDialog(this, theme(), ShellBefehle.erstelle(aktionen, eigeneKonstanten.alle(), appSettings.isPruefungsModus()));
+    }
+
+    private void zeigeMiniRechner()
+    {
+        if (werkzeugGesperrt())
+        {
+            return;
+        }
+        MiniRechnerFenster.zeige(this, theme(), rechner.getWinkelModus());
+    }
+
+    /** Im Prüfungsmodus gibt es keine Hilfswerkzeuge – kurzer Piep statt stillem Nichts. */
+    private boolean werkzeugGesperrt()
+    {
+        if (PruefungsModus.sindWerkzeugeErlaubt(appSettings.isPruefungsModus()))
+        {
+            return false;
+        }
+        Toolkit.getDefaultToolkit().beep();
+        return true;
+    }
+
+    /** Hängt z. B. eine Konstante an den Ausdruck; steht davor schon eine Zahl, kommt ein Malzeichen dazwischen. */
+    private void fuegeInAusdruckEin(String text)
+    {
+        if (!ModeVisibilityPolicy.sindStandardShortcutsAktiv(aktuellerModus))
+        {
+            setAktuellerModus(letzterAusdrucksModus);
+        }
+        String ausdruck = rechner.getAusdruckText();
+        boolean malNoetig = !ausdruck.isEmpty() && (Character.isLetterOrDigit(ausdruck.charAt(ausdruck.length() - 1))
+                || ausdruck.endsWith(")") || ausdruck.endsWith("π"));
+        rechner.setAusdruckText(ausdruck + (malNoetig ? "×" : "") + text);
+        refresh();
+    }
+
     private boolean sindStandardShortcutsAktiv()
     {
-        ModePanel modePanel = modePanels.get(aktuellerModus) instanceof ModePanel panel ? panel : null;
-        return modePanel == null
-                ? ModeVisibilityPolicy.sindStandardShortcutsAktiv(aktuellerModus)
-                : modePanel.nutztStandardShortcuts();
+        return ((ModePanel) modePanels.get(aktuellerModus)).nutztStandardShortcuts();
     }
 
     private void useHistoryEntryResult(String entry)
@@ -243,12 +325,26 @@ public class TaschenrechnerUI extends JFrame
         refresh();
     }
 
+    private void uebernimmInAusdrucksRechner(String wert)
+    {
+        rechner.setzeAusdruckAusVerlaufErgebnis(wert);
+        setAktuellerModus(letzterAusdrucksModus);
+        refresh();
+    }
+
+    private void stelleLetzteEingabeWiederHer()
+    {
+        letzteEingabe.ladeUebrigeEingabe().ifPresent(ausdruck -> {
+            rechner.setAusdruckText(ausdruck);
+            refreshWithExtraInfo("Letzte Eingabe wiederhergestellt");
+        });
+    }
+
     private void refresh()
     {
         displayPanel.setMainText(rechner.formatiereLiveAnzeige());
         displayPanel.setSecondaryText(rechner.zweiteZeile());
-        globalActionBarPanel.setAngleModeText(rechner.getWinkelModus().name());
-        updateStatus();
+        aktualisiereKopfUndSicherung();
     }
 
     private void refreshWithExtraInfo(String info)
@@ -256,7 +352,13 @@ public class TaschenrechnerUI extends JFrame
         displayPanel.setMainText(rechner.formatiereLiveAnzeige());
         String verlauf = rechner.getVerlauf();
         displayPanel.setSecondaryText(info + (verlauf.isEmpty() ? "" : " | " + verlauf));
+        aktualisiereKopfUndSicherung();
+    }
+
+    private void aktualisiereKopfUndSicherung()
+    {
         globalActionBarPanel.setAngleModeText(rechner.getWinkelModus().name());
+        letzteEingabe.merke(rechner.getAusdruckText());
         updateStatus();
     }
 
@@ -264,7 +366,8 @@ public class TaschenrechnerUI extends JFrame
     {
         String speicherText = rechner.hatSpeicherWert() ? "M belegt" : "Speicher leer";
         displayPanel.setStatusText(
-                "Modus: " + aktuellerModus.getLabel()
+                (appSettings.isPruefungsModus() ? PruefungsModus.HINWEIS + " | " : "")
+                        + "Modus: " + aktuellerModus.getLabel()
                         + " | Winkel: " + rechner.getWinkelModus().name()
                         + " | " + speicherText
         );
@@ -272,7 +375,7 @@ public class TaschenrechnerUI extends JFrame
 
     private void pasteDisplayText(String text)
     {
-        if (aktuellerModus != RechnerModus.STANDARD && aktuellerModus != RechnerModus.WISSENSCHAFTLICH)
+        if (!ModeVisibilityPolicy.sindStandardShortcutsAktiv(aktuellerModus))
         {
             Toolkit.getDefaultToolkit().beep();
             return;
@@ -286,6 +389,8 @@ public class TaschenrechnerUI extends JFrame
     {
         AppSettings updatedSettings = appSettings.copy();
         updatedSettings.setThemeType(themeType);
+        // Wer ausdrücklich ein Theme wählt, will nicht, dass Windows es beim nächsten Start überschreibt.
+        updatedSettings.setThemeVomSystem(false);
         applySettings(updatedSettings);
     }
 
@@ -295,11 +400,12 @@ public class TaschenrechnerUI extends JFrame
         appSettings = settings.copy();
         persistenceService.speichereSettings(appSettings);
         applySettingsToServices();
-        themeManager.setTheme(appSettings.getThemeType());
+        themeManager.setTheme(effektiverThemeTyp());
         if (historySettingChanged)
         {
             ladeVerlauf();
         }
+        applyPruefungsModus();
         applyCurrentTheme();
         refresh();
     }
@@ -309,15 +415,32 @@ public class TaschenrechnerUI extends JFrame
         rechner.setWinkelModus(appSettings.getWinkelModus());
         rechner.setNachkommastellen(appSettings.getNachkommastellen());
         rechner.setZahlenFormatModus(appSettings.getZahlenFormatModus());
-        aktualisiereGraphWinkelmodus();
+        AnimationSupport.setWenigerBewegung(appSettings.isWenigerBewegung());
+        aktualisiereWinkelmodusInModi();
     }
 
-    private void aktualisiereGraphWinkelmodus()
+    private void applyPruefungsModus()
     {
-        JPanel graphPanel = modePanels.get(RechnerModus.GRAPH);
-        if (graphPanel instanceof ModePanel panel)
+        boolean aktiv = appSettings.isPruefungsModus();
+        setTitle(aktiv ? "Taschenrechner – " + PruefungsModus.HINWEIS : "Taschenrechner");
+        modeBarPanel.setPruefungsModus(aktiv);
+        globalActionBarPanel.setPruefungsModus(aktiv);
+        if (aktiv && einheitenSidePanelHost.isGeoeffnet())
         {
-            panel.setWinkelModus(rechner.getWinkelModus());
+            einheitenSidePanelHost.setGeoeffnet(false);
+        }
+        setAktuellerModus(PruefungsModus.erlaubterModus(aktiv, aktuellerModus));
+    }
+
+    private void aktualisiereWinkelmodusInModi()
+    {
+        if (modePanels == null)
+        {
+            return;
+        }
+        for (JPanel panel : modePanels.values())
+        {
+            ((ModePanel) panel).setWinkelModus(rechner.getWinkelModus());
         }
     }
 
@@ -335,15 +458,14 @@ public class TaschenrechnerUI extends JFrame
         historyPanel.applyTheme(theme());
         einheitenSidePanelHost.applyTheme(theme());
 
-        for (Map.Entry<RechnerModus, JPanel> entry : modePanels.entrySet())
+        for (JPanel panel : modePanels.values())
         {
-            ShellThemeApplier.applyThemeRecursively(entry.getValue(), theme(), rechner.getWinkelModus());
+            ShellThemeApplier.applyThemeRecursively(panel, theme(), rechner.getWinkelModus());
         }
 
         repaint();
         revalidate();
     }
-
 
     private void evaluate()
     {
@@ -355,18 +477,20 @@ public class TaschenrechnerUI extends JFrame
             displayPanel.setSecondaryText(ergebnis.getVerlaufText());
             displayPanel.pulseSuccess();
             addHistoryEntry(ergebnis.getVerlaufText());
-            updateStatus();
-            return;
         }
-
-        displayPanel.setSecondaryText(ergebnis.getFehlerMeldung());
-        displayPanel.pulseError();
+        else
+        {
+            displayPanel.setSecondaryText(ergebnis.getFehlerMeldung());
+            displayPanel.pulseError();
+        }
+        letzteEingabe.merke(rechner.getAusdruckText());
         updateStatus();
     }
 
     private void addHistoryEntry(String entry)
     {
-        if (entry == null || entry.isBlank()) return;
+        // Im Prüfungsmodus wird nichts mitgeschrieben – auch nicht unsichtbar im Hintergrund.
+        if (entry == null || entry.isBlank() || appSettings.isPruefungsModus()) return;
 
         VerlaufEintrag verlaufEintrag = persistenceService.erstelleVerlaufEintrag(entry, aktuellerModus);
         historyPanel.addStructuredEntry(verlaufEintrag);
@@ -423,7 +547,7 @@ public class TaschenrechnerUI extends JFrame
 
         historyPanel.setAllEntries(session.historyEintraege());
         themeManager.setTheme(session.themeType());
-        setAktuellerModus(session.aktiverModus());
+        setAktuellerModus(PruefungsModus.erlaubterModus(appSettings.isPruefungsModus(), session.aktiverModus()));
         applyCurrentTheme();
         refresh();
     }

@@ -42,6 +42,27 @@ public final class AppDateien
         return datei(benutzerordner(), "custom_theme.properties");
     }
 
+    public static Path konstantenFavoriten()
+    {
+        return datei(benutzerordner(), "konstanten_favoriten.txt");
+    }
+
+    public static Path eigeneKonstanten()
+    {
+        return datei(benutzerordner(), "eigene_konstanten.txt");
+    }
+
+    public static Path eigeneFunktionen()
+    {
+        return datei(benutzerordner(), "eigene_funktionen.txt");
+    }
+
+    /** Letzte Eingabe, falls die App abstürzt oder hart beendet wird. */
+    public static Path wiederherstellung()
+    {
+        return datei(benutzerordner(), "letzte_eingabe.txt");
+    }
+
     static Path datei(Path benutzerordner, String name)
     {
         Path neu = benutzerordner.resolve(ORDNER_NAME).resolve(name);

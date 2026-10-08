@@ -42,6 +42,12 @@ public class StatistikRechnerService
 
     public StatistikErgebnis berechne(List<StatistikDatenpunkt> datenpunkte)
     {
+        return berechne(datenpunkte, 0);
+    }
+
+    /** @param klassenAnzahl Klassen fürs Histogramm, 0 = automatisch (Wurzel aus n) */
+    public StatistikErgebnis berechne(List<StatistikDatenpunkt> datenpunkte, int klassenAnzahl)
+    {
         if (datenpunkte == null || datenpunkte.isEmpty())
         {
             throw new IllegalArgumentException("Mindestens ein Datenwert wird benötigt.");
@@ -72,7 +78,7 @@ public class StatistikRechnerService
         return new StatistikErgebnis(
                 daten,
                 modalwerte(werte),
-                erstelleHistogramm(werte, 0),
+                erstelleHistogramm(werte, klassenAnzahl),
                 n,
                 summe,
                 minimum,

@@ -95,7 +95,18 @@ public final class VerlaufEintrag
                 || ergebnis.toLowerCase().contains(query)
                 || modus.name().toLowerCase().contains(query)
                 || modus.getLabel().toLowerCase().contains(query)
-                || toLegacyText().toLowerCase().contains(query);
+                || toLegacyText().toLowerCase().contains(query)
+                || passtZumDatum(query);
+    }
+
+    /**
+     * „08.10.“ findet die Rechnungen von dem Tag, „14:3“ die von der Uhrzeit.
+     * Nur bei Punkt oder Doppelpunkt, sonst würde jede einzelne Ziffer über das Datum fast alles finden.
+     */
+    private boolean passtZumDatum(String query)
+    {
+        return (query.contains(".") || query.contains(":"))
+                && zeitpunkt.format(DISPLAY_FORMATTER).contains(query);
     }
 
     @Override

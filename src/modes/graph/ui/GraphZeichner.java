@@ -3,10 +3,12 @@ package modes.graph.ui;
 import common.state.WinkelModus;
 import modes.graph.formatting.GraphFormatter;
 import modes.graph.logic.GraphEvaluator;
+import modes.graph.model.Flaeche;
 import modes.graph.model.FunktionsDefinition;
 import modes.graph.model.GraphPunkt;
 import modes.graph.model.GraphState;
 import modes.graph.model.KurvendiskussionResult;
+import modes.graph.model.Tangente;
 import ui.theme.AppTheme;
 import ui.theme.themes.DarkTheme;
 
@@ -16,6 +18,7 @@ import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 
 /** Zeichnet Raster, Achsen, Kurven, Analysepunkte und den Hover-Hinweis. Kennt keine Maus und keinen Zustand. */
@@ -30,7 +33,9 @@ final class GraphZeichner
             WinkelModus winkelModus,
             KurvendiskussionResult analyse,
             Point hoverPunkt,
-            double refreshPulse)
+            double refreshPulse,
+            Tangente tangente,
+            Flaeche flaeche)
     {
     }
 
@@ -53,8 +58,10 @@ final class GraphZeichner
         zeichneRefreshPulse(g, k, theme, szene.refreshPulse());
 
         zeichneRaster(g, k, theme.gridColor(), theme.secondaryDisplayForeground());
+        zeichneFlaeche(g, k, szene.winkelModus(), szene.flaeche());
         zeichneAchsen(g, k, theme.displayForeground());
         zeichneFunktionen(g, k, szene.winkelModus());
+        zeichneTangente(g, k, theme, szene.tangente());
         zeichneAnalysePunkte(g, k, theme, szene.analyse());
         zeichneBereich(g, k, theme.secondaryDisplayForeground());
         zeichneHoverKoordinaten(g, k, theme, szene.hoverPunkt());
@@ -169,6 +176,76 @@ final class GraphZeichner
             g.setColor(funktion.getFarbe());
             g.draw(path);
         }
+    }
+
+    /** Halbtransparent gefüllt und schraffiert zwischen Kurve und x-Achse von a bis b. */
+    private void zeichneFlaeche(Graphics2D g, GraphKoordinaten k, WinkelModus winkelModus, Flaeche flaeche)
+    {
+        if (flaeche == null || flaeche.funktionIndex() >= k.state().getFunktionen().size())
+        {
+            return;
+        }
+
+        FunktionsDefinition funktion = k.state().getFunktion(flaeche.funktionIndex());
+        GraphState state = k.state();
+        double links = Math.max(state.getXMin(), Math.min(flaeche.a(), flaeche.b()));
+        double rechts = Math.min(state.getXMax(), Math.max(flaeche.a(), flaeche.b()));
+        int pxA = k.zuBildschirmX(links);
+        int pxB = k.zuBildschirmX(rechts);
+        if (pxB <= pxA)
+        {
+            return;
+        }
+
+        int nullLinie = k.zuBildschirmY(0.0);
+        Path2D form = new Path2D.Double();
+        form.moveTo(pxA, nullLinie);
+        for (int px = pxA; px <= pxB; px++)
+        {
+            double y = evaluator.wertOderNaN(funktion.getAusdruck(), k.zuWeltX(px), winkelModus);
+            // Knapp außerhalb des Bildes abschneiden, damit steile Kurven keine Riesenkoordinaten erzeugen.
+            double rand = k.state().getYMax() - k.state().getYMin();
+            double gekappt = Math.max(k.state().getYMin() - rand, Math.min(k.state().getYMax() + rand, y));
+            int py = Double.isFinite(y) ? k.zuBildschirmY(gekappt) : nullLinie;
+            form.lineTo(px, py);
+        }
+        form.lineTo(pxB, nullLinie);
+        form.closePath();
+
+        Color farbe = funktion.getFarbe();
+        Graphics2D flaechenGrafik = (Graphics2D) g.create();
+        flaechenGrafik.setColor(new Color(farbe.getRed(), farbe.getGreen(), farbe.getBlue(), 60));
+        flaechenGrafik.fill(form);
+        flaechenGrafik.clip(form);
+        flaechenGrafik.setColor(new Color(farbe.getRed(), farbe.getGreen(), farbe.getBlue(), 130));
+        flaechenGrafik.setStroke(new BasicStroke(1f));
+        for (int x = pxA - k.hoehe(); x <= pxB; x += 8)
+        {
+            flaechenGrafik.drawLine(x, k.hoehe(), x + k.hoehe(), 0);
+        }
+        flaechenGrafik.dispose();
+    }
+
+    private void zeichneTangente(Graphics2D g, GraphKoordinaten k, AppTheme theme, Tangente tangente)
+    {
+        if (tangente == null || tangente.funktionIndex() >= k.state().getFunktionen().size())
+        {
+            return;
+        }
+
+        GraphState state = k.state();
+        Color farbe = state.getFunktion(tangente.funktionIndex()).getFarbe();
+        // In double rechnen: bei steilen Tangenten würde zuBildschirmY (int) überlaufen.
+        double spanneY = state.getYMax() - state.getYMin();
+        double yLinks = (state.getYMax() - tangente.wert(state.getXMin())) / spanneY * k.hoehe();
+        double yRechts = (state.getYMax() - tangente.wert(state.getXMax())) / spanneY * k.hoehe();
+
+        Graphics2D linie = (Graphics2D) g.create();
+        linie.setColor(farbe);
+        linie.setStroke(new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10f, new float[] {8f, 6f}, 0f));
+        linie.draw(new Line2D.Double(0, yLinks, k.breite(), yRechts));
+        linie.dispose();
+        zeichneMarker(g, k, new GraphPunkt(tangente.x0(), tangente.y0()), farbe, theme.canvasBackground(), "T");
     }
 
     private void zeichneAnalysePunkte(Graphics2D g, GraphKoordinaten k, AppTheme theme, KurvendiskussionResult analyse)

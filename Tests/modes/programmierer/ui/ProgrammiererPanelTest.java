@@ -2,12 +2,15 @@ package modes.programmierer.ui;
 
 import modes.programmierer.ui.ProgrammiererPanel;
 import org.junit.jupiter.api.Test;
+import testhilfen.SwingSuche;
 import ui.theme.themes.DarkTheme;
 import ui.theme.themes.LightTheme;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import java.awt.Color;
 import java.awt.Component;
@@ -127,10 +130,83 @@ public class ProgrammiererPanelTest
         assertNotEquals(new LightTheme().numberButtonBackground(), twoButton.getBackground());
     }
 
+    @Test
+    void bitLeiste_ShouldFlipBitAndUpdateDisplay_WhenBitIsClicked()
+    {
+        // Arrange
+        ProgrammiererPanel panel = new ProgrammiererPanel();
+        JButton bitDrei = bitButton(panel, 3);
+
+        // Act
+        bitDrei.doClick();
+
+        // Assert
+        assertEquals("1", bitDrei.getText());
+        assertNotNull(findLabelContaining(panel, "DEC: 8"));
+    }
+
+    @Test
+    void bitLeiste_ShouldHideBitsOutsideWordWidth_WhenByteIsSelected()
+    {
+        // Arrange
+        ProgrammiererPanel panel = new ProgrammiererPanel();
+
+        // Act
+        findButton(panel, "BYTE").doClick();
+
+        // Assert
+        assertTrue(bitButton(panel, 7).getParent().getParent().isVisible());
+        assertFalse(bitButton(panel, 8).getParent().getParent().isVisible());
+        assertFalse(bitButton(panel, 40).getParent().getParent().getParent().isVisible());
+    }
+
+    @Test
+    void panel_ShouldShowCharacterOfCurrentValue()
+    {
+        // Arrange
+        ProgrammiererPanel panel = new ProgrammiererPanel();
+
+        // Act
+        findButton(panel, "6").doClick();
+        findButton(panel, "5").doClick();
+
+        // Assert
+        assertNotNull(findLabelContaining(panel, "Zeichen: 'A' (U+0041)"));
+        assertNotNull(findButton(panel, "IEEE-754…"));
+    }
+
+    @Test
+    void ieeePanel_ShouldShowFloatAndDoubleBits_AndReportInvalidInput()
+    {
+        // Arrange
+        ProgrammiererIeeePanel ieee = new ProgrammiererIeeePanel("1", new DarkTheme());
+        String start = SwingSuche.finde(ieee, JTextArea.class).getText();
+
+        // Act
+        SwingSuche.finde(ieee, JTextField.class).setText("abc");
+        SwingSuche.button(ieee, "Zerlegen").doClick();
+
+        // Assert
+        assertTrue(start.contains("Exponent    01111111  → 127 − 127 = 0"));
+        assertTrue(start.contains("Exponent    01111111111  → 1023 − 1023 = 0"));
+        assertNotNull(findLabelContaining(ieee, "keine gültige Zahl"));
+    }
+
+    private JButton bitButton(Container panel, int bit)
+    {
+        return SwingSuche.finde(panel, JButton.class, b -> ("Bit " + bit + " kippen").equals(b.getToolTipText()));
+    }
+
     private JButton findButton(Container container, String text)
     {
         for (Component component : container.getComponents())
         {
+            // Die Bit-Leiste hat auch Buttons „0“/„1“; hier sind die Zifferntasten gemeint.
+            if (component instanceof ProgrammiererBitLeiste)
+            {
+                continue;
+            }
+
             if (component instanceof JButton button && text.equals(button.getText()))
             {
                 return button;

@@ -8,24 +8,25 @@ public final class ModeVisibilityPolicy
     {
     }
 
+    /** Verlauf und globales Display gibt es nur für die beiden Ausdrucksrechner, alle anderen Modi haben eigene Anzeigen. */
     public static boolean sollHistoryAnzeigen(RechnerModus modus)
     {
-        return switch (modus)
-        {
-            case STANDARD, WISSENSCHAFTLICH -> true;
-            case PROGRAMMIERER, GRAPH, KOMPLEX, MATRIX, STATISTIK -> false;
-        };
+        return istAusdrucksRechner(modus);
     }
 
     public static boolean sollGlobalesDisplayAnzeigen(RechnerModus modus)
     {
-        return modus != RechnerModus.PROGRAMMIERER
-                && modus != RechnerModus.GRAPH
-                && modus != RechnerModus.MATRIX
-                && modus != RechnerModus.STATISTIK;
+        return modus == RechnerModus.STANDARD
+                || modus == RechnerModus.WISSENSCHAFTLICH
+                || modus == RechnerModus.KOMPLEX;
     }
 
     public static boolean sindStandardShortcutsAktiv(RechnerModus modus)
+    {
+        return istAusdrucksRechner(modus);
+    }
+
+    private static boolean istAusdrucksRechner(RechnerModus modus)
     {
         return modus == RechnerModus.STANDARD || modus == RechnerModus.WISSENSCHAFTLICH;
     }

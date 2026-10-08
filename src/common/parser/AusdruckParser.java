@@ -18,7 +18,7 @@ public final class AusdruckParser
 
     public static double auswerten(String expr, double ans, WinkelModus winkelModus, Map<String, Double> variablen)
     {
-        if (expr == null) throw parserFehler(ParserFehler.SYNTAX, "expr is null");
+        if (expr == null) throw parserFehler(ParserFehler.SYNTAX, "Kein Ausdruck vorhanden.");
 
         List<AusdruckToken> tokens = AusdruckTokenizer.tokenisiere(expr);
         List<AusdruckToken> postfix = AusdruckPostfixKonverter.konvertiere(tokens);

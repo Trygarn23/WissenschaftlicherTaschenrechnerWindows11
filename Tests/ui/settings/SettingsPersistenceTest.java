@@ -111,4 +111,62 @@ public class SettingsPersistenceTest
         assertEquals(1180, loaded.getFensterBreite());
         assertEquals(900, loaded.getFensterHoehe());
     }
+
+    @Test
+    void settingsPersistence_ShouldSaveNewOptionsAndFileVersion()
+    {
+        // Arrange
+        Path settingsFile = tempDir.resolve("settings.properties");
+        SettingsPersistence persistence = new SettingsPersistence(settingsFile);
+        AppSettings settings = new AppSettings();
+        settings.setWenigerBewegung(true);
+        settings.setPruefungsModus(true);
+        settings.setThemeVomSystem(true);
+
+        // Act
+        persistence.speichere(settings);
+        AppSettings loaded = persistence.lade();
+
+        // Assert
+        assertTrue(loaded.isWenigerBewegung());
+        assertTrue(loaded.isPruefungsModus());
+        assertTrue(loaded.isThemeVomSystem());
+        assertEquals(AppSettings.DATEI_VERSION, loaded.getGeleseneDateiVersion());
+    }
+
+    @Test
+    void settingsPersistence_ShouldReadOldFileWithoutVersion_AndUseDefaultsForNewOptions() throws Exception
+    {
+        // Arrange: so sah die Datei vor Version 2 aus
+        Path settingsFile = tempDir.resolve("settings.properties");
+        Files.writeString(settingsFile, "theme=NEON\nhistoryEnabled=false\n");
+
+        // Act
+        AppSettings loaded = new SettingsPersistence(settingsFile).lade();
+
+        // Assert
+        assertEquals(1, loaded.getGeleseneDateiVersion());
+        assertEquals(ThemeType.NEON, loaded.getThemeType());
+        assertFalse(loaded.isHistoryEnabled());
+        assertFalse(loaded.isWenigerBewegung());
+        assertFalse(loaded.isPruefungsModus());
+    }
+
+    @Test
+    void standardMitFenster_ShouldResetEverythingButKeepWindowSize()
+    {
+        // Arrange
+        AppSettings settings = new AppSettings();
+        settings.setThemeType(ThemeType.NEON);
+        settings.setPruefungsModus(true);
+        settings.setFensterBreite(1500);
+
+        // Act
+        AppSettings standard = settings.standardMitFenster();
+
+        // Assert
+        assertEquals(ThemeType.DARK, standard.getThemeType());
+        assertFalse(standard.isPruefungsModus());
+        assertEquals(1500, standard.getFensterBreite());
+    }
 }

@@ -1,7 +1,9 @@
 package modes.graph.formatting;
 
 import modes.graph.formatting.GraphFormatter;
+import modes.graph.model.Flaeche;
 import modes.graph.model.GraphPunkt;
+import modes.graph.model.Tangente;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -37,5 +39,26 @@ public class GraphFormatterTest
         assertEquals("keine gefunden", formatter.formatierePunkte(List.of()));
         assertEquals("(1 | 2), (3 | 4)", formatter.formatierePunkte(List.of(new GraphPunkt(1, 2), new GraphPunkt(3, 4))));
         assertEquals("nicht definiert", formatter.formatierePunkt(null));
+    }
+
+    @Test
+    void formatiereTangente_ShouldShowEquationWithSign()
+    {
+        // Act & Assert
+        assertEquals("Tangente an x = 1: t(x) = 2·x − 1", formatter.formatiereTangente(new Tangente(0, 1, 1, 2)));
+        assertEquals("Tangente an x = 0: t(x) = -3·x + 4", formatter.formatiereTangente(new Tangente(0, 0, 4, -3)));
+        assertEquals("Tangente an x = 0: t(x) = 1·x", formatter.formatiereTangente(new Tangente(0, 0, 0, 1)));
+    }
+
+    @Test
+    void formatiereFlaeche_ShouldShowIntegralAbsoluteAreaAndHint()
+    {
+        // Act
+        String text = formatter.formatiereFlaeche(new Flaeche(0, 0, 3, -9, 9));
+
+        // Assert
+        assertTrue(text.contains("Integral von 0 bis 3 = -9"));
+        assertTrue(text.contains("Flächeninhalt (Betrag) = 9"));
+        assertTrue(text.contains("negativ"));
     }
 }

@@ -5,6 +5,7 @@ import modes.programmierer.logic.ProgrammiererLogik;
 import modes.programmierer.model.Basis;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
+import ui.theme.ModernButtonStyler;
 import ui.theme.themes.DarkTheme;
 
 import javax.swing.*;
@@ -19,9 +20,12 @@ class ProgrammiererDisplayPanel extends JPanel
     private final JLabel decLabel = new JLabel("DEC: 0", SwingConstants.RIGHT);
     private final JLabel octLabel = new JLabel("OCT: 0", SwingConstants.RIGHT);
     private final JLabel binLabel = new JLabel("BIN: 0", SwingConstants.RIGHT);
+    private final JLabel zeichenLabel = new JLabel("Zeichen: NUL (U+0000)", SwingConstants.RIGHT);
     private final JLabel statusLabel = new JLabel("Basis: DEC | Wortbreite: QWORD | SIGNED", SwingConstants.RIGHT);
 
-    ProgrammiererDisplayPanel()
+    private final JButton ieeeButton = new JButton("IEEE-754…");
+
+    ProgrammiererDisplayPanel(Runnable ieeeAktion)
     {
         setLayout(new BorderLayout());
         setOpaque(false);
@@ -32,13 +36,14 @@ class ProgrammiererDisplayPanel extends JPanel
         aktuelleBasisLabel.setFont(AppFonts.normal(42));
         aktuelleBasisLabel.setBorder(new EmptyBorder(0, 0, 4, 0));
 
-        JPanel conversions = new JPanel(new GridLayout(4, 1, 0, 6));
+        JPanel conversions = new JPanel(new GridLayout(5, 1, 0, 6));
         conversions.setOpaque(false);
 
         styleSecondaryLabel(hexLabel);
         styleSecondaryLabel(decLabel);
         styleSecondaryLabel(octLabel);
         styleSecondaryLabel(binLabel);
+        styleSecondaryLabel(zeichenLabel);
         styleSecondaryLabel(statusLabel);
         statusLabel.setFont(AppFonts.normal(13));
 
@@ -46,10 +51,18 @@ class ProgrammiererDisplayPanel extends JPanel
         conversions.add(decLabel);
         conversions.add(octLabel);
         conversions.add(binLabel);
+        conversions.add(zeichenLabel);
 
         displayPanel.add(aktuelleBasisLabel, BorderLayout.NORTH);
         displayPanel.add(conversions, BorderLayout.CENTER);
-        displayPanel.add(statusLabel, BorderLayout.SOUTH);
+        ieeeButton.setToolTipText("Zeigt, wie eine Zahl intern als float und double gespeichert wird");
+        ieeeButton.addActionListener(e -> ieeeAktion.run());
+
+        JPanel statusZeile = new JPanel(new BorderLayout(8, 0));
+        statusZeile.setOpaque(false);
+        statusZeile.add(statusLabel, BorderLayout.CENTER);
+        statusZeile.add(ieeeButton, BorderLayout.EAST);
+        displayPanel.add(statusZeile, BorderLayout.SOUTH);
 
         add(displayPanel, BorderLayout.CENTER);
         applyTheme(new DarkTheme());
@@ -69,6 +82,7 @@ class ProgrammiererDisplayPanel extends JPanel
         decLabel.setText("DEC: " + formatter.formatDec(logik.getAnzeige(Basis.DEC)));
         octLabel.setText("OCT: " + formatter.formatOct(logik.getAnzeige(Basis.OCT)));
         binLabel.setText("BIN: " + formatter.formatBinary(logik.getAnzeige(Basis.BIN), logik.getWortbreite()));
+        zeichenLabel.setText(formatter.formatZeichen(logik.getUnsignedWert()));
         statusLabel.setText("Basis: " + logik.getBasis().name()
                 + " | Wortbreite: " + logik.getWortbreite().name()
                 + " | " + (logik.isUnsigned() ? "UNSIGNED" : "SIGNED"));
@@ -83,8 +97,11 @@ class ProgrammiererDisplayPanel extends JPanel
         decLabel.setForeground(theme.secondaryDisplayForeground());
         octLabel.setForeground(theme.secondaryDisplayForeground());
         binLabel.setForeground(theme.secondaryDisplayForeground());
+        zeichenLabel.setForeground(theme.secondaryDisplayForeground());
         statusLabel.setForeground(theme.secondaryDisplayForeground());
         statusLabel.setFont(theme.secondaryDisplayFont().deriveFont(Font.PLAIN, 13f));
+        ModernButtonStyler.styleButton(ieeeButton, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
+        ieeeButton.setFont(AppFonts.normal(13));
     }
 
     private void styleSecondaryLabel(JLabel label)
