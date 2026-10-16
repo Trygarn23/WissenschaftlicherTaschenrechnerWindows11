@@ -277,6 +277,9 @@ public class DisplayPanel extends JPanel
         recDisplay.setBackground(theme.displayBackground());
         recDisplay.setForeground(theme.secondaryDisplayForeground());
         recDisplay.setFont(theme.secondaryDisplayFont());
+        // Die rechtsbündige Textpane meldet nach dem ersten Layout die Höhe 0, dann wäre die zweite Zeile
+        // (Vorschau, offene Klammern, Fehlermeldung) unsichtbar. Deshalb feste Höhe aus der Schrift.
+        recDisplay.setPreferredSize(new Dimension(0, recDisplay.getFontMetrics(recDisplay.getFont()).getHeight()));
 
         mainDisplay.setBackground(theme.displayBackground());
         mainDisplay.setForeground(theme.displayForeground());
