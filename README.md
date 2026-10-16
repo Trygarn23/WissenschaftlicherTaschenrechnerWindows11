@@ -14,6 +14,8 @@ Dieses Projekt ist ein selbst entwickelter wissenschaftlicher Taschenrechner in 
 - Quadrat, Wurzel und Kehrwert
 - Klammern, Operatorprioritäten und Ergebnis-History über den gemeinsamen Parser
 - Eingabe über Buttons und Tastatur
+- Ins Display klicken oder ←/→, Pos1/Ende nutzen, um mitten im Ausdruck weiterzutippen (Entf löscht rechts)
+- Zusammengehörige Klammern werden farbig markiert, Parserfehler zeigen die fehlerhafte Stelle
 
 ### Wissenschaftlicher Modus
 
@@ -23,6 +25,11 @@ Dieses Projekt ist ein selbst entwickelter wissenschaftlicher Taschenrechner in 
 - Konstanten `π`, `e` und `Ans`
 - Wissenschaftliche Schreibweise für sehr große und sehr kleine Werte
 - Einstellbare Präzision über die Settings
+- f(x)-Menü mit `nCr`, `nPr`, `ggT`, `kgV` und `n!` (Argumente mit `;` trennen, z. B. `nCr(5;2)`; `;` auch per Shift+Komma)
+- `S↔D` zeigt das Ergebnis exakt (z. B. `3/4`, `√2/2`, `3π/4`), „Mehr Stellen“ mit voller Genauigkeit
+- Variablen A–F über `STO`/`RCL`, bleiben nach einem Neustart erhalten
+- Funktionen per Rechtsklick im f(x)-Menü anheften
+- Eigene Funktionen in `x` über die Befehlssuche (Strg+K) anlegen und löschen
 
 ### Programmierermodus
 
@@ -83,6 +90,12 @@ Dieses Projekt ist ein selbst entwickelter wissenschaftlicher Taschenrechner in 
 - Suchfeld und Clear-Funktion
 - Doppelklick auf Verlaufseinträge übernimmt das Ergebnis
 - Verlauf kann über die Settings deaktiviert werden
+- „Statistik…“ im Mehr-Menü zeigt die Lieblingsfunktion
+
+### Einheiten
+
+- Ausfahrbares Einheiten-Panel (Strg+8), Umrechnungen als Favorit merkbar
+- „Ergebnis umrechnen“ in der Befehlssuche übernimmt das aktuelle Ergebnis
 
 ## Voraussetzungen
 

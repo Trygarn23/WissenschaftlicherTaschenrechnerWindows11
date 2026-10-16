@@ -19,7 +19,7 @@
 - [x] Display-Schriftgröße bei sehr langen Ausdrücken dynamisch weiter verbessern.
 - [ ] Display bei sehr kleinen Fenstergrößen stabilisieren.
 - [ ] Display bei hoher DPI / Windows-Skalierung stabilisieren.
-- [ ] High-DPI-Checkliste für Windows-Skalierung 100 %, 125%, 150%, 200% erstellen.
+- [x] High-DPI-Checkliste für Windows-Skalierung 100 %, 125%, 150%, 200% erstellen. → `docs/high-dpi-checkliste.md` (das Durchtesten selbst bleibt offen).
 - [x] Statusanzeige bei Moduswechsel sofort aktualisieren.
 - [x] Statusanzeige bei Speicheränderung sofort aktualisieren.
 - [x] Statusanzeige bei Winkelmoduswechsel sofort aktualisieren.
@@ -36,7 +36,7 @@
 - [ ] Performance bei langen Ausdrücken, vielen History-Einträgen und großen Matrizen messen.
 - [x] Letzte Eingabe nach einem Absturz wieder anbieten, damit nicht alles einfach weg ist. → `LetzteEingabeSicherung`, Statuszeile meldet „Letzte Eingabe wiederhergestellt“.
 - [x] Einmal Rückgängig anbieten, wenn man aus Versehen den Ausdruck gelöscht hat. → Strg+Z nach C/CE, solange noch nichts Neues getippt wurde.
-- [ ] Klammerpaare beim Tippen sichtbar zusammengehörig markieren.
+- [x] Klammerpaare beim Tippen sichtbar zusammengehörig markieren. → Paare werden je Verschachtelungstiefe farbig/fett, `KlammerPaare`.
 - [x] Stern-Button im Verlauf zeigt nur ein Kästchen → Stern wird jetzt selbst gemalt (`StarIcon`), klappt in jeder Schrift und jedem Theme.
 - [x] Suchfeld im Verlauf ist zu schmal, da steht nur „Such“ → Suchfeld hat jetzt eine eigene Zeile über den Buttons.
 - [x] Live-Vorschau im Display: Ergebnis schon beim Tippen grau anzeigen, z. B. „= 42“ → über `vorschauWert()` mit `OptionalDouble`, weil `aktuellerWertOder0()` „ist 0“ und „geht nicht“ nicht unterscheiden kann.
@@ -115,15 +115,15 @@
 - [x] Unit Tests nachgezogen: `10ˣ` mit leerem Ausdruck, Zahl und Klammer absichern.
 - [x] Unit Tests nachgezogen: `exp`, `ln`, `log` mit Ausdruck und letzter Zahl absichern.
 - [x] Wissenschaftliches `f(x)`-Popup per Tastatur erreichbar machen.
-- [ ] Nützliche Einheitenumrechnungen direkt aus einem Ergebnis starten.
-- [ ] Häufig genutzte Funktionen als Favoriten anheften.
-- [ ] Ergebnis bei Bedarf mit mehr Nachkommastellen anschauen, ohne die Einstellung dauerhaft umzubauen.
+- [x] Nützliche Einheitenumrechnungen direkt aus einem Ergebnis starten. → Befehlssuche „Ergebnis umrechnen“ öffnet das Einheiten-Panel mit dem Wert.
+- [x] Häufig genutzte Funktionen als Favoriten anheften. → Rechtsklick im f(x)-Popup heftet an, Zeile oben im Popup.
+- [x] Ergebnis bei Bedarf mit mehr Nachkommastellen anschauen, ohne die Einstellung dauerhaft umzubauen. → „Mehr Stellen“ im f(x)-Popup.
 - [ ] Wissenschaftliches `f(x)`-Popup optisch in allen Themes angleichen.
 - [ ] Wissenschaftliches Panel bei kleiner Fenstergröße stabilisieren.
-- [ ] S⇔D-Taste wie beim Casio: Ergebnis exakt anzeigen, z. B. 0,333… → 1/3 oder 1,414… → √2.
+- [x] S⇔D-Taste wie beim Casio: Ergebnis exakt anzeigen, z. B. 0,333… → 1/3 oder 1,414… → √2. → `ExakteForm`: Brüche, a√n/q, Vielfache von π; Taste im f(x)-Popup.
 - [x] `nCr` und `nPr` ergänzen. → Parser: `nCr(n;k)`, `nPr(n;k)` (Trennzeichen `;`, weil Komma das Dezimalzeichen ist). Buttons fehlen noch.
 - [x] ggT, kgV und Primfaktorzerlegung ergänzen. → `ggT(a;b)`, `kgV(a;b)` im Parser, `Zahlentheorie.primfaktoren` (360 = 2³ · 3² · 5). Buttons/Anzeige fehlen noch.
-- [ ] Variablen A–F zum Speichern (STO/RCL), weil ein M-Speicher auf Dauer echt wenig ist.
+- [x] Variablen A–F zum Speichern (STO/RCL), weil ein M-Speicher auf Dauer echt wenig ist. → STO/RCL im f(x)-Popup, gespeichert in `variablen.properties`.
 - [ ] `2nd`-Taste wie beim TI überlegen: sin ↔ asin, x² ↔ √x usw. → könnte das `f(x)`-Popup ersetzen?
 
 ---
@@ -441,10 +441,10 @@
 
 ## CAS-light / Lernmodus
 - [ ] Schritt-für-Schritt-Auswertung erst nach Parser-Modularisierung starten.
-- [x] Token- und Parserfehler mit Position im Ausdruck anzeigen. → `AusdruckParserException.getPosition()`; die Shell zeigt die Stelle noch nicht an.
+- [x] Token- und Parserfehler mit Position im Ausdruck anzeigen. → `AusdruckParserException.getPosition()`; das Display markiert die Stelle rot und nennt sie in der zweiten Zeile.
 - [ ] Einfache Umformungen planen: Klammern auflösen, Potenzregeln, Bruchvereinfachung.
 - [ ] Ableitungsregeln symbolisch für einfache Funktionen planen.
-- [ ] Benutzerdefinierte Funktionen mit Namen und Ausdruck speichern.
+- [x] Benutzerdefinierte Funktionen mit Namen und Ausdruck speichern. → Befehlssuche „Eigene Funktion anlegen…/löschen…“, wird beim Start geladen.
 - [x] Benutzerdefinierte Funktionen validieren. → `FunktionsRegistry.registriereBenutzerfunktion(...)`.
 - [x] Benutzerdefinierte Funktionen im Parser registrieren. → `FunktionsRegistry.registriereBenutzerfunktion(...)`.
 - [ ] Lernmodus planen: Rechenweg anzeigen, aber normale Rechnerbedienung nicht verlangsamen.
@@ -507,7 +507,7 @@
 - [x] Befehlssuche mit Strg+K: Modus, Theme, Funktion oder Konstante tippen, Enter, fertig → Aktionen haben jetzt eh eindeutige Namen.
 - [x] Moduswechsel per Strg+1 bis Strg+9. → Strg+1–7 Modi, Strg+8 Einheiten, F1 bzw. Button „Tastenkürzel“ zeigt alle Kürzel an.
 - [x] Zuletzt genutzte Modi in der Modusleiste weiter nach vorne holen.
-- [ ] Im Display irgendwo in den Ausdruck klicken und mittendrin weitertippen, statt nur hinten anhängen/löschen.
+- [x] Im Display irgendwo in den Ausdruck klicken und mittendrin weitertippen, statt nur hinten anhängen/löschen. → Cursor per Klick und ←/→; Konstanten-Dialog und Einfügen hängen weiter hinten an.
 - [x] Mini-Rechner: kleines Fenster, das immer im Vordergrund bleibt → z. B. neben IntelliJ.
 - [x] Aktionsleiste oben: Der Knopf „Zuletzt genutzt“ (hier „Gleichungen“) und „Weitere…“ sind beide gleich hell hervorgehoben → nur den aktiven Modus hervorheben.
   - „Weitere…“ bleibt neutral; nur der tatsächliche Modusknopf wird hervorgehoben.
@@ -550,7 +550,7 @@
 - [x] `WissenschaftlichRechnerService`-Adapter entfernt (wurde nur noch vom eigenen Test genutzt).
 - [x] `ShellActionRegistry` weiter beobachten: Wird sie zu groß? → Nein, Aktionen sind jetzt Einzeiler über `mitRefresh(...)`.
 - [x] Persistence-Orchestrierung aus `TaschenrechnerUI` in einen Shell-Service auslagern.
-- [ ] `GraphPanel`, `MatrixPanel` und `AusdruckEditor` in weiteren sicheren Schritten verkleinern.
+- [x] `GraphPanel`, `MatrixPanel` und `AusdruckEditor` in weiteren sicheren Schritten verkleinern. → GraphPanel 489→416 (`GraphAnalyse`), MatrixPanel 307→284 (`DateiDialog`, Formatter), AusdruckEditor 588→384.
 - [ ] Gemeinsame Theme-Hilfen für einfache Mode-Panels prüfen, ohne Spezialpanels zu verbiegen.
 - [ ] Optional `StandardActionFactory` nur einführen, falls Standardaktionen wachsen.
 - [ ] Optional `WissenschaftlichActionFactory` einführen, falls wissenschaftliche Actions wachsen.
@@ -590,7 +590,7 @@
 - [ ] Moduswechsel, Settings, Session und History in eine kleine Shell-Steuerung verschieben, wenn es dadurch wirklich ruhiger wird.
 - [x] Für jeden Presenter verständliche Unit Tests schreiben; die vorhandenen Paneltests bleiben als Sicherheitsnetz bestehen.
 - [x] Alten Misch-Code erst entfernen, wenn der jeweilige Modus nach dem Umbau genauso funktioniert wie vorher.
-- [ ] Eine kurze Architektur-Seite schreiben: Wo gehört neuer Code hin und wie sieht ein einfacher MVP-Modus bei uns aus?
+- [x] Eine kurze Architektur-Seite schreiben: Wo gehört neuer Code hin und wie sieht ein einfacher MVP-Modus bei uns aus? → `docs/architektur.md`.
 
 - [ ] Gemeinsames `ModeState`-Konzept entwerfen, ohne Spezialzustände wie Graph/Komplex/PRG in `RechnerZustand` zu quetschen.
 - [x] Theme-Duplikation reduzieren → `BasisTheme`, feste Themes setzen nur noch ihre Farben.
@@ -613,7 +613,7 @@
 - [x] Hardcoded Start-Hintergrund aus `ProgrammiererPanel` entfernen.
 - [x] `ProgrammiererPanel` nach Funktionalitätsabschluss aufteilen.
 - [ ] Build-System sauber entscheiden: Maven oder Gradle, danach Unit Tests mit einem Standardbefehl ausführbar machen.
-- [ ] UI-Checkliste für alle Themes und Modi anlegen.
+- [x] UI-Checkliste für alle Themes und Modi anlegen. → `docs/ui-checkliste.md`.
 - [ ] Regressionstest-Suite vor großen Feature-Branches ausführen.
 
 ---
@@ -684,7 +684,7 @@ Ergänzt die Punkte aus Refactoring und MVP oben.
 - [ ] Export planen: Verlauf als TXT/CSV/JSON, Graph als PNG, Matrix als CSV.
 - [ ] Start ohne IntelliJ für andere Menschen wirklich testen.
 - [ ] Portable Version mit allen nötigen Dateien vorbereiten.
-- [ ] Kleine Release-Checkliste schreiben: testen, Version erhöhen, Changelog, Paket bauen.
+- [x] Kleine Release-Checkliste schreiben: testen, Version erhöhen, Changelog, Paket bauen. → `docs/release-checkliste.md`.
 - [ ] Druck-/Report-Ansicht optional planen.
 - [ ] Lokale Projektdateien für komplexere Arbeiten planen, z. B. Graphen + Tabellen + Notizen.
 - [ ] Lokalisierung Deutsch/Englisch optional planen.
@@ -692,10 +692,10 @@ Ergänzt die Punkte aus Refactoring und MVP oben.
 - [ ] Auto-Update oder Release-Paket optional planen.
 - [ ] `.jar`-Build oder Installer optional planen.
 - [ ] GitHub Releases vorbereiten.
-- [ ] Changelog führen.
+- [x] Changelog führen. → `CHANGELOG.md`.
 - [x] Version im UI anzeigen.
 - [x] Prüfungsmodus: nur Standard + Wissenschaftlich, Verlauf und Graph gesperrt, und man sieht direkt, dass er an ist. → Einstellungen › Schule, Titel + Statuszeile zeigen PRÜFUNGSMODUS.
-- [ ] Rechner-Statistik als Spaß-Feature: „Deine Lieblingsfunktion: sin (42×)“ xD
+- [x] Rechner-Statistik als Spaß-Feature: „Deine Lieblingsfunktion: sin (42×)“ xD → „Statistik…“ im Mehr-Menü des Verlaufs.
 - [ ] GitHub Actions: Tests bei jedem Push automatisch laufen lassen → geht erst nach Maven/Gradle.
 
 ## Nächste Runde (für volles Limit)
@@ -704,15 +704,15 @@ Große Brocken zuerst, kleine als Lückenfüller.
 ### Refactoring (größte Klassen zuerst)
 - [x] `HistoryPanel` (~600 Zeilen) aufteilen: Filter-/Suchleiste, Liste, Export-/Lösch-Aktionen in eigene Teile.
 - [x] `GraphPanel` (~580 Zeilen) aufteilen: Funktionsliste, Steuerleiste (Zoom/Bereich), Analyse-Ausgabe getrennt.
-- [ ] `AusdruckEditor` (~510 Zeilen) prüfen: Cursor/Klammer-Logik von Undo/Redo trennen.
-- [ ] `TaschenrechnerUI` (~430 Zeilen) weiter entschlacken: Aufbau des Fensters vs. Verdrahtung der Aktionen. → Modus-Panels sind nach `ModusPanels` und die Befehle nach `ShellBefehle` gewandert, durch Prüfungsmodus, Konstanten, Mini-Rechner usw. ist die Klasse trotzdem auf ~550 Zeilen gewachsen. Nächster Schritt: Session laden/speichern und Prüfungsmodus-Logik auslagern.
+- [x] `AusdruckEditor` (~510 Zeilen) prüfen: Cursor/Klammer-Logik von Undo/Redo trennen. → 588→384 Zeilen; `AusdruckCursor`, `AusdruckTermRahmen`, `LetzteZahlBearbeitung` ausgelagert, Rückgängig bleibt (nur ein Feld).
+- [x] `TaschenrechnerUI` (~430 Zeilen) weiter entschlacken: Aufbau des Fensters vs. Verdrahtung der Aktionen. → Modus-Panels sind nach `ModusPanels` und die Befehle nach `ShellBefehle` gewandert, durch Prüfungsmodus, Konstanten, Mini-Rechner usw. ist die Klasse trotzdem auf ~550 Zeilen gewachsen. Nächster Schritt: Session laden/speichern und Prüfungsmodus-Logik auslagern. → Erledigt: `SessionSteuerung` und `PruefungsModusSteuerung` ausgelagert (592→557 Zeilen, inkl. neuer Feature-Verdrahtung); weitere Schnitte wären nur durchgereichte Einzeiler.
 - [x] `StatistikPanel` (~400 Zeilen): Eingabetabelle und Ergebnisanzeige trennen.
 - [x] `SettingsDialog` (~340 Zeilen): je Einstellungsbereich ein eigenes kleines Panel.
 - [x] `MatrixPanel` (~340 Zeilen): Matrix-Eingabegitter als eigene Komponente.
 - [x] Nach jedem Aufteilen: alle Tests grün, Zeilenzahl vorher/nachher hier notieren. → HistoryPanel 603→538, GraphPanel 583→487, StatistikPanel 401→326, MatrixPanel 338→305, SettingsDialog 342→255, TaschenrechnerUI gewachsen (siehe oben).
-- [ ] Toten Code suchen (unbenutzte Methoden/Klassen/Imports) und löschen.
-- [ ] Magische Zahlen (Pixelgrößen, Abstände, Grenzwerte) in benannte Konstanten.
-- [ ] Alle `catch (Exception e)` durchgehen: konkrete Ausnahme oder bewusst kommentieren.
+- [x] Toten Code suchen (unbenutzte Methoden/Klassen/Imports) und löschen. → 16 unbenutzte Methoden und 5 Imports entfernt.
+- [x] Magische Zahlen (Pixelgrößen, Abstände, Grenzwerte) in benannte Konstanten. → 95 Konstanten in 34 Dateien; Farbwerte in Themes, physikalische Konstanten und einmalige Paddings bewusst gelassen.
+- [x] Alle `catch (Exception e)` durchgehen: konkrete Ausnahme oder bewusst kommentieren. → gibt es keine mehr, alle fangen konkrete Ausnahmen.
 
 ### Features
 - [x] Prüfungsmodus umsetzen (siehe Spätere Features) inkl. sichtbarem Hinweis in der Statuszeile.
@@ -720,29 +720,29 @@ Große Brocken zuerst, kleine als Lückenfüller.
 - [x] Matrix als CSV exportieren und importieren.
 - [x] Statistik-Daten aus CSV importieren.
 - [x] Verlauf zusätzlich als JSON exportieren.
-- [ ] Einheiten: Favoriten-Umrechnungen merken.
-- [ ] Wissenschaftlich: Ergebnis als Bruch anzeigen (z. B. 0,75 → 3/4), wo sinnvoll.
-- [ ] Wissenschaftlich: Ans-Taste / letztes Ergebnis in neuen Ausdruck übernehmen (falls nicht vorhanden).
+- [x] Einheiten: Favoriten-Umrechnungen merken. → Stern-Button + Favoriten-Dropdown im Einheiten-Panel.
+- [x] Wissenschaftlich: Ergebnis als Bruch anzeigen (z. B. 0,75 → 3/4), wo sinnvoll. → über S↔D (⇔ fehlt in Segoe UI).
+- [x] Wissenschaftlich: Ans-Taste / letztes Ergebnis in neuen Ausdruck übernehmen (falls nicht vorhanden). → war schon da, jetzt per Test abgesichert.
 - [x] Gleichungsmodus: lineare und quadratische Gleichungen lösen (Grundversion).
 - [x] Bruchmodus: Grundrechenarten mit Kürzen (Grundversion).
 - [x] Datumsrechner: Tage zwischen zwei Daten, Datum ± Tage.
-- [ ] Rechner-Statistik („Lieblingsfunktion“) aus dem Verlauf berechnen.
+- [x] Rechner-Statistik („Lieblingsfunktion“) aus dem Verlauf berechnen. → `VerlaufStatistik`.
 - [ ] Lokalisierung DE/EN: alle UI-Texte an einer Stelle sammeln (erst sammeln, dann übersetzen).
 
 ### Tests
-- [ ] Tests für die neuen Exporte (PNG nur „Datei entsteht“, CSV Inhalt prüfen).
+- [x] Tests für die neuen Exporte (PNG nur „Datei entsteht“, CSV Inhalt prüfen). → waren schon vorhanden (GraphCanvasPanelTest, MatrixCsvTest, VerlaufExport/JsonTest).
 - [x] Parser-Grenzfälle: sehr lange Ausdrücke, verschachtelte Klammern, leere Eingabe, nur Operatoren.
 - [x] Programmierer: Überlauf an jeder Wortbreite testen.
-- [ ] Session laden mit kaputter/alter Datei als Test absichern.
-- [ ] Testabdeckung grob schätzen: welche Klasse in `src/common` hat noch gar keinen Test?
+- [x] Session laden mit kaputter/alter Datei als Test absichern. → 9 Tests; dabei Absturz bei kaputtem Unicode-Escape behoben.
+- [x] Testabdeckung grob schätzen: welche Klasse in `src/common` hat noch gar keinen Test? → `docs/testabdeckung.md`, 6 Logikklassen nachgetestet.
 
 Verifikation der Bugfixes: 210 Java-Quelldateien kompiliert, 722 JUnit-Tests erfolgreich (keine übersprungen), UI-Bildprüfung für Einstellungen, Gleichungen, LGS, Logik und Graph. Testläufe mit separatem `user.home`; echte Einstellungen unverändert. Windows-Skalierung und sämtliche Themes nicht manuell durchgetestet.
 
 ### Build / Release
 - [ ] Maven oder Gradle entscheiden und einführen (Voraussetzung für GitHub Actions).
 - [ ] Ausführbare `.jar` bauen und auf einem zweiten Rechner ohne IntelliJ starten.
-- [ ] `CHANGELOG.md` anlegen, rückwirkend aus der Git-Historie füllen.
-- [ ] Release-Checkliste in `docs/` schreiben.
+- [x] `CHANGELOG.md` anlegen, rückwirkend aus der Git-Historie füllen.
+- [x] Release-Checkliste in `docs/` schreiben. → `docs/release-checkliste.md`.
 - [ ] README: Screenshots aller Modi ergänzen.
 - [ ] Git: Der Stand vor den Bugfixes liegt als ein großer Commit (`010f1b2`) auf GitHub. Optional in einzelne Commits aufteilen, dann ist aber ein Force-Push nötig – vorher entscheiden.
 
@@ -756,6 +756,11 @@ Verifikation der Bugfixes: 210 Java-Quelldateien kompiliert, 722 JUnit-Tests erf
 - [x] Konstanten-Dialog: Favoriten als Stern statt Checkbox (dafür `StarIcon` public machen).
 - [ ] Alle neuen Modi einmal in der echten App durchklicken (nur über Tests geprüft, Layout nicht angeschaut).
 - [x] Wissenschaftlich: neue Parserfunktionen (nCr, nPr, ggT, kgV) als Buttons/f(x)-Menü anbieten, sobald der Parser-Teil fertig ist. → im f(x)-Menü inkl. `;` und `n!`, `;` auch per Shift+Komma.
+- [ ] `docs/` steht in der `.gitignore`, die neuen Docs sind trotzdem mit `-f` committet → entscheiden: Docs öffentlich ins Repo (Zeile aus `.gitignore` raus) oder wieder lokal halten.
+- [x] STO/RCL-Auswahlmenü (A–F) übernimmt das Theme nicht.
+- [x] Cursor im Display: Konstanten-Dialog, Befehlssuche und Einfügen aus der Zwischenablage ignorieren die Cursorposition; Pos1/Ende/Entf fehlen. → Konstanten an der Cursorstelle (mit × auf beiden Seiten), Pos1/Ende/Entf gebunden; Einfügen aus der Zwischenablage ersetzt bewusst weiter den Ausdruck.
+- [x] Eigene Funktion löschen, die von einer anderen benutzt wird → die andere meldet erst beim Rechnen einen Fehler; besser vorher warnen. → Warnung mit Liste der abhängigen Funktionen.
+- [ ] f(x)-Popup wird mit 16 Einträgen + Favoriten voll → bei Gelegenheit in Gruppen (Trigonometrie / Kombinatorik / Speicher) aufteilen.
 
 ---
 

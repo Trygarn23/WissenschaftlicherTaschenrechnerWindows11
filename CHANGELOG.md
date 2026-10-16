@@ -10,10 +10,28 @@ Alles ab 2026-10-08 (aktueller Stand, Version `0.5.0-local`).
 ### Neu
 - Neue Modi und Werkzeuge (Bruch, Datum, Finanz, Gleichung, Logik, Netzwerk, Vektor), Gleichungssysteme und kompakte Gleichungseingabe.
 - Graph: erweiterte Analyse, logische Operatorsymbole werden gezeichnet.
+- Wissenschaftlich: `nCr`, `nPr`, `ggT`, `kgV`, `n!` im f(x)-Menü (Trennzeichen `;`, auch per Shift+Komma).
+- Wissenschaftlich: `S↔D` zeigt Ergebnisse exakt (Bruch, Wurzel, Vielfache von π), „Mehr Stellen“ zeigt die volle Genauigkeit.
+- Variablen A–F mit STO/RCL, bleiben über Neustarts erhalten.
+- Display: mitten im Ausdruck weitertippen (Klick, ←/→), Klammerpaare farbig, Parserfehler mit markierter Stelle.
+- Funktionen im f(x)-Menü per Rechtsklick anheften; eigene Funktionen anlegen und löschen (Befehlssuche).
+- Einheiten: Favoriten-Umrechnungen und „Ergebnis umrechnen“ aus der Befehlssuche.
+- Verlauf: „Statistik…“ mit Lieblingsfunktion.
+- Tastenkürzel-Übersicht um Strg+K, Strg+Shift+K, ←/→, Pos1/Ende/Entf und einen Programmierer-Abschnitt ergänzt.
+- Vor dem Löschen einer eigenen Funktion, die noch benutzt wird, kommt eine Warnung.
+- Doku: Architektur-Seite, Release-, UI- und High-DPI-Checkliste, Testabdeckung.
 
 ### Geändert
 - Parser-Umbau, Tastatur, Einstellungs-Layout und Modus-Hervorhebung überarbeitet.
 - Todo-Liste stark erweitert.
+- Konstanten-Favoriten als Stern statt Checkbox.
+- Aufgeräumt: toter Code und unbenutzte Imports entfernt, magische Zahlen benannt, `AusdruckEditor`, `TaschenrechnerUI`, `GraphPanel` und `MatrixPanel` verkleinert.
+
+### Behoben
+- Parser: `a x` wird als `a·x` gelesen statt als unbekannter Name `ax`.
+- Graph: Funktionen wie `1/x`, die bei x = 0 nicht definiert sind, galten als ungültig.
+- Mini-Rechner übernimmt einen Theme-Wechsel sofort.
+- Kaputte Settings-/Session-Datei (abgeschnittenes Unicode-Escape) hat das Laden abstürzen lassen.
 
 ## 2026-10-04
 
