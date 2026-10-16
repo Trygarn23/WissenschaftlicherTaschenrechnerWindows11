@@ -6,6 +6,7 @@ import modes.logik.logic.WahrheitstabellenRechner;
 import modes.logik.model.KvDiagramm;
 import modes.logik.model.Wahrheitstabelle;
 import ui.shell.ModePanel;
+import ui.shell.ModusFormular;
 import ui.shell.StatusAnzeige;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
@@ -89,7 +90,13 @@ public class LogikPanel extends JPanel implements ModePanel
         tabs.setBackground(theme.panelBackground());
         tabs.setForeground(theme.displayForeground());
 
-        applyThemeToChildren(this);
+        ModusFormular.faerbeKinder(this, theme, komponente ->
+        {
+            if (komponente instanceof JScrollPane scrollPane)
+            {
+                scrollPane.getViewport().setBackground(theme.inputBackground());
+            }
+        }, resultLabel, detailLabel, statusLabel);
         resultLabel.setForeground(theme.displayForeground());
         detailLabel.setForeground(theme.secondaryDisplayForeground());
         statusAnzeige.setTheme(theme);
@@ -319,35 +326,6 @@ public class LogikPanel extends JPanel implements ModePanel
                 setBackground(hervorheben ? new Color(220, 230, 255) : table.getBackground());
             }
             return this;
-        }
-    }
-
-    private void applyThemeToChildren(Component component)
-    {
-        if (theme == null)
-        {
-            return;
-        }
-
-        if (component instanceof JLabel label && label != resultLabel && label != detailLabel && label != statusLabel)
-        {
-            label.setForeground(theme.displayForeground());
-        }
-        else if (component instanceof JPanel panel && panel != this)
-        {
-            panel.setBackground(theme.panelBackground());
-        }
-        else if (component instanceof JScrollPane scrollPane)
-        {
-            scrollPane.getViewport().setBackground(theme.inputBackground());
-        }
-
-        if (component instanceof Container container)
-        {
-            for (Component child : container.getComponents())
-            {
-                applyThemeToChildren(child);
-            }
         }
     }
 }

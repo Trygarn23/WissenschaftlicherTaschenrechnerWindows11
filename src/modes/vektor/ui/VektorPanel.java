@@ -6,6 +6,7 @@ import common.state.RechnerModus;
 import modes.vektor.logic.VektorRechner;
 import modes.vektor.model.Vektor;
 import ui.shell.ModePanel;
+import ui.shell.ModusFormular;
 import ui.shell.StatusAnzeige;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
@@ -37,7 +38,6 @@ public class VektorPanel extends JPanel implements ModePanel
     private final List<JButton> buttons = new ArrayList<>();
     private JButton kreuzButton;
 
-    private AppTheme theme;
 
     public VektorPanel()
     {
@@ -57,26 +57,17 @@ public class VektorPanel extends JPanel implements ModePanel
     @Override
     public void applyTheme(AppTheme theme)
     {
-        this.theme = theme;
         setBackground(theme.windowBackground());
 
-        for (JTextField field : fields)
-        {
-            field.setFont(AppFonts.normal(15));
-            ModernButtonStyler.styleInput(field, theme);
-            field.setCaretColor(theme.displayForeground());
-        }
-
-        dimensionBox.setFont(AppFonts.normal(14));
-        dimensionBox.setBackground(theme.inputBackground());
-        dimensionBox.setForeground(theme.displayForeground());
+        fields.forEach(field -> ModusFormular.styleEingabe(field, theme));
+        ModusFormular.styleAuswahl(dimensionBox, theme);
 
         for (JButton button : buttons)
         {
             ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
         }
 
-        applyThemeToChildren(this);
+        ModusFormular.faerbeKinder(this, theme, resultLabel, detailLabel, statusLabel);
         resultLabel.setForeground(theme.displayForeground());
         detailLabel.setForeground(theme.secondaryDisplayForeground());
         statusAnzeige.setTheme(theme);
@@ -94,7 +85,7 @@ public class VektorPanel extends JPanel implements ModePanel
         fieldsPanel.add(dimensionBox);
         fieldsPanel.add(buildVektorInput("a", aX, aY, aZ));
         fieldsPanel.add(buildVektorInput("b", bX, bY, bZ));
-        fieldsPanel.add(wrapField("Skalar k", skalarField));
+        fieldsPanel.add(ModusFormular.labelUeber("Skalar k", skalarField));
 
         JPanel controls = new JPanel(new GridLayout(0, 2, 8, 8));
         controls.setOpaque(false);
@@ -131,21 +122,12 @@ public class VektorPanel extends JPanel implements ModePanel
 
         JPanel row = new JPanel(new GridLayout(1, 3, 8, 0));
         row.setOpaque(false);
-        row.add(wrapField("x", x));
-        row.add(wrapField("y", y));
-        row.add(wrapField("z", z));
+        row.add(ModusFormular.labelUeber("x", x));
+        row.add(ModusFormular.labelUeber("y", y));
+        row.add(ModusFormular.labelUeber("z", z));
 
         panel.add(label, BorderLayout.NORTH);
         panel.add(row, BorderLayout.CENTER);
-        return panel;
-    }
-
-    private JPanel wrapField(String labelText, JTextField field)
-    {
-        JPanel panel = new JPanel(new BorderLayout(0, 4));
-        panel.setOpaque(false);
-        panel.add(new JLabel(labelText), BorderLayout.NORTH);
-        panel.add(field, BorderLayout.CENTER);
         return panel;
     }
 
@@ -249,31 +231,6 @@ public class VektorPanel extends JPanel implements ModePanel
         catch (IllegalArgumentException e)
         {
             statusAnzeige.zeigeFehler(e.getMessage());
-        }
-    }
-
-    private void applyThemeToChildren(Component component)
-    {
-        if (theme == null)
-        {
-            return;
-        }
-
-        if (component instanceof JLabel label && label != resultLabel && label != detailLabel && label != statusLabel)
-        {
-            label.setForeground(theme.displayForeground());
-        }
-        else if (component instanceof JPanel panel && panel != this)
-        {
-            panel.setBackground(theme.panelBackground());
-        }
-
-        if (component instanceof Container container)
-        {
-            for (Component child : container.getComponents())
-            {
-                applyThemeToChildren(child);
-            }
         }
     }
 }

@@ -7,6 +7,7 @@ import modes.netzwerk.logic.Ipv6Rechner;
 import modes.netzwerk.model.Ipv4Netz;
 import modes.netzwerk.model.Teilung;
 import ui.shell.ModePanel;
+import ui.shell.ModusFormular;
 import ui.shell.StatusAnzeige;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
@@ -35,7 +36,6 @@ public class NetzwerkPanel extends JPanel implements ModePanel
     private final List<JButton> buttons = new ArrayList<>();
     private final List<JTextField> fields = List.of(adressField, maskenField, teilnetzField, ipv6Field);
 
-    private AppTheme theme;
 
     public NetzwerkPanel()
     {
@@ -61,22 +61,15 @@ public class NetzwerkPanel extends JPanel implements ModePanel
     @Override
     public void applyTheme(AppTheme theme)
     {
-        this.theme = theme;
         setBackground(theme.windowBackground());
 
-        for (JTextField field : fields)
-        {
-            field.setFont(AppFonts.normal(15));
-            ModernButtonStyler.styleInput(field, theme);
-            field.setCaretColor(theme.displayForeground());
-        }
-
+        fields.forEach(field -> ModusFormular.styleEingabe(field, theme));
         for (JButton button : buttons)
         {
             ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
         }
 
-        applyThemeToChildren(this);
+        ModusFormular.faerbeKinder(this, theme, resultLabel, detailLabel, statusLabel);
         ausgabe.setBackground(theme.inputBackground());
         ausgabe.setForeground(theme.displayForeground());
         ausgabe.setCaretColor(theme.displayForeground());
@@ -123,13 +116,9 @@ public class NetzwerkPanel extends JPanel implements ModePanel
         return panel;
     }
 
-    private JPanel wrapField(String labelText, JTextField field)
+    private static JPanel wrapField(String labelText, JTextField field)
     {
-        JPanel panel = new JPanel(new BorderLayout(0, 2));
-        panel.setOpaque(false);
-        panel.add(new JLabel(labelText), BorderLayout.NORTH);
-        panel.add(field, BorderLayout.CENTER);
-        return panel;
+        return ModusFormular.labelUeber(labelText, field, 2);
     }
 
     private JPanel buttonRow(JButton... rowButtons)
@@ -269,25 +258,5 @@ public class NetzwerkPanel extends JPanel implements ModePanel
         String text = ausgabe.getText().isEmpty() ? resultLabel.getText() : ausgabe.getText();
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
         statusAnzeige.zeigeErfolg("Ergebnis kopiert");
-    }
-
-    private void applyThemeToChildren(Component component)
-    {
-        if (component instanceof JLabel label && label != resultLabel && label != detailLabel && label != statusLabel)
-        {
-            label.setForeground(theme.displayForeground());
-        }
-        else if (component instanceof JPanel panel && panel != this)
-        {
-            panel.setBackground(theme.panelBackground());
-        }
-
-        if (component instanceof Container container)
-        {
-            for (Component child : container.getComponents())
-            {
-                applyThemeToChildren(child);
-            }
-        }
     }
 }

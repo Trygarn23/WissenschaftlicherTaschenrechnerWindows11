@@ -7,12 +7,14 @@ import modes.datum.logic.DatumsRechner.Verschiebung;
 import modes.datum.logic.DatumsRechner.Zeitraum;
 import modes.datum.logic.ZeitSummierer;
 import ui.shell.ModePanel;
+import ui.shell.ModusFormular;
 import ui.shell.StatusAnzeige;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -39,7 +41,6 @@ public class DatumPanel extends JPanel implements ModePanel
     private final StatusAnzeige statusAnzeige = new StatusAnzeige(statusLabel);
     private final List<JButton> buttons = new ArrayList<>();
 
-    private AppTheme theme;
 
     public DatumPanel()
     {
@@ -70,32 +71,28 @@ public class DatumPanel extends JPanel implements ModePanel
     @Override
     public void applyTheme(AppTheme theme)
     {
-        this.theme = theme;
         setBackground(theme.windowBackground());
         tabs.setBackground(theme.panelBackground());
         tabs.setForeground(theme.displayForeground());
 
-        for (JComponent eingabe : List.of(vonField, bisField, datumField, anzahlField, zeitenArea))
+        for (JTextComponent eingabe : List.of(vonField, bisField, datumField, anzahlField, zeitenArea))
         {
-            eingabe.setFont(AppFonts.normal(15));
-            ModernButtonStyler.styleInput(eingabe, theme);
+            ModusFormular.styleEingabe(eingabe, theme);
         }
-        for (JTextField field : List.of(vonField, bisField, datumField, anzahlField))
-        {
-            field.setCaretColor(theme.displayForeground());
-        }
-        zeitenArea.setCaretColor(theme.displayForeground());
-
-        einheitBox.setFont(AppFonts.normal(14));
-        einheitBox.setBackground(theme.inputBackground());
-        einheitBox.setForeground(theme.displayForeground());
+        ModusFormular.styleAuswahl(einheitBox, theme);
 
         for (JButton button : buttons)
         {
             ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
         }
 
-        applyThemeToChildren(this);
+        ModusFormular.faerbeKinder(this, theme, komponente ->
+        {
+            if (komponente instanceof JCheckBox box)
+            {
+                box.setForeground(theme.displayForeground());
+            }
+        }, resultLabel, detailLabel, statusLabel);
         resultLabel.setForeground(theme.displayForeground());
         detailLabel.setForeground(theme.secondaryDisplayForeground());
         statusAnzeige.setTheme(theme);
@@ -130,7 +127,7 @@ public class DatumPanel extends JPanel implements ModePanel
         anzahl.setOpaque(false);
         anzahl.add(anzahlField);
         anzahl.add(einheitBox);
-        panel.add(beschriftet("Anzahl", anzahl));
+        panel.add(ModusFormular.labelUeber("Anzahl", anzahl));
 
         JPanel aktionen = new JPanel(new GridLayout(1, 3, 8, 0));
         aktionen.setOpaque(false);
@@ -274,16 +271,7 @@ public class DatumPanel extends JPanel implements ModePanel
         zeile.setOpaque(false);
         zeile.add(field, BorderLayout.CENTER);
         zeile.add(createButton("Heute", () -> field.setText(DatumsRechner.formatiere(LocalDate.now()))), BorderLayout.EAST);
-        return beschriftet(titel + " (TT.MM.JJJJ)", zeile);
-    }
-
-    private JPanel beschriftet(String titel, JComponent inhalt)
-    {
-        JPanel panel = new JPanel(new BorderLayout(0, 4));
-        panel.setOpaque(false);
-        panel.add(new JLabel(titel), BorderLayout.NORTH);
-        panel.add(inhalt, BorderLayout.CENTER);
-        return panel;
+        return ModusFormular.labelUeber(titel + " (TT.MM.JJJJ)", zeile);
     }
 
     private JPanel tabPanel()
@@ -309,29 +297,5 @@ public class DatumPanel extends JPanel implements ModePanel
         button.addActionListener(e -> action.run());
         buttons.add(button);
         return button;
-    }
-
-    private void applyThemeToChildren(Component component)
-    {
-        if (component instanceof JLabel label && label != resultLabel && label != detailLabel && label != statusLabel)
-        {
-            label.setForeground(theme.displayForeground());
-        }
-        else if (component instanceof JCheckBox box)
-        {
-            box.setForeground(theme.displayForeground());
-        }
-        else if (component instanceof JPanel panel && panel != this)
-        {
-            panel.setBackground(theme.panelBackground());
-        }
-
-        if (component instanceof Container container)
-        {
-            for (Component child : container.getComponents())
-            {
-                applyThemeToChildren(child);
-            }
-        }
     }
 }

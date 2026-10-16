@@ -10,6 +10,7 @@ import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 import ui.shell.ModePanel;
+import ui.shell.ModusFormular;
 import ui.shell.StatusAnzeige;
 
 import javax.swing.*;
@@ -38,7 +39,6 @@ public class KomplexPanel extends JPanel implements ModePanel, KomplexView
     private final List<JButton> buttons = new ArrayList<>();
     private final List<JTextField> fields = List.of(aRealField, aImagField, bRealField, bImagField);
 
-    private AppTheme theme;
 
     public KomplexPanel()
     {
@@ -68,26 +68,17 @@ public class KomplexPanel extends JPanel implements ModePanel, KomplexView
     @Override
     public void applyTheme(AppTheme theme)
     {
-        this.theme = theme;
         setBackground(theme.windowBackground());
 
-        for (JTextField field : fields)
-        {
-            field.setFont(AppFonts.normal(15));
-            ModernButtonStyler.styleInput(field, theme);
-            field.setCaretColor(theme.displayForeground());
-        }
-
-        darstellungBox.setFont(AppFonts.normal(14));
-        darstellungBox.setBackground(theme.inputBackground());
-        darstellungBox.setForeground(theme.displayForeground());
+        fields.forEach(field -> ModusFormular.styleEingabe(field, theme));
+        ModusFormular.styleAuswahl(darstellungBox, theme);
 
         for (JButton button : buttons)
         {
             ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
         }
 
-        applyThemeToChildren(this);
+        ModusFormular.faerbeKinder(this, theme, resultLabel, detailLabel, statusLabel);
         resultLabel.setForeground(theme.displayForeground());
         detailLabel.setForeground(theme.secondaryDisplayForeground());
         statusAnzeige.setTheme(theme);
@@ -187,20 +178,11 @@ public class KomplexPanel extends JPanel implements ModePanel, KomplexView
 
         JPanel row = new JPanel(new GridLayout(1, 2, 8, 0));
         row.setOpaque(false);
-        row.add(wrapField("Real", realField));
-        row.add(wrapField("Imaginär", imagField));
+        row.add(ModusFormular.labelUeber("Real", realField));
+        row.add(ModusFormular.labelUeber("Imaginär", imagField));
 
         panel.add(label, BorderLayout.NORTH);
         panel.add(row, BorderLayout.CENTER);
-        return panel;
-    }
-
-    private JPanel wrapField(String labelText, JTextField field)
-    {
-        JPanel panel = new JPanel(new BorderLayout(0, 4));
-        panel.setOpaque(false);
-        panel.add(new JLabel(labelText), BorderLayout.NORTH);
-        panel.add(field, BorderLayout.CENTER);
         return panel;
     }
 
@@ -237,30 +219,5 @@ public class KomplexPanel extends JPanel implements ModePanel, KomplexView
         button.addActionListener(e -> action.run());
         buttons.add(button);
         return button;
-    }
-
-    private void applyThemeToChildren(Component component)
-    {
-        if (theme == null)
-        {
-            return;
-        }
-
-        if (component instanceof JLabel label && label != resultLabel && label != detailLabel && label != statusLabel)
-        {
-            label.setForeground(theme.displayForeground());
-        }
-        else if (component instanceof JPanel panel && panel != this)
-        {
-            panel.setBackground(theme.panelBackground());
-        }
-
-        if (component instanceof Container container)
-        {
-            for (Component child : container.getComponents())
-            {
-                applyThemeToChildren(child);
-            }
-        }
     }
 }

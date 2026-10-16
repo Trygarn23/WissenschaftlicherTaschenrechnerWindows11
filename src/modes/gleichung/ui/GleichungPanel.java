@@ -9,6 +9,7 @@ import modes.matrix.model.Matrix;
 import modes.matrix.model.LgsLoesung;
 import modes.matrix.formatting.MatrixFormatter;
 import ui.shell.ModePanel;
+import ui.shell.ModusFormular;
 import ui.shell.StatusAnzeige;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
@@ -66,23 +67,21 @@ public class GleichungPanel extends JPanel implements ModePanel
     {
         this.theme = theme;
         setBackground(theme.windowBackground());
-        unbekannte.setFont(AppFonts.normal(14));
-        unbekannte.setBackground(theme.inputBackground());
-        unbekannte.setForeground(theme.displayForeground());
-
-        for (JTextField field : fields)
-        {
-            field.setFont(AppFonts.normal(15));
-            ModernButtonStyler.styleInput(field, theme);
-            field.setCaretColor(theme.displayForeground());
-        }
+        ModusFormular.styleAuswahl(unbekannte, theme);
+        fields.forEach(field -> ModusFormular.styleEingabe(field, theme));
 
         for (JButton button : buttons)
         {
             ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
         }
 
-        applyThemeToChildren(this);
+        ModusFormular.faerbeKinder(this, theme, komponente ->
+        {
+            if (komponente instanceof JScrollPane scroll)
+            {
+                scroll.getViewport().setBackground(theme.panelBackground());
+            }
+        }, resultLabel, detailLabel, statusLabel);
         resultLabel.setForeground(theme.displayForeground());
         detailLabel.setForeground(theme.secondaryDisplayForeground());
         statusAnzeige.setTheme(theme);
@@ -282,29 +281,5 @@ public class GleichungPanel extends JPanel implements ModePanel
     private static String escape(String text)
     {
         return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-    }
-
-    private void applyThemeToChildren(Component component)
-    {
-        if (component instanceof JLabel label && label != resultLabel && label != detailLabel && label != statusLabel)
-        {
-            label.setForeground(theme.displayForeground());
-        }
-        else if (component instanceof JPanel panel && panel != this)
-        {
-            panel.setBackground(theme.panelBackground());
-        }
-        else if (component instanceof JScrollPane scroll)
-        {
-            scroll.getViewport().setBackground(theme.panelBackground());
-        }
-
-        if (component instanceof Container container)
-        {
-            for (Component child : container.getComponents())
-            {
-                applyThemeToChildren(child);
-            }
-        }
     }
 }

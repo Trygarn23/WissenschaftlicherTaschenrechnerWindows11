@@ -4,6 +4,7 @@ import common.formatting.ZahlenAnzeige;
 import common.state.RechnerModus;
 import modes.bruch.model.Bruch;
 import ui.shell.ModePanel;
+import ui.shell.ModusFormular;
 import ui.shell.StatusAnzeige;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
@@ -33,7 +34,6 @@ public class BruchPanel extends JPanel implements ModePanel
 
     private Bruch ergebnis;
     private Consumer<String> ergebnisUebernehmenListener;
-    private AppTheme theme;
 
     public BruchPanel()
     {
@@ -60,21 +60,16 @@ public class BruchPanel extends JPanel implements ModePanel
     @Override
     public void applyTheme(AppTheme theme)
     {
-        this.theme = theme;
         setBackground(theme.windowBackground());
 
-        for (JTextField field : List.of(aField, bField))
-        {
-            field.setFont(AppFonts.normal(15));
-            ModernButtonStyler.styleInput(field, theme);
-            field.setCaretColor(theme.displayForeground());
-        }
+        ModusFormular.styleEingabe(aField, theme);
+        ModusFormular.styleEingabe(bField, theme);
         for (JButton button : buttons)
         {
             ModernButtonStyler.styleButton(button, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
         }
 
-        applyThemeToChildren(this);
+        ModusFormular.faerbeKinder(this, theme, resultLabel, dezimalLabel, gemischtLabel, statusLabel);
         resultLabel.setForeground(theme.displayForeground());
         dezimalLabel.setForeground(theme.secondaryDisplayForeground());
         gemischtLabel.setForeground(theme.secondaryDisplayForeground());
@@ -214,31 +209,5 @@ public class BruchPanel extends JPanel implements ModePanel
     {
         // Tausenderpunkte raus, damit das Display den Wert wieder einlesen kann.
         return ZahlenAnzeige.formatiere(bruch.alsDouble()).replace(".", "");
-    }
-
-    private void applyThemeToChildren(Component component)
-    {
-        if (theme == null)
-        {
-            return;
-        }
-
-        if (component instanceof JLabel label && label != resultLabel && label != dezimalLabel
-                && label != gemischtLabel && label != statusLabel)
-        {
-            label.setForeground(theme.displayForeground());
-        }
-        else if (component instanceof JPanel panel && panel != this)
-        {
-            panel.setBackground(theme.panelBackground());
-        }
-
-        if (component instanceof Container container)
-        {
-            for (Component child : container.getComponents())
-            {
-                applyThemeToChildren(child);
-            }
-        }
     }
 }

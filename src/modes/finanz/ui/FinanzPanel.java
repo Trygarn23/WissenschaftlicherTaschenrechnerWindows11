@@ -5,6 +5,7 @@ import common.state.RechnerModus;
 import modes.finanz.logic.FinanzRechnung;
 import modes.finanz.model.FinanzErgebnis;
 import ui.shell.ModePanel;
+import ui.shell.ModusFormular;
 import ui.shell.StatusAnzeige;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
@@ -30,7 +31,6 @@ public class FinanzPanel extends JPanel implements ModePanel
     private final JLabel statusLabel = new JLabel("Bereit");
     private final StatusAnzeige statusAnzeige = new StatusAnzeige(statusLabel);
 
-    private AppTheme theme;
 
     public FinanzPanel()
     {
@@ -51,22 +51,13 @@ public class FinanzPanel extends JPanel implements ModePanel
     @Override
     public void applyTheme(AppTheme theme)
     {
-        this.theme = theme;
         setBackground(theme.windowBackground());
 
-        for (JTextField field : fields)
-        {
-            field.setFont(AppFonts.normal(15));
-            ModernButtonStyler.styleInput(field, theme);
-            field.setCaretColor(theme.displayForeground());
-        }
-
-        rechnungBox.setFont(AppFonts.normal(14));
-        rechnungBox.setBackground(theme.inputBackground());
-        rechnungBox.setForeground(theme.displayForeground());
+        fields.forEach(field -> ModusFormular.styleEingabe(field, theme));
+        ModusFormular.styleAuswahl(rechnungBox, theme);
         ModernButtonStyler.styleButton(berechnenButton, theme, theme.toggleButtonBackground(), theme.toggleButtonForeground());
 
-        applyThemeToChildren(this);
+        ModusFormular.faerbeKinder(this, theme, resultLabel, rechenwegLabel, statusLabel);
         resultLabel.setForeground(theme.displayForeground());
         rechenwegLabel.setForeground(theme.secondaryDisplayForeground());
         statusAnzeige.setTheme(theme);
@@ -176,25 +167,5 @@ public class FinanzPanel extends JPanel implements ModePanel
             throw new IllegalArgumentException("„" + field.getText().trim() + "“ ist keine gültige Zahl.");
         }
         return BigDecimal.valueOf(zahl);
-    }
-
-    private void applyThemeToChildren(Component component)
-    {
-        if (component instanceof JLabel label && label != resultLabel && label != rechenwegLabel && label != statusLabel)
-        {
-            label.setForeground(theme.displayForeground());
-        }
-        else if (component instanceof JPanel panel && panel != this)
-        {
-            panel.setBackground(theme.panelBackground());
-        }
-
-        if (component instanceof Container container)
-        {
-            for (Component child : container.getComponents())
-            {
-                applyThemeToChildren(child);
-            }
-        }
     }
 }

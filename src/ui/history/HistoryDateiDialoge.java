@@ -2,12 +2,10 @@ package ui.history;
 
 import common.history.VerlaufEintrag;
 import common.history.VerlaufJson;
+import ui.shell.DateiDialog;
 
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,17 +22,11 @@ final class HistoryDateiDialoge
 
     static void speichere(Component parent, String extension, String content)
     {
-        JFileChooser chooser = chooser("Verlauf exportieren", extension);
-        chooser.setSelectedFile(new File("verlauf." + extension));
-        if (chooser.showSaveDialog(parent) != JFileChooser.APPROVE_OPTION)
+        Path file = DateiDialog.waehleZumSpeichern(parent, "Verlauf exportieren", beschreibung(extension), extension,
+                "verlauf." + extension);
+        if (file == null)
         {
             return;
-        }
-
-        Path file = chooser.getSelectedFile().toPath();
-        if (!file.getFileName().toString().toLowerCase().endsWith("." + extension))
-        {
-            file = file.resolveSibling(file.getFileName() + "." + extension);
         }
 
         try
@@ -51,15 +43,15 @@ final class HistoryDateiDialoge
     /** Liest eine JSON-Datei, die vorher über den Export geschrieben wurde. Leer, wenn abgebrochen oder fehlerhaft. */
     static Optional<List<VerlaufEintrag>> ladeJson(Component parent)
     {
-        JFileChooser chooser = chooser("Verlauf importieren", "json");
-        if (chooser.showOpenDialog(parent) != JFileChooser.APPROVE_OPTION)
+        Path file = DateiDialog.waehleZumOeffnen(parent, "Verlauf importieren", beschreibung("json"), "json");
+        if (file == null)
         {
             return Optional.empty();
         }
 
         try
         {
-            return Optional.of(VerlaufJson.lese(Files.readString(chooser.getSelectedFile().toPath(), StandardCharsets.UTF_8)));
+            return Optional.of(VerlaufJson.lese(Files.readString(file, StandardCharsets.UTF_8)));
         }
         catch (IOException | IllegalArgumentException ex)
         {
@@ -69,11 +61,8 @@ final class HistoryDateiDialoge
         }
     }
 
-    private static JFileChooser chooser(String title, String extension)
+    private static String beschreibung(String extension)
     {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(title);
-        chooser.setFileFilter(new FileNameExtensionFilter(extension.toUpperCase() + "-Datei", extension));
-        return chooser;
+        return extension.toUpperCase() + "-Datei";
     }
 }
