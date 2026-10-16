@@ -80,6 +80,9 @@ public final class TastenkuerzelDialog extends JDialog
                 new Eintrag("Strg+Shift+K", "Konstanten-Bibliothek öffnen"),
                 new Eintrag("Strg+C", "Anzeige kopieren (Display vorher anklicken)"),
                 new Eintrag("Strg+V", "Ausdruck einfügen (Display vorher anklicken)"),
+                new Eintrag("← / →", "Cursor im Ausdruck verschieben"),
+                new Eintrag("Pos1 / Ende", "Cursor an den Anfang / ans Ende des Ausdrucks"),
+                new Eintrag("Entf", "Zeichen rechts vom Cursor löschen"),
                 new Eintrag(Tastenkuerzel.RUECKGAENGIG_TEXT, "Mit C/CE gelöschte Eingabe zurückholen"),
                 new Eintrag(Tastenkuerzel.PROGRAMMIERER_CLR_TEXT, "Suche verlassen, im PRG-Modus CLR"),
                 new Eintrag(Tastenkuerzel.HILFE_TEXT, "Diese Übersicht öffnen")

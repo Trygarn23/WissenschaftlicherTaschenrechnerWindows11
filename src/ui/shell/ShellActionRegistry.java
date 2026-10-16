@@ -17,6 +17,9 @@ public class ShellActionRegistry
     /** Pfeiltasten haben keinen Button, deshalb eigene Aktionsnamen statt Button-Text. */
     public static final String CURSOR_LINKS = "Cursor links";
     public static final String CURSOR_RECHTS = "Cursor rechts";
+    public static final String CURSOR_ANFANG = "Cursor Anfang";
+    public static final String CURSOR_ENDE = "Cursor Ende";
+    public static final String ENTF = "Entf";
 
     private final RechnerService rechner;
     private final WissenschaftlichOperationen wissenschaftlichOperationen;
@@ -104,6 +107,9 @@ public class ShellActionRegistry
         mitRefreshGanzerAusdruck("CE", rechner::ce);
         mitRefreshGanzerAusdruck(CURSOR_LINKS, () -> rechner.bewegeCursor(-1));
         mitRefreshGanzerAusdruck(CURSOR_RECHTS, () -> rechner.bewegeCursor(1));
+        mitRefreshGanzerAusdruck(CURSOR_ANFANG, () -> rechner.setzeCursor(0));
+        mitRefreshGanzerAusdruck(CURSOR_ENDE, () -> rechner.setzeCursor(Integer.MAX_VALUE));
+        mitRefreshGanzerAusdruck(ENTF, rechner::loescheRechts);
         mitRefresh("←", rechner::loeschen);
         mitRefresh(Tastenkuerzel.RUECKGAENGIG_AKTION, rechner::rueckgaengig);
         mitRefresh("%", rechner::prozent);

@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import java.awt.Component;
 import java.awt.GridLayout;
+import java.util.List;
 
 /** Einfache Dialoge zum Anlegen und Löschen eigener Funktionen f(x). */
 final class EigeneFunktionenDialog
@@ -55,9 +56,24 @@ final class EigeneFunktionenDialog
 
         Object auswahl = JOptionPane.showInputDialog(parent, "Welche Funktion löschen?", "Eigene Funktion löschen",
                 JOptionPane.QUESTION_MESSAGE, null, namen, namen[0]);
-        if (auswahl != null)
+        if (auswahl == null)
         {
-            funktionen.entferne(auswahl.toString().substring(0, auswahl.toString().indexOf('(')));
+            return;
         }
+
+        String name = auswahl.toString().substring(0, auswahl.toString().indexOf('('));
+        List<String> abhaengige = funktionen.benutztVon(name);
+        if (!abhaengige.isEmpty())
+        {
+            String meldung = name + " wird noch benutzt von: " + String.join(", ", abhaengige)
+                    + ".\nDiese Funktionen lassen sich danach nicht mehr berechnen. Trotzdem löschen?";
+            int antwort = JOptionPane.showConfirmDialog(parent, meldung, "Eigene Funktion löschen",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (antwort != JOptionPane.YES_OPTION)
+            {
+                return;
+            }
+        }
+        funktionen.entferne(name);
     }
 }

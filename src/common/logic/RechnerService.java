@@ -221,6 +221,21 @@ public class RechnerService
         ausdruckEditor.bewegeCursor(schritte);
     }
 
+    public void setzeCursor(int index)
+    {
+        ausdruckEditor.setzeCursor(index);
+    }
+
+    public void loescheRechts()
+    {
+        ausdruckEditor.loescheRechts();
+    }
+
+    public void fuegeEin(String text)
+    {
+        ausdruckEditor.fuegeEin(text);
+    }
+
     /** Klick ins Display: Die Anzeige hat Tausenderpunkte, der interne Ausdruck nicht. */
     public void setzeCursorAusAnzeige(int anzeigeIndex)
     {

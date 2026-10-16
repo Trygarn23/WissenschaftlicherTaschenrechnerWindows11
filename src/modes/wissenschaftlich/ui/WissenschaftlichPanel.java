@@ -236,7 +236,18 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
                     functionSelectionListener.accept(command + " " + name);
                 }
             });
+            if (theme != null)
+            {
+                item.setFont(theme.buttonFont());
+                item.setBackground(theme.functionButtonBackground());
+                item.setForeground(theme.functionButtonForeground());
+            }
             variableMenu.add(item);
+        }
+        if (theme != null)
+        {
+            variableMenu.setBackground(theme.panelBackground());
+            variableMenu.setBorder(BorderFactory.createLineBorder(theme.modeBorder(), 1));
         }
         variableMenu.show(anchor, 0, anchor.getHeight());
     }

@@ -87,7 +87,8 @@ public class DisplayPanel extends JPanel
 
         // Nicht editierbare Textpanes behalten sonst ihre Editor-Aktionen und
         // schlucken Enter/Backspace, bevor die Rechnertasten am RootPane greifen.
-        for (int key : new int[]{KeyEvent.VK_ENTER, KeyEvent.VK_BACK_SPACE, KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT})
+        for (int key : new int[]{KeyEvent.VK_ENTER, KeyEvent.VK_BACK_SPACE, KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT,
+                KeyEvent.VK_HOME, KeyEvent.VK_END, KeyEvent.VK_DELETE})
         {
             pane.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(key, 0), "rechnerTaste");
         }

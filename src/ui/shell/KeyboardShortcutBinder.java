@@ -71,6 +71,9 @@ public class KeyboardShortcutBinder
                 () -> aktionen.ausfuehren(";"));
         bind(im, am, KeyEvent.VK_LEFT, "cursorLinks", () -> aktionen.ausfuehren(ShellActionRegistry.CURSOR_LINKS));
         bind(im, am, KeyEvent.VK_RIGHT, "cursorRechts", () -> aktionen.ausfuehren(ShellActionRegistry.CURSOR_RECHTS));
+        bind(im, am, KeyEvent.VK_HOME, "cursorAnfang", () -> aktionen.ausfuehren(ShellActionRegistry.CURSOR_ANFANG));
+        bind(im, am, KeyEvent.VK_END, "cursorEnde", () -> aktionen.ausfuehren(ShellActionRegistry.CURSOR_ENDE));
+        bind(im, am, KeyEvent.VK_DELETE, "entf", () -> aktionen.ausfuehren(ShellActionRegistry.ENTF));
 
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK), "rueckgaengig",
                 () -> aktionen.ausfuehren(Tastenkuerzel.RUECKGAENGIG_AKTION));

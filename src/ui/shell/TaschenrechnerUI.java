@@ -320,17 +320,14 @@ public class TaschenrechnerUI extends JFrame
         MiniRechnerFenster.zeige(this, theme(), rechner.getWinkelModus());
     }
 
-    /** Hängt z. B. eine Konstante an den Ausdruck; steht davor schon eine Zahl, kommt ein Malzeichen dazwischen. */
+    /** Fügt z. B. eine Konstante an der Cursorstelle ein, siehe {@link common.logic.AusdruckEditor#fuegeEin}. */
     private void fuegeInAusdruckEin(String text)
     {
         if (!ModeVisibilityPolicy.sindStandardShortcutsAktiv(aktuellerModus))
         {
             setAktuellerModus(letzterAusdrucksModus);
         }
-        String ausdruck = rechner.getAusdruckText();
-        boolean malNoetig = !ausdruck.isEmpty() && (Character.isLetterOrDigit(ausdruck.charAt(ausdruck.length() - 1))
-                || ausdruck.endsWith(")") || ausdruck.endsWith("π"));
-        rechner.setAusdruckText(ausdruck + (malNoetig ? "×" : "") + text);
+        rechner.fuegeEin(text);
         refresh();
     }
 

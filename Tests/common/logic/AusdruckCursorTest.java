@@ -215,6 +215,80 @@ public class AusdruckCursorTest
     }
 
     @Test
+    void fuegeEin_ShouldInsertWithMultiplication_WhenCursorIsAfterDigit()
+    {
+        // Arrange
+        rechner.setAusdruckText("2+3");
+        editor.setzeCursor(1);
+
+        // Act
+        rechner.fuegeEin("π");
+
+        // Assert
+        assertEquals("2×π+3", rechner.getAusdruckText());
+        assertEquals(3, editor.getCursor());
+    }
+
+    @Test
+    void fuegeEin_ShouldMultiplyOnBothSides_WhenCursorIsInsideNumber()
+    {
+        // Arrange
+        rechner.setAusdruckText("23");
+        editor.setzeCursor(1);
+
+        // Act
+        rechner.fuegeEin("5");
+
+        // Assert: 2×5×3 statt der verschmolzenen Zahl 2×53
+        assertEquals("2×5×3", rechner.getAusdruckText());
+        assertEquals("30", rechner.berechne());
+    }
+
+    @Test
+    void loescheRechts_ShouldDeleteCharacterAfterCursor_WhenCursorIsInside()
+    {
+        // Arrange
+        rechner.setAusdruckText("12+3");
+        editor.setzeCursor(2);
+
+        // Act
+        rechner.loescheRechts();
+
+        // Assert
+        assertEquals("123", rechner.getAusdruckText());
+        assertEquals(2, editor.getCursor());
+    }
+
+    @Test
+    void loescheRechts_ShouldDoNothing_WhenCursorIsAtEnd()
+    {
+        // Arrange
+        rechner.setAusdruckText("12");
+
+        // Act
+        rechner.loescheRechts();
+
+        // Assert
+        assertEquals("12", rechner.getAusdruckText());
+    }
+
+    @Test
+    void setzeCursor_ShouldJumpToStartAndEnd_WhenHomeAndEndArePressed()
+    {
+        // Arrange
+        rechner.setAusdruckText("12+3");
+
+        // Act
+        rechner.setzeCursor(0);
+        int amAnfang = editor.getCursor();
+        rechner.setzeCursor(Integer.MAX_VALUE);
+
+        // Assert
+        assertEquals(0, amAnfang);
+        assertEquals(-1, rechner.cursorAnzeigeIndex());
+    }
+
+    @Test
     void ausdruckZumKorrigieren_ShouldRestoreExpressionWithCursorAtError_WhenPositionIsKnown()
     {
         // Arrange

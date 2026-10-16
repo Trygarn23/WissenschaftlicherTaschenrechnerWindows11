@@ -8,6 +8,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -67,6 +68,24 @@ class EigeneFunktionenTest
         // Assert
         assertTrue(new EigeneFunktionen(datei).alle().isEmpty());
         assertFalse(FunktionsRegistry.benutzerfunktionen().containsKey("doppelt"));
+    }
+
+    @Test
+    void benutztVon_ShouldListOtherFunctionsCallingIt_WhenFunctionIsUsed()
+    {
+        // Arrange
+        EigeneFunktionen funktionen = new EigeneFunktionen(ordner.resolve("funktionen.txt"));
+        funktionen.fuegeHinzu("quad", "x^2");
+        funktionen.fuegeHinzu("viert", "QUAD(quad(x))");
+        funktionen.fuegeHinzu("plus", "x+1");
+        funktionen.fuegeHinzu("biquad", "x*3");
+
+        // Act
+        List<String> abhaengige = funktionen.benutztVon("Quad");
+
+        // Assert
+        assertEquals(List.of("viert"), abhaengige);
+        assertTrue(funktionen.benutztVon("plus").isEmpty());
     }
 
     @Test

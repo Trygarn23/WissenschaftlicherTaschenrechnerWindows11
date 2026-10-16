@@ -5,8 +5,10 @@ import common.persistence.DateiPersistenz;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Vom Nutzer angelegte Funktionen {@code name(x) = ausdruck}, gespeichert als {@code name;ausdruck} pro Zeile.
@@ -62,6 +64,18 @@ public final class EigeneFunktionen
             FunktionsRegistry.entferneBenutzerfunktion(name);
             speichere();
         }
+    }
+
+    /** Namen der anderen eigenen Funktionen, deren Ausdruck {@code name(…)} aufruft – die gehen nach dem Löschen kaputt. */
+    public List<String> benutztVon(String name)
+    {
+        String gesucht = name.strip().toLowerCase(Locale.ROOT);
+        Pattern aufruf = Pattern.compile("(?<![a-z])" + Pattern.quote(gesucht) + "\\s*\\(");
+        return funktionen.entrySet().stream()
+                .filter(e -> !e.getKey().equals(gesucht))
+                .filter(e -> aufruf.matcher(e.getValue().toLowerCase(Locale.ROOT)).find())
+                .map(Map.Entry::getKey)
+                .toList();
     }
 
     private void registriere(String name, String ausdruck)

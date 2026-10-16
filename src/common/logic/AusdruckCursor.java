@@ -29,6 +29,16 @@ final class AusdruckCursor
         setzeCursor(zustand.getCursor() + schritte);
     }
 
+    /** Entf: löscht das Zeichen rechts vom Cursor; der Cursor bleibt stehen. */
+    void loescheRechts()
+    {
+        if (zustand.isCursorAmEnde() || zustand.isGleichGedrueckt()) return;
+
+        int position = zustand.getCursor();
+        zustand.deleteAusdruckZeichen(position);
+        zustand.setCursor(position);
+    }
+
     /**
      * Führt eine Eingabe an der Cursorstelle aus: Alle Editor-Aktionen arbeiten am Ende des Ausdrucks,
      * also wird der Teil hinter dem Cursor kurz abgeschnitten und danach wieder angehängt.

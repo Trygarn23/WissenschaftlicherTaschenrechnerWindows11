@@ -190,6 +190,32 @@ public class AusdruckEditor
         cursor.amCursor(aktion);
     }
 
+    public void loescheRechts()
+    {
+        cursor.loescheRechts();
+    }
+
+    /** Fügt z. B. eine Konstante an der Cursorstelle ein; steht davor schon eine Zahl, kommt ein Malzeichen dazwischen. */
+    public void fuegeEin(String text)
+    {
+        // Steht rechts vom Cursor schon ein Wert, braucht es auch dahinter ein ×, sonst verschmelzen die Ziffern.
+        boolean malDanach = !zustand.isCursorAmEnde() && !zustand.isGleichGedrueckt()
+                && zustand.getCursor() < zustand.getAusdruckLaenge()
+                && istWertAnfang(zustand.getAusdruckZeichen(zustand.getCursor()));
+        amCursor(() -> {
+            String ausdruck = zustand.getAusdruckText();
+            boolean malNoetig = !ausdruck.isEmpty() && (Character.isLetterOrDigit(ausdruck.charAt(ausdruck.length() - 1))
+                    || ausdruck.endsWith(")") || ausdruck.endsWith("π"));
+            zustand.appendAusdruck((malNoetig ? "×" : "") + text + (malDanach ? "×" : ""));
+            zustand.setGleichGedrueckt(false);
+        });
+    }
+
+    private static boolean istWertAnfang(char zeichen)
+    {
+        return Character.isLetterOrDigit(zeichen) || zeichen == '(' || zeichen == ',' || zeichen == 'π';
+    }
+
     public String operatorSetzen(String operator)
     {
         operator = AusdruckNormalisierung.operator(operator);
