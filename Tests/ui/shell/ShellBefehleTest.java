@@ -20,7 +20,7 @@ class ShellBefehleTest
     {
         Runnable nichts = () -> { };
         return new ShellBefehle.Aktionen(modus::set, theme -> { }, eingefuegt::add,
-                nichts, nichts, nichts, nichts, nichts, nichts, nichts);
+                nichts, nichts, nichts, nichts, nichts, nichts, nichts, nichts, nichts, nichts);
     }
 
     @Test
@@ -50,5 +50,18 @@ class ShellBefehleTest
         assertTrue(befehle.stream().noneMatch(b -> b.titel().equals("Graph")));
         assertTrue(befehle.stream().noneMatch(b -> b.kategorie().equals("Konstante")));
         assertTrue(befehle.stream().anyMatch(b -> b.titel().equals("Wissenschaftlich")));
+        assertTrue(befehle.stream().noneMatch(b -> b.titel().startsWith("Eigene Funktion")));
+    }
+
+    @Test
+    void erstelle_ShouldOfferResultConversionAndUserFunctions()
+    {
+        // Act
+        List<Befehl> befehle = ShellBefehle.erstelle(aktionen(), List.of(), false);
+
+        // Assert
+        assertEquals("Ergebnis umrechnen", BefehlsSuche.filtere(befehle, "Ergebnis umr", 1).getFirst().titel());
+        assertEquals("Eigene Funktion anlegen…", BefehlsSuche.filtere(befehle, "Eigene Funktion anl", 1).getFirst().titel());
+        assertEquals("Eigene Funktion löschen…", BefehlsSuche.filtere(befehle, "Eigene Funktion lö", 1).getFirst().titel());
     }
 }

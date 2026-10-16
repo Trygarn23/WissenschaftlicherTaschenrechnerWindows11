@@ -30,7 +30,10 @@ final class ShellBefehle
             Runnable konstanten,
             Runnable miniRechner,
             Runnable verlaufUmklappen,
-            Runnable winkelUmschalten
+            Runnable winkelUmschalten,
+            Runnable ergebnisUmrechnen,
+            Runnable funktionAnlegen,
+            Runnable funktionLoeschen
     )
     {
     }
@@ -65,6 +68,9 @@ final class ShellBefehle
         if (PruefungsModus.sindWerkzeugeErlaubt(pruefungsModus))
         {
             befehle.add(new Befehl("Einheiten umrechnen", "Aktion", List.of("units", "umrechnung"), aktionen.einheiten()));
+            befehle.add(new Befehl("Ergebnis umrechnen", "Aktion", List.of("einheiten", "units"), aktionen.ergebnisUmrechnen()));
+            befehle.add(new Befehl("Eigene Funktion anlegen…", "Aktion", List.of("funktion", "definieren"), aktionen.funktionAnlegen()));
+            befehle.add(new Befehl("Eigene Funktion löschen…", "Aktion", List.of("funktion", "entfernen"), aktionen.funktionLoeschen()));
             befehle.add(new Befehl("Konstanten-Bibliothek", "Aktion", List.of("naturkonstanten"), aktionen.konstanten()));
             befehle.add(new Befehl("Mini-Rechner", "Aktion", List.of("immer oben", "klein"), aktionen.miniRechner()));
             befehle.add(new Befehl("Verlauf ein-/ausklappen", "Aktion", List.of("history"), aktionen.verlaufUmklappen()));

@@ -34,6 +34,13 @@ public class EinheitenSidePanelHost extends JPanel
         animationTimer.setRepeats(true);
     }
 
+    /** Öffnet das Panel mit dem Wert als Eingabe, z. B. dem aktuellen Ergebnis. */
+    public void oeffneMitWert(double wert)
+    {
+        sidePanel.setWert(wert);
+        setGeoeffnet(true);
+    }
+
     public void toggle()
     {
         setGeoeffnet(!geoeffnet);

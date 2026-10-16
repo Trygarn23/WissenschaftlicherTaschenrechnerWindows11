@@ -5,6 +5,7 @@ import common.konstanten.EigeneKonstanten;
 import common.konstanten.KonstantenFavoriten;
 import common.logic.BerechnungsErgebnis;
 import common.logic.RechnerService;
+import common.parser.EigeneFunktionen;
 import common.persistence.AppDateien;
 import common.state.RechnerModus;
 import modes.wissenschaftlich.logic.VariablenSpeicher;
@@ -42,6 +43,7 @@ public class TaschenrechnerUI extends JFrame
     private final LetzteEingabeSicherung letzteEingabe = new LetzteEingabeSicherung(AppDateien.wiederherstellung());
     private final KonstantenFavoriten konstantenFavoriten = new KonstantenFavoriten(AppDateien.konstantenFavoriten());
     private final EigeneKonstanten eigeneKonstanten = new EigeneKonstanten(AppDateien.eigeneKonstanten());
+    private final EigeneFunktionen eigeneFunktionen = new EigeneFunktionen(AppDateien.eigeneFunktionen());
 
     private RechnerModus aktuellerModus = appSettings.getStartModus();
     /** Wohin Ergebnisse aus Hilfsmodi (z. B. Brüche) übernommen werden: der zuletzt benutzte Ausdrucksrechner. */
@@ -245,6 +247,16 @@ public class TaschenrechnerUI extends JFrame
         einheitenSidePanelHost.toggle();
     }
 
+    /** Aktuelles Ergebnis aus Standard/Wissenschaftlich als Wert ins Einheiten-Panel übernehmen. */
+    private void rechneErgebnisUm()
+    {
+        if (werkzeugGesperrt())
+        {
+            return;
+        }
+        rechner.aktuellerWert().ifPresentOrElse(einheitenSidePanelHost::oeffneMitWert, () -> Toolkit.getDefaultToolkit().beep());
+    }
+
     private void zeigeTastenkuerzel()
     {
         TastenkuerzelDialog.showDialog(this, theme());
@@ -271,7 +283,10 @@ public class TaschenrechnerUI extends JFrame
                 this::zeigeKonstanten,
                 this::zeigeMiniRechner,
                 () -> historyPanel.setEingeklappt(!historyPanel.isEingeklappt()),
-                globalActionBarPanel::clickAngleMode
+                globalActionBarPanel::clickAngleMode,
+                this::rechneErgebnisUm,
+                () -> EigeneFunktionenDialog.anlegen(this, eigeneFunktionen),
+                () -> EigeneFunktionenDialog.loeschen(this, eigeneFunktionen)
         );
         BefehlsDialog.showDialog(this, theme(), ShellBefehle.erstelle(aktionen, eigeneKonstanten.alle(), appSettings.isPruefungsModus()));
     }

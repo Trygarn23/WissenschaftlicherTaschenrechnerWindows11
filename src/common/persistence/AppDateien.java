@@ -52,6 +52,16 @@ public final class AppDateien
         return datei(benutzerordner(), "eigene_konstanten.txt");
     }
 
+    public static Path einheitenFavoriten()
+    {
+        return datei(benutzerordner(), "einheiten_favoriten.txt");
+    }
+
+    public static Path funktionsFavoriten()
+    {
+        return datei(benutzerordner(), "funktions_favoriten.txt");
+    }
+
     public static Path eigeneFunktionen()
     {
         return datei(benutzerordner(), "eigene_funktionen.txt");

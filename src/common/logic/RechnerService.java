@@ -116,6 +116,12 @@ public class RechnerService
         return ergebnis.equals(formatiereLiveAnzeige()) ? Optional.empty() : Optional.of("= " + ergebnis);
     }
 
+    /** Wert des aktuellen Ausdrucks bzw. Ergebnisses, leer wenn er (noch) nicht ausrechenbar ist. */
+    public OptionalDouble aktuellerWert()
+    {
+        return berechnungsService.vorschauWert();
+    }
+
     /** Zweite Display-Zeile: beim Tippen Vorschau und offene Klammern, sonst die letzte Rechnung. */
     public String zweiteZeile()
     {
@@ -201,7 +207,7 @@ public class RechnerService
     }
 
     /** Wert des aktuellen Ausdrucks (nach „=“ also das Ergebnis), 0 wenn er nicht ausrechenbar ist. */
-    public double aktuellerWert()
+    public double aktuellerWertOder0()
     {
         return berechnungsService.aktuellerWertOder0();
     }

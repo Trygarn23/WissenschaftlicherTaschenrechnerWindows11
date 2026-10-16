@@ -3,6 +3,7 @@ package ui.history;
 import common.history.VerlaufEintrag;
 import common.history.VerlaufExport;
 import common.history.VerlaufJson;
+import common.history.VerlaufStatistik;
 import common.history.VerlaufTextMapper;
 import common.state.RechnerModus;
 import ui.shell.ModeVisibilityPolicy;
@@ -174,6 +175,9 @@ public class HistoryPanel extends JPanel
         addMenuItem("Als CSV exportieren…", e -> HistoryDateiDialoge.speichere(this, "csv", "﻿" + VerlaufExport.alsCsv(visibleEntries())));
         addMenuItem("Als JSON exportieren…", e -> HistoryDateiDialoge.speichere(this, "json", VerlaufJson.schreibe(visibleEntries())));
         addMenuItem("JSON importieren…", e -> HistoryDateiDialoge.ladeJson(this).ifPresent(this::importEntries));
+        moreMenu.addSeparator();
+        addMenuItem("Statistik…", e -> JOptionPane.showMessageDialog(this,
+                VerlaufStatistik.aus(getAllStructuredEntries()).alsText(), "Statistik", JOptionPane.INFORMATION_MESSAGE));
     }
 
     private void addMenuItem(String text, ActionListener action)

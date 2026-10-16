@@ -501,4 +501,30 @@ public class RechnerServiceTest
         assertEquals("20", ergebnis);
         assertEquals("4*5 = 20", rechner.getVerlauf());
     }
+
+    @Test
+    void aktuellerWert_ShouldReturnResult_WhenExpressionWasCalculated()
+    {
+        // Arrange
+        rechner.setAusdruckText("12*3");
+
+        // Act
+        double vorher = rechner.aktuellerWert().orElseThrow();
+        rechner.berechne();
+        double nachher = rechner.aktuellerWert().orElseThrow();
+
+        // Assert
+        assertEquals(36.0, vorher, 1e-10);
+        assertEquals(36.0, nachher, 1e-10);
+    }
+
+    @Test
+    void aktuellerWert_ShouldBeEmpty_WhenExpressionIsIncomplete()
+    {
+        // Arrange
+        rechner.setAusdruckText("12*");
+
+        // Act & Assert
+        assertTrue(rechner.aktuellerWert().isEmpty());
+    }
 }

@@ -2,9 +2,12 @@ package ui.units;
 
 import common.formatting.ZahlenAnzeige;
 import common.formatting.ZahlenEingabe;
+import common.persistence.AppDateien;
 import common.units.Einheit;
 import common.units.EinheitKategorie;
+import common.units.EinheitenFavoriten;
 import common.units.EinheitenService;
+import ui.history.StarIcon;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
@@ -22,16 +25,24 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class EinheitenSidePanel extends JPanel
 {
+    private static final String KEIN_FAVORIT = "Favorit wählen…";
+
     private final EinheitenService service = new EinheitenService();
+    private final EinheitenFavoriten favoriten;
 
     private final JLabel titleLabel = new JLabel("Einheiten");
     private final JButton closeButton = new JButton("x");
+    private final JComboBox<Object> favoritesBox = new JComboBox<>();
+    private final JButton favoriteButton = new JButton("Favorit");
     private final JComboBox<EinheitKategorie> categoryBox = new JComboBox<>();
     private final JComboBox<Einheit> fromBox = new JComboBox<>();
     private final JComboBox<Einheit> toBox = new JComboBox<>();
@@ -48,6 +59,12 @@ public class EinheitenSidePanel extends JPanel
 
     public EinheitenSidePanel()
     {
+        this(new EinheitenFavoriten(AppDateien.einheitenFavoriten()));
+    }
+
+    public EinheitenSidePanel(EinheitenFavoriten favoriten)
+    {
+        this.favoriten = favoriten;
         setLayout(new BorderLayout(0, 14));
         setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
         setOpaque(true);
@@ -57,6 +74,7 @@ public class EinheitenSidePanel extends JPanel
         add(statusLabel, BorderLayout.SOUTH);
 
         fuelleKategorien();
+        fuelleFavoriten();
         wireEvents();
         aktualisiereEinheiten();
         rechneLive();
@@ -65,6 +83,12 @@ public class EinheitenSidePanel extends JPanel
     public void setCloseListener(Runnable closeListener)
     {
         this.closeListener = closeListener;
+    }
+
+    /** Übernimmt z. B. ein Rechenergebnis als Eingabewert. */
+    public void setWert(double wert)
+    {
+        valueField.setText(BigDecimal.valueOf(wert).stripTrailingZeros().toPlainString().replace('.', ','));
     }
 
     public void applyTheme(AppTheme theme)
@@ -85,11 +109,13 @@ public class EinheitenSidePanel extends JPanel
             label.setForeground(theme.secondaryDisplayForeground());
         }
 
+        styleCombo(favoritesBox);
         styleCombo(categoryBox);
         styleCombo(fromBox);
         styleCombo(toBox);
         styleField(valueField);
         styleButton(swapButton);
+        styleButton(favoriteButton);
         styleButton(closeButton);
     }
 
@@ -115,6 +141,10 @@ public class EinheitenSidePanel extends JPanel
         gbc.weightx = 1.0;
         gbc.insets = new Insets(0, 0, 8, 0);
 
+        body.add(label("Favoriten"), gbc);
+        gbc.gridy++;
+        body.add(favoritesBox, gbc);
+        gbc.gridy++;
         body.add(label("Kategorie"), gbc);
         gbc.gridy++;
         body.add(categoryBox, gbc);
@@ -131,7 +161,11 @@ public class EinheitenSidePanel extends JPanel
         gbc.gridy++;
         body.add(toBox, gbc);
         gbc.gridy++;
-        body.add(swapButton, gbc);
+        JPanel buttons = new JPanel(new GridLayout(1, 2, 8, 0));
+        buttons.setOpaque(false);
+        buttons.add(swapButton);
+        buttons.add(favoriteButton);
+        body.add(buttons, gbc);
         gbc.gridy++;
         gbc.insets = new Insets(10, 0, 4, 0);
         body.add(resultLabel, gbc);
@@ -175,6 +209,18 @@ public class EinheitenSidePanel extends JPanel
         fromBox.addActionListener(e -> rechneLive());
         toBox.addActionListener(e -> rechneLive());
         swapButton.addActionListener(e -> tauscheEinheiten());
+        favoriteButton.setToolTipText("Diese Umrechnung als Favorit merken");
+        favoriteButton.addActionListener(e -> {
+            aktuelleUmrechnung().ifPresent(favoriten::umschalten);
+            fuelleFavoriten();
+            aktualisiereFavoritStern();
+        });
+        favoritesBox.addActionListener(e -> {
+            if (favoritesBox.getSelectedItem() instanceof EinheitenFavoriten.Umrechnung umrechnung)
+            {
+                waehle(umrechnung);
+            }
+        });
         valueField.getDocument().addDocumentListener(new DocumentListener()
         {
             @Override
@@ -219,6 +265,46 @@ public class EinheitenSidePanel extends JPanel
         rechneLive();
     }
 
+    private void fuelleFavoriten()
+    {
+        favoritesBox.removeAllItems();
+        favoritesBox.addItem(KEIN_FAVORIT);
+        favoriten.alle().forEach(favoritesBox::addItem);
+    }
+
+    private Optional<EinheitenFavoriten.Umrechnung> aktuelleUmrechnung()
+    {
+        if (!(fromBox.getSelectedItem() instanceof Einheit von) || !(toBox.getSelectedItem() instanceof Einheit nach))
+        {
+            return Optional.empty();
+        }
+        return Optional.of(new EinheitenFavoriten.Umrechnung(von.kategorie(), von.name(), nach.name()));
+    }
+
+    private void waehle(EinheitenFavoriten.Umrechnung umrechnung)
+    {
+        categoryBox.setSelectedItem(umrechnung.kategorie());
+        for (Einheit einheit : service.einheitenFuer(umrechnung.kategorie()))
+        {
+            if (einheit.name().equals(umrechnung.von()))
+            {
+                fromBox.setSelectedItem(einheit);
+            }
+            if (einheit.name().equals(umrechnung.nach()))
+            {
+                toBox.setSelectedItem(einheit);
+            }
+        }
+        favoritesBox.setSelectedIndex(0);
+    }
+
+    private void aktualisiereFavoritStern()
+    {
+        boolean favorit = aktuelleUmrechnung().map(favoriten::istFavorit).orElse(false);
+        favoriteButton.setIcon(new StarIcon(favorit, 14));
+        favoriteButton.setText(favorit ? "Gemerkt" : "Favorit");
+    }
+
     private void tauscheEinheiten()
     {
         Object von = fromBox.getSelectedItem();
@@ -234,6 +320,7 @@ public class EinheitenSidePanel extends JPanel
             return;
         }
 
+        aktualisiereFavoritStern();
         try
         {
             Einheit von = (Einheit) fromBox.getSelectedItem();

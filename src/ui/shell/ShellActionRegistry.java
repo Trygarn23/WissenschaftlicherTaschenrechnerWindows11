@@ -132,7 +132,7 @@ public class ShellActionRegistry
         mitRefresh(";", w::trennzeichen);
 
         actions.put("S⇔D", this::exaktUmschalten);
-        actions.put("Mehr Stellen", () -> refreshWithExtraInfo.accept("= " + rechner.formatiereVolleGenauigkeit(rechner.aktuellerWert())));
+        actions.put("Mehr Stellen", () -> refreshWithExtraInfo.accept("= " + rechner.formatiereVolleGenauigkeit(rechner.aktuellerWertOder0())));
     }
 
     private void exaktUmschalten()
@@ -145,7 +145,7 @@ public class ShellActionRegistry
             return;
         }
         exaktAngezeigtFuer = ausdruck;
-        refreshWithExtraInfo.accept(ExakteForm.finde(rechner.aktuellerWert())
+        refreshWithExtraInfo.accept(ExakteForm.finde(rechner.aktuellerWertOder0())
                 .map(form -> "= " + form)
                 .orElse("Keine exakte Form gefunden"));
     }
@@ -163,7 +163,7 @@ public class ShellActionRegistry
         for (String name : VariablenSpeicher.NAMEN)
         {
             actions.put("STO " + name, () -> {
-                double wert = rechner.aktuellerWert();
+                double wert = rechner.aktuellerWertOder0();
                 variablen.speichere(name, wert);
                 refreshWithExtraInfo.accept(name + " = " + rechner.formatiereZahl(wert));
             });

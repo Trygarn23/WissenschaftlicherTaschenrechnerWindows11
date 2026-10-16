@@ -1,6 +1,10 @@
 package ui.units;
 
+import common.units.EinheitKategorie;
+import common.units.EinheitenFavoriten;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import testhilfen.SwingSuche;
 import ui.theme.themes.LightTheme;
 import ui.units.EinheitenSidePanel;
 import ui.units.EinheitenSidePanelHost;
@@ -11,6 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import java.awt.Component;
 import java.awt.Container;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,7 +29,7 @@ public class EinheitenSidePanelTest
     {
         EinheitenSidePanel panel = new EinheitenSidePanel();
 
-        assertEquals(3, countComponents(panel, JComboBox.class));
+        assertEquals(4, countComponents(panel, JComboBox.class));
         assertEquals(1, countComponents(panel, JTextField.class));
         assertNotNull(findButton(panel, "Tauschen"));
         assertNotNull(findButton(panel, "x"));
@@ -51,6 +56,45 @@ public class EinheitenSidePanelTest
 
         assertEquals(theme.toggleButtonBackground(), findButton(panel, "Tauschen").getBackground());
         assertEquals(theme.panelBackground(), panel.getBackground());
+    }
+
+    @Test
+    void favoriteButton_ShouldRememberConversionAndSelectItAgain(@TempDir Path ordner)
+    {
+        // Arrange
+        EinheitenFavoriten favoriten = new EinheitenFavoriten(ordner.resolve("einheiten.txt"));
+        EinheitenSidePanel panel = new EinheitenSidePanel(favoriten);
+        findButton(panel, "Favorit").doClick();
+        EinheitenFavoriten.Umrechnung gemerkt = favoriten.alle().getFirst();
+        @SuppressWarnings("unchecked")
+        JComboBox<Object> favoritenBox = SwingSuche.finde(panel, JComboBox.class,
+                box -> box.getItemCount() > 0 && "Favorit wählen…".equals(box.getItemAt(0)));
+        @SuppressWarnings("unchecked")
+        JComboBox<Object> kategorieBox = SwingSuche.finde(panel, JComboBox.class,
+                box -> box.getItemCount() > 0 && box.getItemAt(0) instanceof EinheitKategorie);
+        kategorieBox.setSelectedItem(EinheitKategorie.TEMPERATUR);
+
+        // Act
+        favoritenBox.setSelectedItem(gemerkt);
+
+        // Assert
+        assertEquals(gemerkt.kategorie(), kategorieBox.getSelectedItem());
+        assertNotNull(findButton(panel, "Gemerkt"));
+        assertEquals(0, favoritenBox.getSelectedIndex());
+    }
+
+    @Test
+    void sidePanelHost_ShouldOpenWithValue()
+    {
+        // Arrange
+        EinheitenSidePanelHost host = new EinheitenSidePanelHost();
+
+        // Act
+        host.oeffneMitWert(2.5);
+
+        // Assert
+        assertTrue(host.isGeoeffnet());
+        assertEquals("2,5", findComponent(host, JTextField.class).getText());
     }
 
     @Test
