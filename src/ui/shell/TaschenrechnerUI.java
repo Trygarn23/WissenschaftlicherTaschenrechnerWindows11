@@ -202,6 +202,17 @@ public class TaschenrechnerUI extends JFrame
         historyPanel.setFavoriteChangedListener(e -> speichereVerlauf());
         historyPanel.setEntryDoubleClickListener(this::useHistoryEntryResult);
         displayPanel.setPasteListener(this::pasteDisplayText);
+        displayPanel.setCursorListener(this::setzeCursorAusDisplay);
+    }
+
+    private void setzeCursorAusDisplay(int anzeigeIndex)
+    {
+        if (!ModeVisibilityPolicy.sindStandardShortcutsAktiv(aktuellerModus))
+        {
+            return;
+        }
+        rechner.setzeCursorAusAnzeige(anzeigeIndex);
+        refresh();
     }
 
     private void setAktuellerModus(RechnerModus modus)
@@ -359,14 +370,14 @@ public class TaschenrechnerUI extends JFrame
 
     private void refresh()
     {
-        displayPanel.setMainText(rechner.formatiereLiveAnzeige());
+        displayPanel.setMainText(rechner.formatiereLiveAnzeige(), rechner.cursorAnzeigeIndex());
         displayPanel.setSecondaryText(rechner.zweiteZeile());
         aktualisiereKopfUndSicherung();
     }
 
     private void refreshWithExtraInfo(String info)
     {
-        displayPanel.setMainText(rechner.formatiereLiveAnzeige());
+        displayPanel.setMainText(rechner.formatiereLiveAnzeige(), rechner.cursorAnzeigeIndex());
         String verlauf = rechner.getVerlauf();
         displayPanel.setSecondaryText(info + (verlauf.isEmpty() ? "" : " | " + verlauf));
         aktualisiereKopfUndSicherung();
@@ -488,7 +499,16 @@ public class TaschenrechnerUI extends JFrame
     private void evaluate()
     {
         BerechnungsErgebnis ergebnis = rechner.berechneDetailliert();
-        displayPanel.setMainText(ergebnis.getAnzeigeText());
+        if (ergebnis.hatFehlerPosition())
+        {
+            rechner.ausdruckZumKorrigieren(ergebnis);
+            displayPanel.setMainText(rechner.formatiereLiveAnzeige(), rechner.cursorAnzeigeIndex());
+            displayPanel.markError(rechner.fehlerAnzeigeIndex(ergebnis));
+        }
+        else
+        {
+            displayPanel.setMainText(ergebnis.getAnzeigeText());
+        }
 
         if (ergebnis.isErfolgreich())
         {
@@ -498,7 +518,7 @@ public class TaschenrechnerUI extends JFrame
         }
         else
         {
-            displayPanel.setSecondaryText(ergebnis.getFehlerMeldung());
+            displayPanel.setSecondaryText(rechner.fehlerMeldungMitStelle(ergebnis));
             displayPanel.pulseError();
         }
         letzteEingabe.merke(rechner.getAusdruckText());

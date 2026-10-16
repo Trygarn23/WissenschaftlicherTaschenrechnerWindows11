@@ -7,6 +7,8 @@ public class RechnerZustand
     private final StringBuilder verlauf = new StringBuilder();
     private final StringBuilder ausdruck = new StringBuilder();
     private double letzteAntwort = 0.0;
+    /** Einfügestelle im Ausdruck; -1 heißt „am Ende“, damit Anhängen den Cursor mitnimmt. */
+    private int cursor = -1;
 
     public WinkelModus getWinkelModus()
     {
@@ -62,6 +64,7 @@ public class RechnerZustand
 
     public void setAusdruckText(String text)
     {
+        cursor = -1;
         ausdruck.setLength(0);
         if (text != null)
         {
@@ -127,7 +130,23 @@ public class RechnerZustand
 
     public void clearAusdruck()
     {
+        cursor = -1;
         ausdruck.setLength(0);
+    }
+
+    public int getCursor()
+    {
+        return cursor < 0 ? ausdruck.length() : Math.min(cursor, ausdruck.length());
+    }
+
+    public void setCursor(int index)
+    {
+        cursor = index >= ausdruck.length() ? -1 : Math.max(0, index);
+    }
+
+    public boolean isCursorAmEnde()
+    {
+        return getCursor() == ausdruck.length();
     }
 
     public String getVerlaufText()

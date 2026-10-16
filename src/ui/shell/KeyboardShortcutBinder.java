@@ -69,6 +69,9 @@ public class KeyboardShortcutBinder
         // Deutsche Tastatur: ; liegt auf Shift+Komma.
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.SHIFT_DOWN_MASK), "trennzeichen",
                 () -> aktionen.ausfuehren(";"));
+        bind(im, am, KeyEvent.VK_LEFT, "cursorLinks", () -> aktionen.ausfuehren(ShellActionRegistry.CURSOR_LINKS));
+        bind(im, am, KeyEvent.VK_RIGHT, "cursorRechts", () -> aktionen.ausfuehren(ShellActionRegistry.CURSOR_RECHTS));
+
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK), "rueckgaengig",
                 () -> aktionen.ausfuehren(Tastenkuerzel.RUECKGAENGIG_AKTION));
     }

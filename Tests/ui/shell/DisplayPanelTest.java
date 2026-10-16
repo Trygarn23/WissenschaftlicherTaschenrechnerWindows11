@@ -61,6 +61,27 @@ public class DisplayPanelTest
     }
 
     @Test
+    void setMainText_ShouldColorMatchingBracketsAlike_WhenThemeIsSet()
+    {
+        // Arrange
+        DisplayPanel panel = new DisplayPanel();
+        panel.applyTheme(new DarkTheme());
+        javax.swing.JTextPane main = testhilfen.SwingSuche.alle(panel, javax.swing.JTextPane.class).get(1);
+
+        // Act
+        panel.setMainText("(1+(2))", 2);
+
+        // Assert
+        javax.swing.text.StyledDocument doc = main.getStyledDocument();
+        java.awt.Color aussen = javax.swing.text.StyleConstants.getForeground(doc.getCharacterElement(0).getAttributes());
+        assertEquals(aussen, javax.swing.text.StyleConstants.getForeground(doc.getCharacterElement(6).getAttributes()));
+        assertEquals(javax.swing.text.StyleConstants.getForeground(doc.getCharacterElement(3).getAttributes()),
+                javax.swing.text.StyleConstants.getForeground(doc.getCharacterElement(5).getAttributes()));
+        assertNotEquals(aussen, javax.swing.text.StyleConstants.getForeground(doc.getCharacterElement(3).getAttributes()));
+        assertEquals(2, main.getCaretPosition());
+    }
+
+    @Test
     void displayPanel_ShouldDescribeClipboardShortcutsInTooltip()
     {
         // Arrange

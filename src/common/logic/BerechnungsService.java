@@ -26,9 +26,9 @@ public class BerechnungsService
 
     public BerechnungsErgebnis berechneDetailliert()
     {
+        String original = zustand.getAusdruckText();
         try
         {
-            String original = zustand.getAusdruckText();
             double ergebnis = AusdruckParser.auswerten(original, zustand.getLetzteAntwort(), zustand.getWinkelModus());
 
             if (!Double.isFinite(ergebnis)) return fehler(BerechnungsFehler.UNGUELTIGES_ERGEBNIS);
@@ -47,7 +47,7 @@ public class BerechnungsService
         }
         catch (AusdruckParserException e)
         {
-            return fehler(mappeParserFehler(e.getFehler()));
+            return fehler(BerechnungsErgebnis.fehler(mappeParserFehler(e.getFehler()), original, e.getPosition()));
         }
         catch (IllegalArgumentException e)
         {
@@ -94,10 +94,15 @@ public class BerechnungsService
 
     private BerechnungsErgebnis fehler(BerechnungsFehler fehler)
     {
+        return fehler(BerechnungsErgebnis.fehler(fehler));
+    }
+
+    private BerechnungsErgebnis fehler(BerechnungsErgebnis ergebnis)
+    {
         zustand.clearAusdruck();
         zustand.clearVerlauf();
         zustand.setGleichGedrueckt(true);
-        return BerechnungsErgebnis.fehler(fehler);
+        return ergebnis;
     }
 
     private BerechnungsFehler mappeParserFehler(ParserFehler fehler)

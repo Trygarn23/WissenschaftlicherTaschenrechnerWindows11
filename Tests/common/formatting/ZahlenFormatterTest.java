@@ -99,4 +99,41 @@ public class ZahlenFormatterTest
         assertEquals("0,30000000000000004", summe);
         assertEquals("1,25e20", gross);
     }
+
+    @Test
+    void anzeigeIndex_ShouldCountThousandsSeparators_WhenNumberIsGrouped()
+    {
+        // Arrange: intern „1234567+8“, angezeigt „1.234.567+8“
+        String ausdruck = "1234567+8";
+
+        // Act & Assert
+        assertEquals(0, formatter.anzeigeIndex(ausdruck, 0));
+        assertEquals(2, formatter.anzeigeIndex(ausdruck, 1));
+        assertEquals(9, formatter.anzeigeIndex(ausdruck, 7));
+        assertEquals(11, formatter.anzeigeIndex(ausdruck, 9));
+    }
+
+    @Test
+    void internerIndex_ShouldBeInverseOfAnzeigeIndex_WhenClickedOnDigitOrSeparator()
+    {
+        // Arrange
+        String ausdruck = "1234567+8";
+
+        // Act & Assert
+        assertEquals(1, formatter.internerIndex(ausdruck, 1));
+        assertEquals(1, formatter.internerIndex(ausdruck, 2));
+        assertEquals(7, formatter.internerIndex(ausdruck, 9));
+        assertEquals(9, formatter.internerIndex(ausdruck, 99));
+    }
+
+    @Test
+    void anzeigeIndex_ShouldKeepIndices_WhenDecimalPartIsNotGrouped()
+    {
+        // Arrange: Nachkommastellen bekommen keine Punkte
+        String ausdruck = "0,12345*2";
+
+        // Act & Assert
+        assertEquals(7, formatter.anzeigeIndex(ausdruck, 7));
+        assertEquals(7, formatter.internerIndex(ausdruck, 7));
+    }
 }

@@ -70,6 +70,47 @@ public class ZahlenFormatter
         return result.toString();
     }
 
+    /** Stelle in {@link #formatiereLiveAnzeige}, die zur Stelle im internen Ausdruck gehört (Tausenderpunkte zählen mit). */
+    public int anzeigeIndex(String ausdruck, int internerIndex)
+    {
+        int[] positionen = anzeigePositionen(ausdruck);
+        return positionen[Math.max(0, Math.min(internerIndex, positionen.length - 1))];
+    }
+
+    /** Umkehrung von {@link #anzeigeIndex}: Ein Klick direkt neben einen Tausenderpunkt landet vor der folgenden Ziffer. */
+    public int internerIndex(String ausdruck, int anzeigeIndex)
+    {
+        int[] positionen = anzeigePositionen(ausdruck);
+        for (int i = 0; i < positionen.length; i++)
+        {
+            if (positionen[i] >= anzeigeIndex) return i;
+        }
+        return positionen.length - 1;
+    }
+
+    /** Für jede Stelle im Ausdruck (plus Ende) die passende Stelle in der Live-Anzeige. */
+    private int[] anzeigePositionen(String ausdruck)
+    {
+        String text = ausdruck == null ? "" : ausdruck;
+        String anzeige = text.isEmpty() ? "" : formatiereLiveAnzeige(text);
+        int[] positionen = new int[text.length() + 1];
+
+        int j = 0;
+        for (int i = 0; i < text.length(); i++)
+        {
+            char zeichen = text.charAt(i);
+            // Tausenderpunkte gibt es nur in der Anzeige.
+            while (j < anzeige.length() && anzeige.charAt(j) == '.' && zeichen != '.') j++;
+            positionen[i] = j;
+
+            // Ein interner Punkt im Ganzzahlteil fällt in der Anzeige weg.
+            boolean entfernt = zeichen == '.' && j < anzeige.length() && anzeige.charAt(j) != '.' && anzeige.charAt(j) != ',';
+            if (!entfernt) j++;
+        }
+        positionen[text.length()] = anzeige.length();
+        return positionen;
+    }
+
     public String formatiereLiveZahl(String zahl)
     {
         if (zahl == null || zahl.isEmpty()) return "";

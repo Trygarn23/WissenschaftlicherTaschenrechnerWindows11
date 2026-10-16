@@ -165,6 +165,50 @@ public class AusdruckEditor
         return Math.max(0, AusdruckTermFinder.zaehleOffeneKlammern(zustand.getAusdruckText()));
     }
 
+    public int getCursor()
+    {
+        return zustand.getCursor();
+    }
+
+    /** Wer in ein Ergebnis klickt, will es weiterbearbeiten – deshalb zählt „=“ danach nicht mehr. */
+    public void setzeCursor(int index)
+    {
+        zustand.setGleichGedrueckt(false);
+        zustand.setCursor(index);
+    }
+
+    public void bewegeCursor(int schritte)
+    {
+        setzeCursor(zustand.getCursor() + schritte);
+    }
+
+    /**
+     * Führt eine Eingabe an der Cursorstelle aus: Alle Editor-Aktionen arbeiten am Ende des Ausdrucks,
+     * also wird der Teil hinter dem Cursor kurz abgeschnitten und danach wieder angehängt.
+     * Steht der Cursor am Ende, läuft die Aktion unverändert.
+     */
+    public void amCursor(Runnable aktion)
+    {
+        if (zustand.isCursorAmEnde() || zustand.isGleichGedrueckt())
+        {
+            aktion.run();
+            return;
+        }
+
+        int cursor = zustand.getCursor();
+        String rest = zustand.getAusdruckTeilText(cursor);
+        zustand.setAusdruckLaenge(cursor);
+        zustand.setCursor(cursor);
+        aktion.run();
+
+        // Fehler (z. B. 5000!) löschen den ganzen Ausdruck, dann gehört der Rest nicht mehr dazu.
+        if (zustand.isGleichGedrueckt()) return;
+
+        int neuerCursor = zustand.getAusdruckLaenge();
+        zustand.appendAusdruck(rest);
+        zustand.setCursor(neuerCursor);
+    }
+
     /** Ein leeres Display wird nicht gemerkt, sonst würde zweimal C den eigentlichen Ausdruck wegwerfen. */
     private void merkeFuerRueckgaengig()
     {

@@ -190,6 +190,55 @@ public class RechnerService
         return berechnungsService.berechneDetailliert();
     }
 
+    /** Fehlermeldung für die zweite Zeile, bei bekannter Stelle mit „an Stelle N“ (gezählt wie im Display). */
+    public String fehlerMeldungMitStelle(BerechnungsErgebnis ergebnis)
+    {
+        if (!ergebnis.hatFehlerPosition()) return ergebnis.getFehlerMeldung();
+        return ergebnis.getFehlerMeldung() + " (an Stelle " + (fehlerAnzeigeIndex(ergebnis) + 1) + ")";
+    }
+
+    /** Fehlerstelle als Index in der Live-Anzeige des fehlerhaften Ausdrucks, -1 wenn unbekannt. */
+    public int fehlerAnzeigeIndex(BerechnungsErgebnis ergebnis)
+    {
+        if (!ergebnis.hatFehlerPosition()) return -1;
+        return zahlenFormatierer.anzeigeIndex(ergebnis.getFehlerAusdruck(), ergebnis.getFehlerPosition());
+    }
+
+    /**
+     * Holt nach einem Fehler mit bekannter Stelle den Ausdruck zurück und stellt den Cursor davor,
+     * damit man ihn direkt korrigieren kann statt alles neu zu tippen.
+     */
+    public void ausdruckZumKorrigieren(BerechnungsErgebnis ergebnis)
+    {
+        if (!ergebnis.hatFehlerPosition()) return;
+
+        setAusdruckText(ergebnis.getFehlerAusdruck());
+        ausdruckEditor.setzeCursor(ergebnis.getFehlerPosition());
+    }
+
+    public void amCursor(Runnable aktion)
+    {
+        ausdruckEditor.amCursor(aktion);
+    }
+
+    public void bewegeCursor(int schritte)
+    {
+        ausdruckEditor.bewegeCursor(schritte);
+    }
+
+    /** Klick ins Display: Die Anzeige hat Tausenderpunkte, der interne Ausdruck nicht. */
+    public void setzeCursorAusAnzeige(int anzeigeIndex)
+    {
+        ausdruckEditor.setzeCursor(zahlenFormatierer.internerIndex(zustand.getAusdruckText(), anzeigeIndex));
+    }
+
+    /** Cursor als Index in der Live-Anzeige, -1 wenn er am Ende steht (dann wird kein Cursor gezeigt). */
+    public int cursorAnzeigeIndex()
+    {
+        if (zustand.isCursorAmEnde()) return -1;
+        return zahlenFormatierer.anzeigeIndex(zustand.getAusdruckText(), zustand.getCursor());
+    }
+
     public String formatiereZahl(double zahl)
     {
         return zahlenFormatierer.formatiereZahl(zahl);

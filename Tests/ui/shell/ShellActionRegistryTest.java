@@ -247,4 +247,37 @@ public class ShellActionRegistryTest
             }
         }
     }
+
+    @Test
+    void ausfuehren_ShouldEditAtCursor_WhenCursorWasMovedLeft()
+    {
+        // Arrange
+        rechner.setAusdruckText("12");
+
+        // Act
+        registry.ausfuehren(ShellActionRegistry.CURSOR_LINKS);
+        registry.ausfuehren("5");
+        registry.ausfuehren("←");
+        registry.ausfuehren("+");
+
+        // Assert
+        assertEquals("1+2", rechner.getAusdruckText());
+    }
+
+    @Test
+    void ausfuehren_ShouldClearWholeExpression_WhenCIsPressedWithCursorInside()
+    {
+        // Arrange
+        rechner.setAusdruckText("12+3");
+        registry.ausfuehren(ShellActionRegistry.CURSOR_LINKS);
+        registry.ausfuehren(ShellActionRegistry.CURSOR_LINKS);
+
+        // Act
+        registry.ausfuehren("C");
+        registry.ausfuehren("7");
+
+        // Assert
+        assertEquals("7", rechner.getAusdruckText());
+        assertEquals(-1, rechner.cursorAnzeigeIndex());
+    }
 }

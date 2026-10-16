@@ -14,6 +14,10 @@ import java.util.function.Consumer;
 
 public class ShellActionRegistry
 {
+    /** Pfeiltasten haben keinen Button, deshalb eigene Aktionsnamen statt Button-Text. */
+    public static final String CURSOR_LINKS = "Cursor links";
+    public static final String CURSOR_RECHTS = "Cursor rechts";
+
     private final RechnerService rechner;
     private final WissenschaftlichOperationen wissenschaftlichOperationen;
     private final Runnable refresh;
@@ -59,8 +63,17 @@ public class ShellActionRegistry
         initMemoryActions();
     }
 
-    /** Registriert eine Aktion, nach der die Anzeige automatisch aktualisiert wird. */
+    /** Registriert eine Eingabe, die an der Cursorstelle wirkt; danach wird die Anzeige aktualisiert. */
     private void mitRefresh(String taste, Runnable aktion)
+    {
+        actions.put(taste, () -> {
+            rechner.amCursor(aktion);
+            refresh.run();
+        });
+    }
+
+    /** Für C/CE: betrifft den ganzen Ausdruck, nicht nur den Teil vor dem Cursor. */
+    private void mitRefreshGanzerAusdruck(String taste, Runnable aktion)
     {
         actions.put(taste, () -> {
             aktion.run();
@@ -87,8 +100,10 @@ public class ShellActionRegistry
         actions.put("=", evaluate);
 
         mitRefresh("±", rechner::wechselVorzeichen);
-        mitRefresh("C", rechner::allesLoeschen);
-        mitRefresh("CE", rechner::ce);
+        mitRefreshGanzerAusdruck("C", rechner::allesLoeschen);
+        mitRefreshGanzerAusdruck("CE", rechner::ce);
+        mitRefreshGanzerAusdruck(CURSOR_LINKS, () -> rechner.bewegeCursor(-1));
+        mitRefreshGanzerAusdruck(CURSOR_RECHTS, () -> rechner.bewegeCursor(1));
         mitRefresh("←", rechner::loeschen);
         mitRefresh(Tastenkuerzel.RUECKGAENGIG_AKTION, rechner::rueckgaengig);
         mitRefresh("%", rechner::prozent);

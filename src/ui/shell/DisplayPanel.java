@@ -1,11 +1,13 @@
 package ui.shell;
 
+import common.logic.KlammerPaare;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
 import ui.animation.AnimationSupport;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -15,8 +17,11 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 public class DisplayPanel extends JPanel
 {
@@ -28,8 +33,12 @@ public class DisplayPanel extends JPanel
     private final JLabel statusLabel = new JLabel("Modus: Standard | Winkel: DEG | Speicher: leer");
     private final JPanel displayArea = new JPanel(new BorderLayout(0, 4));
 
+    private static final Color ERROR_COLOR = new Color(220, 50, 50);
+
     private Consumer<String> pasteListener;
+    private IntConsumer cursorListener;
     private AppTheme currentTheme;
+    private boolean cursorVisible;
 
     public DisplayPanel()
     {
@@ -48,6 +57,7 @@ public class DisplayPanel extends JPanel
         mainDisplay.setToolTipText(getToolTipText());
 
         mainDisplay.setText("0");
+        configureCursor();
 
         displayArea.setOpaque(true);
         displayArea.setBorder(new EmptyBorder(10, 12, 8, 12));
@@ -68,7 +78,7 @@ public class DisplayPanel extends JPanel
 
         // Nicht editierbare Textpanes behalten sonst ihre Editor-Aktionen und
         // schlucken Enter/Backspace, bevor die Rechnertasten am RootPane greifen.
-        for (int key : new int[]{KeyEvent.VK_ENTER, KeyEvent.VK_BACK_SPACE})
+        for (int key : new int[]{KeyEvent.VK_ENTER, KeyEvent.VK_BACK_SPACE, KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT})
         {
             pane.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(key, 0), "rechnerTaste");
         }
@@ -77,6 +87,35 @@ public class DisplayPanel extends JPanel
         SimpleAttributeSet right = new SimpleAttributeSet();
         StyleConstants.setAlignment(right, StyleConstants.ALIGN_RIGHT);
         doc.setParagraphAttributes(0, doc.getLength(), right, false);
+    }
+
+    /**
+     * Das Display ist nicht editierbar, deshalb zeigt Swing keinen Caret. Dieser hier ist sichtbar,
+     * sobald der Cursor mitten im Ausdruck steht; ein Klick meldet die Stelle an den Rechner.
+     */
+    private void configureCursor()
+    {
+        mainDisplay.setCaret(new DefaultCaret()
+        {
+            @Override
+            public boolean isVisible()
+            {
+                return cursorVisible;
+            }
+        });
+        mainDisplay.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mouseReleased(MouseEvent e)
+            {
+                // Mit der Maus markieren bleibt zum Kopieren erhalten.
+                if (cursorListener != null && SwingUtilities.isLeftMouseButton(e)
+                        && mainDisplay.getSelectionStart() == mainDisplay.getSelectionEnd())
+                {
+                    cursorListener.accept(mainDisplay.getCaretPosition());
+                }
+            }
+        });
     }
 
     private void configureStatusLabel()
@@ -123,8 +162,69 @@ public class DisplayPanel extends JPanel
 
     public void setMainText(String text)
     {
+        setMainText(text, -1);
+    }
+
+    /** @param cursorIndex Stelle im angezeigten Text für den Eingabecursor, -1 = am Ende (dann unsichtbar) */
+    public void setMainText(String text, int cursorIndex)
+    {
         mainDisplay.setText(text);
+        // Sonst gehen alte Klammerfarben und Fehlermarkierungen auf den neuen Text über.
+        mainDisplay.getStyledDocument().setCharacterAttributes(0, mainDisplay.getDocument().getLength(), SimpleAttributeSet.EMPTY, true);
+        highlightBrackets();
+        cursorVisible = cursorIndex >= 0 && cursorIndex < mainDisplay.getDocument().getLength();
+        mainDisplay.setCaretPosition(cursorVisible ? cursorIndex : mainDisplay.getDocument().getLength());
+        mainDisplay.repaint();
         updateMainDisplayFont();
+    }
+
+    /** Hinterlegt das Zeichen an der Fehlerstelle rot; eine Stelle hinter dem Ende markiert das letzte Zeichen. */
+    public void markError(int index)
+    {
+        int length = mainDisplay.getDocument().getLength();
+        if (index < 0 || length == 0)
+        {
+            return;
+        }
+
+        SimpleAttributeSet style = new SimpleAttributeSet();
+        StyleConstants.setUnderline(style, true);
+        StyleConstants.setForeground(style, ERROR_COLOR);
+        if (currentTheme != null)
+        {
+            StyleConstants.setBackground(style, currentTheme.blend(currentTheme.displayBackground(), ERROR_COLOR, 0.35));
+        }
+        mainDisplay.getStyledDocument().setCharacterAttributes(Math.min(index, length - 1), 1, style, false);
+    }
+
+    /** Wird mit der angeklickten Stelle im angezeigten Text aufgerufen. */
+    public void setCursorListener(IntConsumer cursorListener)
+    {
+        this.cursorListener = cursorListener;
+    }
+
+    /** Färbt zusammengehörige Klammern je Verschachtelungstiefe gleich ein. */
+    private void highlightBrackets()
+    {
+        if (currentTheme == null)
+        {
+            return;
+        }
+
+        Color[] colors = {currentTheme.graphYAchseColor(), currentTheme.graphWendestelleColor(), currentTheme.graphExtremumColor()};
+        StyledDocument doc = mainDisplay.getStyledDocument();
+        int[] depths = KlammerPaare.tiefen(mainDisplay.getText());
+        for (int i = 0; i < depths.length && i < doc.getLength(); i++)
+        {
+            if (depths[i] < 0)
+            {
+                continue;
+            }
+            SimpleAttributeSet style = new SimpleAttributeSet();
+            StyleConstants.setForeground(style, colors[depths[i] % colors.length]);
+            StyleConstants.setBold(style, true);
+            doc.setCharacterAttributes(i, 1, style, false);
+        }
     }
 
     public void setSecondaryText(String text)
@@ -170,10 +270,12 @@ public class DisplayPanel extends JPanel
 
         mainDisplay.setBackground(theme.displayBackground());
         mainDisplay.setForeground(theme.displayForeground());
+        mainDisplay.setCaretColor(theme.displayForeground());
 
         statusLabel.setForeground(theme.secondaryDisplayForeground());
         statusLabel.setFont(theme.secondaryDisplayFont().deriveFont(Font.PLAIN, 13f));
         updateMainDisplayFont();
+        highlightBrackets();
     }
 
     public void pulseSuccess()
