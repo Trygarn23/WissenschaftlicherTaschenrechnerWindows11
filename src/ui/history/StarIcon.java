@@ -8,12 +8,12 @@ import java.awt.geom.Path2D;
  * Selbst gemalter Stern, weil Segoe UI die Zeichen ☆/★ nicht kennt und nur ein Kästchen zeigt.
  * Die Farbe kommt von der Komponente, damit der Stern in jedem Theme passt.
  */
-final class StarIcon implements Icon
+public final class StarIcon implements Icon
 {
     private final boolean filled;
     private final int size;
 
-    StarIcon(boolean filled, int size)
+    public StarIcon(boolean filled, int size)
     {
         this.filled = filled;
         this.size = size;

@@ -748,14 +748,14 @@ Verifikation der Bugfixes: 210 Java-Quelldateien kompiliert, 722 JUnit-Tests erf
 
 ### Neu gefunden beim Abarbeiten
 - [x] Parser: `-x^2` wird als `(-x)^2` gerechnet, richtig wäre `-(x^2)` → Parser-Agent hatte den Auftrag, Ergebnis prüfen. → behoben: `-2^2 = -4`, `2^-2 = 0,25`, `(-2)^2 = 4`.
-- [ ] Parser: Leerzeichen werden entfernt, dadurch wird `a x` zu `ax` (ungültig) statt `a·x`.
-- [ ] Graph: `istGueltig` prüft nur bei x = 0, deshalb gilt z. B. `1/x` beim Zeichnen als ungültig.
+- [x] Parser: Leerzeichen werden entfernt, dadurch wird `a x` zu `ax` (ungültig) statt `a·x`. → Leerzeichen zwischen zwei Namen wird zu `·`.
+- [x] Graph: `istGueltig` prüft nur bei x = 0, deshalb gilt z. B. `1/x` beim Zeichnen als ungültig. → prüft jetzt mehrere Probestellen.
 - [ ] PRG: Multiplikation gibt es jetzt (Numpad *), aber keinen Button – Tastenraster ist voll.
-- [ ] Tastenkürzel-Übersicht um Strg+K, Strg+Shift+K und PRG-Numpad-* ergänzen.
-- [ ] Mini-Rechner übernimmt Theme-Wechsel erst beim nächsten Öffnen.
-- [ ] Konstanten-Dialog: Favoriten als Stern statt Checkbox (dafür `StarIcon` public machen).
+- [x] Tastenkürzel-Übersicht um Strg+K, Strg+Shift+K und PRG-Numpad-* ergänzen. → plus eigener PRG-Abschnitt.
+- [x] Mini-Rechner übernimmt Theme-Wechsel erst beim nächsten Öffnen.
+- [x] Konstanten-Dialog: Favoriten als Stern statt Checkbox (dafür `StarIcon` public machen).
 - [ ] Alle neuen Modi einmal in der echten App durchklicken (nur über Tests geprüft, Layout nicht angeschaut).
-- [ ] Wissenschaftlich: neue Parserfunktionen (nCr, nPr, ggT, kgV) als Buttons/f(x)-Menü anbieten, sobald der Parser-Teil fertig ist.
+- [x] Wissenschaftlich: neue Parserfunktionen (nCr, nPr, ggT, kgV) als Buttons/f(x)-Menü anbieten, sobald der Parser-Teil fertig ist. → im f(x)-Menü inkl. `;` und `n!`, `;` auch per Shift+Komma.
 
 ---
 
@@ -766,5 +766,5 @@ Verifikation der Bugfixes: 210 Java-Quelldateien kompiliert, 722 JUnit-Tests erf
 
 ## Befehle
 git add .
-git commit -m "Das Crazy todo"
+git commit -m ""
 git push

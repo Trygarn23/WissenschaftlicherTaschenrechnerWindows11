@@ -457,6 +457,7 @@ public class TaschenrechnerUI extends JFrame
         displayPanel.applyTheme(theme());
         historyPanel.applyTheme(theme());
         einheitenSidePanelHost.applyTheme(theme());
+        MiniRechnerFenster.aktualisiereTheme(theme());
 
         for (JPanel panel : modePanels.values())
         {

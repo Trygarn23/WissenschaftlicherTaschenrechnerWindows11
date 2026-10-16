@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 public class GraphEvaluator
 {
     private static final double DEFAULT_H = 1e-4;
+    private static final double[] PROBESTELLEN = {0.0, 1.0, -1.0, 0.5, 2.0, -2.0, 10.0, -10.0};
     private static final Set<String> PARAMETER_NAMEN = Set.of("a", "b", "c", "d", "k");
     // Wie im Tokenizer des Parsers: ein Bezeichner ist eine ununterbrochene Folge von Buchstaben ("abs" ist kein "a").
     private static final Pattern BEZEICHNER = Pattern.compile("\\p{L}+");
@@ -123,8 +124,16 @@ public class GraphEvaluator
         return new Tangente(funktionIndex, x0, y0, steigung);
     }
 
+    /** Gültig, wenn die Funktion an irgendeiner Probestelle einen Wert hat; 1/x ist bei 0 nur eine Lücke. */
     public boolean istGueltig(String ausdruck, WinkelModus winkelModus)
     {
-        return Double.isFinite(wertOderNaN(ausdruck, 0.0, winkelModus));
+        for (double x : PROBESTELLEN)
+        {
+            if (Double.isFinite(wertOderNaN(ausdruck, x, winkelModus)))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -63,9 +63,21 @@ public final class TastenkuerzelDialog extends JDialog
         {
             rechnen.add(new Eintrag(kuerzel.getAnzeigeText(), ButtonTooltips.beschreibungFor(kuerzel.getAktion())));
         }
+        rechnen.add(new Eintrag("Shift+, (;)", "Trennt Funktionsargumente, z. B. nCr(5;2)"));
         abschnitte.put("Rechnen (Standard und Wissenschaftlich)", rechnen);
 
+        abschnitte.put("Programmierer", List.of(
+                new Eintrag("0 – 9, A – F", "Ziffern, je nach Basis"),
+                new Eintrag("+  −  Num *", "Plus, Minus, Mal (Mal nur über den Nummernblock)"),
+                new Eintrag("Enter", "Ergebnis"),
+                new Eintrag("Backspace", "Letzte Ziffer löschen"),
+                new Eintrag("!  &  |  ^", "NOT, AND, OR, XOR"),
+                new Eintrag(",  .", "Shift links, Shift rechts")
+        ));
+
         abschnitte.put("Sonstiges", List.of(
+                new Eintrag("Strg+K", "Befehlssuche: Modus, Theme, Funktion oder Konstante"),
+                new Eintrag("Strg+Shift+K", "Konstanten-Bibliothek öffnen"),
                 new Eintrag("Strg+C", "Anzeige kopieren (Display vorher anklicken)"),
                 new Eintrag("Strg+V", "Ausdruck einfügen (Display vorher anklicken)"),
                 new Eintrag(Tastenkuerzel.RUECKGAENGIG_TEXT, "Mit C/CE gelöschte Eingabe zurückholen"),

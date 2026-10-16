@@ -107,6 +107,11 @@ public class ShellActionRegistry
         mitRefresh("ceil", w::aufrunden);
         mitRefresh("round", w::runden);
         mitRefresh("rand", w::zufall);
+        for (String funktion : new String[]{"nCr", "nPr", "ggT", "kgV"})
+        {
+            mitRefresh(funktion, () -> w.zweiArgumente(funktion));
+        }
+        mitRefresh(";", w::trennzeichen);
     }
 
     private void initMemoryActions()

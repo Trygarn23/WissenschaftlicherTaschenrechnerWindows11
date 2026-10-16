@@ -68,4 +68,14 @@ public final class MiniRechnerFenster extends JFrame
     {
         panel.applyTheme(theme);
     }
+
+    /** Für den Themewechsel im Hauptfenster: färbt den Mini-Rechner sofort um, falls er offen ist. */
+    public static void aktualisiereTheme(AppTheme theme)
+    {
+        if (offen != null)
+        {
+            offen.applyTheme(theme);
+            offen.repaint();
+        }
+    }
 }

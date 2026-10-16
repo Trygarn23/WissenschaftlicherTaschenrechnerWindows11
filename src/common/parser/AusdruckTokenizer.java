@@ -29,11 +29,23 @@ public final class AusdruckTokenizer
 
         // Normalisieren, dabei für jedes Zeichen die Stelle im Original merken.
         StringBuilder text = new StringBuilder(expr.length() + 1);
-        int[] original = new int[expr.length() + 1];
+        int[] original = new int[expr.length() * 2 + 1];
+        boolean leerzeichen = false;
         for (int i = 0; i < expr.length(); i++)
         {
             char c = expr.charAt(i);
-            if (Character.isWhitespace(c)) continue;
+            if (Character.isWhitespace(c))
+            {
+                leerzeichen = true;
+                continue;
+            }
+            // "a x" ist a·x und nicht der unbekannte Name "ax".
+            if (leerzeichen && isIdentifierChar(c) && !text.isEmpty() && isIdentifierChar(text.charAt(text.length() - 1)))
+            {
+                original[text.length()] = i;
+                text.append('*');
+            }
+            leerzeichen = false;
             original[text.length()] = i;
             text.append(normalisiere(c));
         }

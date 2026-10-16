@@ -192,7 +192,7 @@ public class AusdruckEditor
             }
 
             char letztesZeichen = letztesZeichen();
-            if (AusdruckTermFinder.istOperatorZeichen(letztesZeichen) || letztesZeichen == '(')
+            if (AusdruckTermFinder.istOperatorZeichen(letztesZeichen) || letztesZeichen == '(' || letztesZeichen == ';')
             {
                 zustand.appendAusdruck("-");
                 return zustand.getAusdruckText();
@@ -389,7 +389,40 @@ public class AusdruckEditor
         if (zustand.isAusdruckLeer()) return true;
 
         char zeichen = letztesZeichen();
-        return AusdruckTermFinder.istOperatorZeichen(zeichen) || zeichen == '(';
+        return AusdruckTermFinder.istOperatorZeichen(zeichen) || zeichen == '(' || zeichen == ';';
+    }
+
+    /**
+     * Für Funktionen mit zwei Argumenten wie nCr(n;k): der letzte Term wird das erste Argument,
+     * danach steht schon das {@code ;} und man tippt direkt das zweite.
+     */
+    public String zweiArgumentFunktion(String funktionsName)
+    {
+        resetNachGleichWennNoetig();
+
+        if (endetMitOperatorOderKlammerAuf())
+        {
+            zustand.appendAusdruck(funktionsName + "(");
+            return zustand.getAusdruckText();
+        }
+
+        int start = startLetzterTerm();
+        String term = start < zustand.getAusdruckLaenge() ? zustand.getAusdruckTeilText(start) : "";
+        zustand.deleteAusdruck(start, zustand.getAusdruckLaenge());
+        zustand.appendAusdruck(funktionsName + "(" + term + (term.isEmpty() ? "" : ";"));
+        zustand.setGleichGedrueckt(false);
+        return zustand.getAusdruckText();
+    }
+
+    /** Trennt Funktionsargumente; nur innerhalb einer offenen Klammer und nach einem Wert sinnvoll. */
+    public String trennzeichen()
+    {
+        if (zustand.isGleichGedrueckt() || endetMitOperatorOderKlammerAuf() || offeneKlammern() == 0)
+        {
+            return zustand.getAusdruckText();
+        }
+        zustand.appendAusdruck(";");
+        return zustand.getAusdruckText();
     }
 
     private String letztenTermEinrahmen(String praefix, String suffix)

@@ -5,6 +5,7 @@ import common.konstanten.Konstante;
 import common.konstanten.KonstantenFavoriten;
 import common.konstanten.KonstantenKatalog;
 import common.konstanten.KonstantenKategorie;
+import ui.history.StarIcon;
 import ui.shell.StatusAnzeige;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
@@ -15,6 +16,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -176,6 +178,8 @@ public class KonstantenPanel extends JPanel
         tabelle.setFillsViewportHeight(true);
         tabelle.getTableHeader().setReorderingAllowed(false);
         tabelle.getColumnModel().getColumn(0).setMaxWidth(70);
+        tabelle.getColumnModel().getColumn(0).setCellRenderer(new SternZelle());
+        tabelle.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(new SternZelle()));
         tabelle.getColumnModel().getColumn(1).setPreferredWidth(240);
         tabelle.getColumnModel().getColumn(3).setPreferredWidth(170);
         tabelle.getSelectionModel().addListSelectionListener(e -> zeigeDetails());
@@ -327,6 +331,28 @@ public class KonstantenPanel extends JPanel
                 tabelle.scrollRectToVisible(tabelle.getCellRect(i, 0, true));
                 return;
             }
+        }
+    }
+
+    /** Favorit als Stern wie im Verlauf statt als Checkbox; dient als Renderer und Editor. */
+    private static final class SternZelle extends JCheckBox implements TableCellRenderer
+    {
+        SternZelle()
+        {
+            setHorizontalAlignment(CENTER);
+            setIcon(new StarIcon(false, 14));
+            setSelectedIcon(new StarIcon(true, 14));
+            setToolTipText("Als Favorit markieren");
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object wert, boolean ausgewaehlt, boolean fokus, int zeile, int spalte)
+        {
+            setSelected(Boolean.TRUE.equals(wert));
+            setOpaque(true);
+            setBackground(ausgewaehlt ? table.getSelectionBackground() : table.getBackground());
+            setForeground(ausgewaehlt ? table.getSelectionForeground() : table.getForeground());
+            return this;
         }
     }
 

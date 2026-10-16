@@ -108,4 +108,17 @@ public class GraphEvaluatorTest
                 () -> evaluator.auswerten(f.getAusdruck(), 2.0, WinkelModus.DEG));
         assertTrue(exception.getMessage().contains("Funktionskreis erkannt"));
     }
+
+    @Test
+    void istGueltig_ShouldAcceptFunctionsThatAreUndefinedAtZero()
+    {
+        // Arrange
+        GraphEvaluator evaluator = new GraphEvaluator();
+
+        // Act & Assert
+        assertTrue(evaluator.istGueltig("1/x", WinkelModus.RAD));
+        assertTrue(evaluator.istGueltig("ln(x)", WinkelModus.RAD));
+        assertFalse(evaluator.istGueltig("sqrt(-1-x^2)", WinkelModus.RAD));
+        assertFalse(evaluator.istGueltig("2*+", WinkelModus.RAD));
+    }
 }

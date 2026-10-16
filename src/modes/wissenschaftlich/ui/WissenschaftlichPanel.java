@@ -32,7 +32,9 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
     private static final String[] FX_FUNCTIONS = {
             "sin", "cos", "tan",
             "asin", "acos", "atan",
-            "sinh", "cosh", "tanh"
+            "sinh", "cosh", "tanh",
+            "nCr", "nPr", ";",
+            "ggT", "kgV", "n!"
     };
 
     private Consumer<String> functionSelectionListener;
@@ -127,7 +129,7 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
         functionPopupTitleLabel = new JLabel("Funktionen");
         functionPopupTitleLabel.setFont(AppFonts.fett(14));
 
-        JPanel buttonGrid = new JPanel(new GridLayout(3, 3, 6, 6));
+        JPanel buttonGrid = new JPanel(new GridLayout(0, 3, 6, 6));
         buttonGrid.setOpaque(false);
 
         for (String functionName : FX_FUNCTIONS)

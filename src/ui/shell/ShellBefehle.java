@@ -16,7 +16,7 @@ final class ShellBefehle
     /** Funktionen, die als „name(“ in den Ausdruck eingefügt werden. */
     private static final List<String> FUNKTIONEN = List.of(
             "sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh",
-            "ln", "log", "sqrt", "abs", "exp", "floor", "ceil", "round"
+            "ln", "log", "sqrt", "abs", "exp", "floor", "ceil", "round", "nCr", "nPr", "ggT", "kgV"
     );
 
     /** Was die Befehle in der Shell auslösen. */

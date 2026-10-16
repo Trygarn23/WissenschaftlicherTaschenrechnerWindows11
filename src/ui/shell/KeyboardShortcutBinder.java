@@ -66,6 +66,9 @@ public class KeyboardShortcutBinder
             }
         }
 
+        // Deutsche Tastatur: ; liegt auf Shift+Komma.
+        bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.SHIFT_DOWN_MASK), "trennzeichen",
+                () -> aktionen.ausfuehren(";"));
         bind(im, am, KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK), "rueckgaengig",
                 () -> aktionen.ausfuehren(Tastenkuerzel.RUECKGAENGIG_AKTION));
     }

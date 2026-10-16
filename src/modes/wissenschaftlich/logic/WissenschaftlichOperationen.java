@@ -101,6 +101,17 @@ public class WissenschaftlichOperationen
         return ausdruckEditor.funktionOhneArgumenteEinfuegen("rand");
     }
 
+    /** nCr, nPr, ggT, kgV: zwei Argumente, getrennt durch {@code ;}. */
+    public String zweiArgumente(String funktionsName)
+    {
+        return ausdruckEditor.zweiArgumentFunktion(funktionsName);
+    }
+
+    public String trennzeichen()
+    {
+        return ausdruckEditor.trennzeichen();
+    }
+
     public String fakultaet()
     {
         return ausdruckEditor.fakultaet();

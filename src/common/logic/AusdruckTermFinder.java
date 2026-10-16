@@ -94,7 +94,7 @@ final class AusdruckTermFinder
             if (i == 0) return 0;
 
             char davor = ausdruck.charAt(i - 1);
-            if (istOperatorZeichen(davor) || davor == '(')
+            if (istOperatorZeichen(davor) || davor == '(' || davor == ';')
             {
                 return i;
             }
@@ -134,7 +134,7 @@ final class AusdruckTermFinder
             if (start - 1 == 0) return start - 1;
 
             char davor = ausdruck.charAt(start - 2);
-            if (istOperatorZeichen(davor) || davor == '(')
+            if (istOperatorZeichen(davor) || davor == '(' || davor == ';')
             {
                 return start - 1;
             }

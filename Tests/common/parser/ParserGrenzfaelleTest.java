@@ -131,4 +131,16 @@ class ParserGrenzfaelleTest
     {
         return assertThrows(AusdruckParserException.class, () -> rechne(ausdruck));
     }
+
+    @Test
+    void auswerten_ShouldTreatSpaceBetweenNamesAsMultiplication()
+    {
+        // Arrange
+        java.util.Map<String, Double> variablen = java.util.Map.of("a", 2.0, "x", 3.0);
+
+        // Act & Assert
+        assertEquals(6.0, AusdruckParser.auswerten("a x", 0.0, WinkelModus.RAD, variablen), 1e-12);
+        assertEquals(6.0, AusdruckParser.auswerten("a  x", 0.0, WinkelModus.RAD, variablen), 1e-12);
+        assertEquals(2.0, rechne("1 + 1"), 1e-12);
+    }
 }
