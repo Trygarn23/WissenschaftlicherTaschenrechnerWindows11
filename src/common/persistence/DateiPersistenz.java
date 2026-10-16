@@ -37,7 +37,7 @@ public final class DateiPersistenz
             properties.load(reader);
             return Optional.of(properties);
         }
-        catch (IOException e)
+        catch (IOException | IllegalArgumentException e) // IllegalArgumentException: kaputtes Unicode-Escape in Properties.load
         {
             LOGGER.log(Level.WARNING, "Datei konnte nicht gelesen werden: " + datei, e);
             return Optional.empty();
