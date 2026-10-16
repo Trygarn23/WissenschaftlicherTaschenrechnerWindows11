@@ -120,6 +120,8 @@ Empfohlen in IntelliJ:
 
 Manuell per Konsole ist ebenfalls möglich, erfordert aber einen vollständigen JUnit-5-Classpath. Die Tests liegen im Ordner `Tests`.
 
+Manuelle Prüfungen und Releases: [`docs/ui-checkliste.md`](docs/ui-checkliste.md), [`docs/high-dpi-checkliste.md`](docs/high-dpi-checkliste.md), [`docs/release-checkliste.md`](docs/release-checkliste.md). Zum Aufbau des Codes: [`docs/architektur.md`](docs/architektur.md), Änderungen: [`CHANGELOG.md`](CHANGELOG.md).
+
 ## Projektstruktur
 
 ```text
