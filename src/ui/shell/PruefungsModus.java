@@ -9,6 +9,7 @@ import common.state.RechnerModus;
 public final class PruefungsModus
 {
     public static final String HINWEIS = "PRÜFUNGSMODUS";
+    static final String FENSTER_TITEL = "Taschenrechner";
 
     private PruefungsModus()
     {
@@ -29,5 +30,16 @@ public final class PruefungsModus
     public static boolean sindWerkzeugeErlaubt(boolean pruefungsModus)
     {
         return !pruefungsModus;
+    }
+
+    static String fensterTitel(boolean pruefungsModus)
+    {
+        return pruefungsModus ? FENSTER_TITEL + " – " + HINWEIS : FENSTER_TITEL;
+    }
+
+    /** Vorspann für die Statuszeile, damit man den Prüfungsmodus nicht übersieht. */
+    static String statusPraefix(boolean pruefungsModus)
+    {
+        return pruefungsModus ? HINWEIS + " | " : "";
     }
 }

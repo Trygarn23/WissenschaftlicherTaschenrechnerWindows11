@@ -35,6 +35,13 @@ import java.util.Map;
 
 public class TaschenrechnerUI extends JFrame
 {
+    private static final int MIN_BREITE = 980;
+    private static final int MIN_HOEHE = 700;
+    /** Außenrand des Fensters und Abstand zwischen den großen Bereichen. */
+    private static final int RAND = 14;
+    private static final int BEREICH_ABSTAND = 12;
+    private static final int SEITEN_ABSTAND = 10;
+
     private final ThemeManager themeManager = new ThemeManager();
     private final ShellPersistenceService persistenceService = new ShellPersistenceService();
     private AppSettings appSettings = persistenceService.ladeSettings();
@@ -55,6 +62,9 @@ public class TaschenrechnerUI extends JFrame
     private final ModeContentHostPanel modeContentHostPanel = new ModeContentHostPanel();
     private final HistoryPanel historyPanel = new HistoryPanel();
     private final EinheitenSidePanelHost einheitenSidePanelHost = new EinheitenSidePanelHost();
+    private final SessionSteuerung session = new SessionSteuerung(persistenceService, rechner, historyPanel);
+    private final PruefungsModusSteuerung pruefung = new PruefungsModusSteuerung(
+            () -> appSettings.isPruefungsModus(), this, modeBarPanel, globalActionBarPanel, einheitenSidePanelHost);
     private Map<RechnerModus, JPanel> modePanels;
 
     private ShellActionRegistry shellActionRegistry;
@@ -98,11 +108,11 @@ public class TaschenrechnerUI extends JFrame
 
     private void configureFrame()
     {
-        setTitle("Taschenrechner");
+        setTitle(PruefungsModus.FENSTER_TITEL);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(appSettings.getFensterBreite(), appSettings.getFensterHoehe());
         setLocationRelativeTo(null);
-        setMinimumSize(new Dimension(980, 700));
+        setMinimumSize(new Dimension(MIN_BREITE, MIN_HOEHE));
         addWindowListener(new WindowAdapter()
         {
             @Override
@@ -129,24 +139,24 @@ public class TaschenrechnerUI extends JFrame
 
     private void buildLayout()
     {
-        JPanel contentPane = new JPanel(new BorderLayout(12, 12));
-        contentPane.setBorder(new EmptyBorder(14, 14, 14, 14));
+        JPanel contentPane = new JPanel(new BorderLayout(BEREICH_ABSTAND, BEREICH_ABSTAND));
+        contentPane.setBorder(new EmptyBorder(RAND, RAND, RAND, RAND));
         setContentPane(contentPane);
 
         JPanel topArea = new JPanel();
         topArea.setOpaque(false);
         topArea.setLayout(new BoxLayout(topArea, BoxLayout.Y_AXIS));
         topArea.add(globalActionBarPanel);
-        topArea.add(Box.createVerticalStrut(10));
+        topArea.add(Box.createVerticalStrut(SEITEN_ABSTAND));
         topArea.add(modeBarPanel);
-        topArea.add(Box.createVerticalStrut(12));
+        topArea.add(Box.createVerticalStrut(BEREICH_ABSTAND));
         topArea.add(displayPanel);
 
-        JPanel centerArea = new JPanel(new BorderLayout(12, 0));
+        JPanel centerArea = new JPanel(new BorderLayout(BEREICH_ABSTAND, 0));
         centerArea.setOpaque(false);
         centerArea.add(modeContentHostPanel, BorderLayout.CENTER);
 
-        JPanel sideArea = new JPanel(new BorderLayout(10, 0));
+        JPanel sideArea = new JPanel(new BorderLayout(SEITEN_ABSTAND, 0));
         sideArea.setOpaque(false);
         sideArea.add(einheitenSidePanelHost, BorderLayout.WEST);
         sideArea.add(historyPanel, BorderLayout.EAST);
@@ -168,7 +178,7 @@ public class TaschenrechnerUI extends JFrame
             modeContentHostPanel.registerMode(entry.getKey(), entry.getValue());
         }
 
-        setAktuellerModus(PruefungsModus.erlaubterModus(appSettings.isPruefungsModus(), aktuellerModus));
+        setAktuellerModus(pruefung.erlaubterModus(aktuellerModus));
     }
 
     private void wireShellEvents()
@@ -217,9 +227,8 @@ public class TaschenrechnerUI extends JFrame
 
     private void setAktuellerModus(RechnerModus modus)
     {
-        if (!PruefungsModus.istModusErlaubt(appSettings.isPruefungsModus(), modus))
+        if (pruefung.modusGesperrt(modus))
         {
-            Toolkit.getDefaultToolkit().beep();
             return;
         }
 
@@ -235,7 +244,7 @@ public class TaschenrechnerUI extends JFrame
         modeContentHostPanel.showMode(modus, theme());
 
         ModePanel modePanel = (ModePanel) modePanels.get(modus);
-        boolean zeigtHistory = modePanel.zeigtHistory() && PruefungsModus.sindWerkzeugeErlaubt(appSettings.isPruefungsModus());
+        boolean zeigtHistory = modePanel.zeigtHistory() && pruefung.sindWerkzeugeErlaubt();
 
         displayPanel.setVisible(modePanel.zeigtGlobalesDisplay());
         historyPanel.setVisible(zeigtHistory);
@@ -251,7 +260,7 @@ public class TaschenrechnerUI extends JFrame
 
     private void toggleEinheiten()
     {
-        if (werkzeugGesperrt())
+        if (pruefung.werkzeugGesperrt())
         {
             return;
         }
@@ -261,7 +270,7 @@ public class TaschenrechnerUI extends JFrame
     /** Aktuelles Ergebnis aus Standard/Wissenschaftlich als Wert ins Einheiten-Panel übernehmen. */
     private void rechneErgebnisUm()
     {
-        if (werkzeugGesperrt())
+        if (pruefung.werkzeugGesperrt())
         {
             return;
         }
@@ -275,7 +284,7 @@ public class TaschenrechnerUI extends JFrame
 
     private void zeigeKonstanten()
     {
-        if (werkzeugGesperrt())
+        if (pruefung.werkzeugGesperrt())
         {
             return;
         }
@@ -299,27 +308,16 @@ public class TaschenrechnerUI extends JFrame
                 () -> EigeneFunktionenDialog.anlegen(this, eigeneFunktionen),
                 () -> EigeneFunktionenDialog.loeschen(this, eigeneFunktionen)
         );
-        BefehlsDialog.showDialog(this, theme(), ShellBefehle.erstelle(aktionen, eigeneKonstanten.alle(), appSettings.isPruefungsModus()));
+        BefehlsDialog.showDialog(this, theme(), ShellBefehle.erstelle(aktionen, eigeneKonstanten.alle(), pruefung.istAktiv()));
     }
 
     private void zeigeMiniRechner()
     {
-        if (werkzeugGesperrt())
+        if (pruefung.werkzeugGesperrt())
         {
             return;
         }
         MiniRechnerFenster.zeige(this, theme(), rechner.getWinkelModus());
-    }
-
-    /** Im Prüfungsmodus gibt es keine Hilfswerkzeuge – kurzer Piep statt stillem Nichts. */
-    private boolean werkzeugGesperrt()
-    {
-        if (PruefungsModus.sindWerkzeugeErlaubt(appSettings.isPruefungsModus()))
-        {
-            return false;
-        }
-        Toolkit.getDefaultToolkit().beep();
-        return true;
     }
 
     /** Hängt z. B. eine Konstante an den Ausdruck; steht davor schon eine Zahl, kommt ein Malzeichen dazwischen. */
@@ -394,7 +392,7 @@ public class TaschenrechnerUI extends JFrame
     {
         String speicherText = rechner.hatSpeicherWert() ? "M belegt" : "Speicher leer";
         displayPanel.setStatusText(
-                (appSettings.isPruefungsModus() ? PruefungsModus.HINWEIS + " | " : "")
+                PruefungsModus.statusPraefix(pruefung.istAktiv())
                         + "Modus: " + aktuellerModus.getLabel()
                         + " | Winkel: " + rechner.getWinkelModus().name()
                         + " | " + speicherText
@@ -449,15 +447,8 @@ public class TaschenrechnerUI extends JFrame
 
     private void applyPruefungsModus()
     {
-        boolean aktiv = appSettings.isPruefungsModus();
-        setTitle(aktiv ? "Taschenrechner – " + PruefungsModus.HINWEIS : "Taschenrechner");
-        modeBarPanel.setPruefungsModus(aktiv);
-        globalActionBarPanel.setPruefungsModus(aktiv);
-        if (aktiv && einheitenSidePanelHost.isGeoeffnet())
-        {
-            einheitenSidePanelHost.setGeoeffnet(false);
-        }
-        setAktuellerModus(PruefungsModus.erlaubterModus(aktiv, aktuellerModus));
+        pruefung.anwenden();
+        setAktuellerModus(pruefung.erlaubterModus(aktuellerModus));
     }
 
     private void aktualisiereWinkelmodusInModi()
@@ -528,7 +519,7 @@ public class TaschenrechnerUI extends JFrame
     private void addHistoryEntry(String entry)
     {
         // Im Prüfungsmodus wird nichts mitgeschrieben – auch nicht unsichtbar im Hintergrund.
-        if (entry == null || entry.isBlank() || appSettings.isPruefungsModus()) return;
+        if (entry == null || entry.isBlank() || pruefung.istAktiv()) return;
 
         VerlaufEintrag verlaufEintrag = persistenceService.erstelleVerlaufEintrag(entry, aktuellerModus);
         historyPanel.addStructuredEntry(verlaufEintrag);
@@ -552,40 +543,14 @@ public class TaschenrechnerUI extends JFrame
 
     private void speichereSession()
     {
-        persistenceService.speichereSession(new ShellSessionData(
-                aktuellerModus,
-                rechner.getAusdruckText(),
-                rechner.getVerlauf(),
-                historyPanel.getAllEntries(),
-                rechner.getWinkelModus(),
-                rechner.getSpeicherWert(),
-                appSettings.getThemeType(),
-                rechner.getZahlenFormatModus(),
-                rechner.getNachkommastellen()
-        ));
+        session.speichere(aktuellerModus, appSettings.getThemeType());
     }
 
     private void ladeSession()
     {
-        ShellSessionData session = persistenceService.ladeSession();
-
-        appSettings.setThemeType(session.themeType());
-        appSettings.setStartModus(session.aktiverModus());
-        appSettings.setWinkelModus(session.winkelModus());
-        appSettings.setZahlenFormatModus(session.zahlenFormatModus());
-        appSettings.setNachkommastellen(session.nachkommastellen());
-        persistenceService.speichereSettings(appSettings);
-
-        rechner.setWinkelModus(session.winkelModus());
-        rechner.setZahlenFormatModus(session.zahlenFormatModus());
-        rechner.setNachkommastellen(session.nachkommastellen());
-        rechner.setAusdruckText(session.ausdruck());
-        rechner.setVerlauf(session.verlauf());
-        rechner.setSpeicherWert(session.speicherWert());
-
-        historyPanel.setAllEntries(session.historyEintraege());
-        themeManager.setTheme(session.themeType());
-        setAktuellerModus(PruefungsModus.erlaubterModus(appSettings.isPruefungsModus(), session.aktiverModus()));
+        ShellSessionData geladen = session.lade(appSettings);
+        themeManager.setTheme(geladen.themeType());
+        setAktuellerModus(pruefung.erlaubterModus(geladen.aktiverModus()));
         applyCurrentTheme();
         refresh();
     }

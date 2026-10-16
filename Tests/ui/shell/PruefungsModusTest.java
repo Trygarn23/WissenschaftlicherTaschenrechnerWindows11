@@ -26,4 +26,13 @@ class PruefungsModusTest
         assertEquals(RechnerModus.GRAPH, PruefungsModus.erlaubterModus(false, RechnerModus.GRAPH));
         assertFalse(PruefungsModus.sindWerkzeugeErlaubt(true));
     }
+
+    @Test
+    void fensterTitelUndStatus_ShouldShowHint_OnlyWhenActive()
+    {
+        assertEquals("Taschenrechner – PRÜFUNGSMODUS", PruefungsModus.fensterTitel(true));
+        assertEquals("Taschenrechner", PruefungsModus.fensterTitel(false));
+        assertEquals("PRÜFUNGSMODUS | ", PruefungsModus.statusPraefix(true));
+        assertEquals("", PruefungsModus.statusPraefix(false));
+    }
 }
