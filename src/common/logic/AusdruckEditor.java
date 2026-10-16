@@ -3,16 +3,17 @@ package common.logic;
 import common.formatting.ZahlenFormatter;
 import common.state.RechnerZustand;
 
-import java.math.BigInteger;
-import java.util.function.DoublePredicate;
-import java.util.function.DoubleUnaryOperator;
-
+/**
+ * Bearbeitet den Ausdruck im Display. Einfache Eingaben (Ziffern, Operatoren, Klammern, Löschen,
+ * Rückgängig) stehen hier; Cursor, Term-Einrahmung und Zahl-Umrechnungen liegen in eigenen Helfern.
+ */
 public class AusdruckEditor
 {
-    private static final String FEHLER_TEXT = "Fehler";
-
     private final RechnerZustand zustand;
     private final ZahlenFormatter zahlenFormatierer;
+    private final AusdruckCursor cursor;
+    private final AusdruckTermRahmen termRahmen;
+    private final LetzteZahlBearbeitung letzteZahl;
 
     /** Ausdruck vor dem letzten C/CE, für einmal Rückgängig. */
     private String vorDemLoeschen;
@@ -21,18 +22,21 @@ public class AusdruckEditor
     {
         this.zustand = zustand;
         this.zahlenFormatierer = zahlenFormatierer;
+        this.cursor = new AusdruckCursor(zustand);
+        this.termRahmen = new AusdruckTermRahmen(zustand);
+        this.letzteZahl = new LetzteZahlBearbeitung(zustand, zahlenFormatierer);
     }
 
     public String eingabeZahl(String ziffer)
     {
-        resetNachGleichWennNoetig();
+        resetNachGleichWennNoetig(zustand);
         zustand.appendAusdruck(ziffer);
         return zustand.getAusdruckText();
     }
 
     public String eingabeKomma()
     {
-        resetNachGleichWennNoetig();
+        resetNachGleichWennNoetig(zustand);
 
         int start = startLetzteZahl();
         if (zustand.getAusdruckLaenge() > 0
@@ -58,7 +62,7 @@ public class AusdruckEditor
             zustand.setGleichGedrueckt(false);
         }
 
-        if (zustand.isAusdruckLeer() || endetMitOperatorOderKlammerAuf() || letztesZeichen() == '(')
+        if (zustand.isAusdruckLeer() || endetMitOperatorOderKlammerAuf() || letztesZeichen(zustand) == '(')
         {
             zustand.appendAusdruck("-");
             return zustand.getAusdruckText();
@@ -84,17 +88,8 @@ public class AusdruckEditor
 
     public String klammerAuf()
     {
-        resetNachGleichWennNoetig();
-
-        if (zustand.getAusdruckLaenge() > 0)
-        {
-            char letztesZeichen = letztesZeichen();
-            if (Character.isDigit(letztesZeichen) || letztesZeichen == ')' || letztesZeichen == ',')
-            {
-                zustand.appendAusdruck("*");
-            }
-        }
-
+        resetNachGleichWennNoetig(zustand);
+        malVorNeuemWert();
         zustand.appendAusdruck("(");
         return zustand.getAusdruckText();
     }
@@ -160,55 +155,6 @@ public class AusdruckEditor
         return vorDemLoeschen != null && zustand.isAusdruckLeer();
     }
 
-    public int offeneKlammern()
-    {
-        return Math.max(0, AusdruckTermFinder.zaehleOffeneKlammern(zustand.getAusdruckText()));
-    }
-
-    public int getCursor()
-    {
-        return zustand.getCursor();
-    }
-
-    /** Wer in ein Ergebnis klickt, will es weiterbearbeiten – deshalb zählt „=“ danach nicht mehr. */
-    public void setzeCursor(int index)
-    {
-        zustand.setGleichGedrueckt(false);
-        zustand.setCursor(index);
-    }
-
-    public void bewegeCursor(int schritte)
-    {
-        setzeCursor(zustand.getCursor() + schritte);
-    }
-
-    /**
-     * Führt eine Eingabe an der Cursorstelle aus: Alle Editor-Aktionen arbeiten am Ende des Ausdrucks,
-     * also wird der Teil hinter dem Cursor kurz abgeschnitten und danach wieder angehängt.
-     * Steht der Cursor am Ende, läuft die Aktion unverändert.
-     */
-    public void amCursor(Runnable aktion)
-    {
-        if (zustand.isCursorAmEnde() || zustand.isGleichGedrueckt())
-        {
-            aktion.run();
-            return;
-        }
-
-        int cursor = zustand.getCursor();
-        String rest = zustand.getAusdruckTeilText(cursor);
-        zustand.setAusdruckLaenge(cursor);
-        zustand.setCursor(cursor);
-        aktion.run();
-
-        // Fehler (z. B. 5000!) löschen den ganzen Ausdruck, dann gehört der Rest nicht mehr dazu.
-        if (zustand.isGleichGedrueckt()) return;
-
-        int neuerCursor = zustand.getAusdruckLaenge();
-        zustand.appendAusdruck(rest);
-        zustand.setCursor(neuerCursor);
-    }
-
     /** Ein leeres Display wird nicht gemerkt, sonst würde zweimal C den eigentlichen Ausdruck wegwerfen. */
     private void merkeFuerRueckgaengig()
     {
@@ -218,9 +164,35 @@ public class AusdruckEditor
         }
     }
 
+    public int offeneKlammern()
+    {
+        return Math.max(0, AusdruckTermFinder.zaehleOffeneKlammern(zustand.getAusdruckText()));
+    }
+
+    public int getCursor()
+    {
+        return cursor.getCursor();
+    }
+
+    public void setzeCursor(int index)
+    {
+        cursor.setzeCursor(index);
+    }
+
+    public void bewegeCursor(int schritte)
+    {
+        cursor.bewegeCursor(schritte);
+    }
+
+    /** Führt eine Eingabe an der Cursorstelle aus, siehe {@link AusdruckCursor#amCursor}. */
+    public void amCursor(Runnable aktion)
+    {
+        cursor.amCursor(aktion);
+    }
+
     public String operatorSetzen(String operator)
     {
-        operator = normalisiereOperator(operator);
+        operator = AusdruckNormalisierung.operator(operator);
 
         if (zustand.isGleichGedrueckt())
         {
@@ -235,7 +207,7 @@ public class AusdruckEditor
                 return zustand.getAusdruckText();
             }
 
-            char letztesZeichen = letztesZeichen();
+            char letztesZeichen = letztesZeichen(zustand);
             if (AusdruckTermFinder.istOperatorZeichen(letztesZeichen) || letztesZeichen == '(' || letztesZeichen == ';')
             {
                 zustand.appendAusdruck("-");
@@ -261,12 +233,17 @@ public class AusdruckEditor
 
     public String prozent()
     {
-        return wendeAufLetzteZahlAn(x -> x / 100.0, x -> true);
+        return letzteZahl.prozent();
+    }
+
+    public String fakultaet()
+    {
+        return letzteZahl.fakultaet();
     }
 
     public String quadriere()
     {
-        return letztenTermEinrahmen("(", ")^2");
+        return termRahmen.letztenTermEinrahmen("(", ")^2");
     }
 
     public String wurzel()
@@ -276,7 +253,7 @@ public class AusdruckEditor
 
     public String reziprok()
     {
-        return letztenTermEinrahmen("1/(", ")");
+        return termRahmen.letztenTermEinrahmen("1/(", ")");
     }
 
     public String ans()
@@ -305,70 +282,23 @@ public class AusdruckEditor
         zustand.setGleichGedrueckt(false);
     }
 
-
     public String konstanteEinsetzen(double wert)
     {
-        resetNachGleichWennNoetig();
-
-        if (zustand.getAusdruckLaenge() > 0)
-        {
-            char letztesZeichen = letztesZeichen();
-            if (Character.isDigit(letztesZeichen) || letztesZeichen == ')' || letztesZeichen == ',')
-            {
-                zustand.appendAusdruck("*");
-            }
-        }
-
-        zustand.appendAusdruck(interneDarstellung(wert));
+        resetNachGleichWennNoetig(zustand);
+        malVorNeuemWert();
+        zustand.appendAusdruck(zahlenFormatierer.interneDarstellung(wert));
         return zustand.getAusdruckText();
     }
 
     public String funktionEinfuegenOderUmklammern(String funktionsName)
     {
-        resetNachGleichWennNoetig();
-
-        if (zustand.isAusdruckLeer() || endetMitOperatorOderKlammerAuf())
-        {
-            zustand.appendAusdruck(funktionsName);
-            zustand.appendAusdruck("(");
-            zustand.setGleichGedrueckt(false);
-            return zustand.getAusdruckText();
-        }
-
-        int start = startLetzterTerm();
-
-        if (start < 0 || start >= zustand.getAusdruckLaenge())
-        {
-            zustand.appendAusdruck(funktionsName);
-            zustand.appendAusdruck("(");
-            zustand.setGleichGedrueckt(false);
-            return zustand.getAusdruckText();
-        }
-
-        String term = zustand.getAusdruckTeilText(start);
-        zustand.deleteAusdruck(start, zustand.getAusdruckLaenge());
-        zustand.appendAusdruck(funktionsName);
-        zustand.appendAusdruck("(");
-        zustand.appendAusdruck(term);
-        zustand.appendAusdruck(")");
-
-        zustand.setGleichGedrueckt(false);
-        return zustand.getAusdruckText();
+        return termRahmen.funktionEinfuegenOderUmklammern(funktionsName);
     }
 
     public String funktionOhneArgumenteEinfuegen(String funktionsName)
     {
-        resetNachGleichWennNoetig();
-
-        if (zustand.getAusdruckLaenge() > 0)
-        {
-            char letztesZeichen = letztesZeichen();
-            if (Character.isDigit(letztesZeichen) || letztesZeichen == ')' || letztesZeichen == ',')
-            {
-                zustand.appendAusdruck("*");
-            }
-        }
-
+        resetNachGleichWennNoetig(zustand);
+        malVorNeuemWert();
         zustand.appendAusdruck(funktionsName);
         zustand.appendAusdruck("()");
         zustand.setGleichGedrueckt(false);
@@ -377,85 +307,18 @@ public class AusdruckEditor
 
     public String praefixOperatorEinfuegenOderUmklammern(String praefix)
     {
-        resetNachGleichWennNoetig();
-
-        if (zustand.isAusdruckLeer() || endetMitOperatorOderKlammerAuf())
-        {
-            zustand.appendAusdruck(praefix);
-            zustand.setGleichGedrueckt(false);
-            return zustand.getAusdruckText();
-        }
-
-        int start = startLetzterTerm();
-        if (start < 0 || start >= zustand.getAusdruckLaenge())
-        {
-            zustand.appendAusdruck(praefix);
-            zustand.setGleichGedrueckt(false);
-            return zustand.getAusdruckText();
-        }
-
-        String term = zustand.getAusdruckTeilText(start);
-        zustand.deleteAusdruck(start, zustand.getAusdruckLaenge());
-        zustand.appendAusdruck(praefix);
-        zustand.appendAusdruck(term);
-        zustand.appendAusdruck(")");
-
-        zustand.setGleichGedrueckt(false);
-        return zustand.getAusdruckText();
+        return termRahmen.praefixOperatorEinfuegenOderUmklammern(praefix);
     }
 
-    public String fakultaet()
+    /** Für Funktionen mit zwei Argumenten wie nCr(n;k), siehe {@link AusdruckTermRahmen#zweiArgumentFunktion}. */
+    public String zweiArgumentFunktion(String funktionsName)
     {
-        if (!kannLetzteZahlBearbeiten()) return zustand.getAusdruckText();
-
-        int start = startLetzteZahl();
-        double wert = letzteZahlAlsDouble();
-
-        if (wert < 0 || wert != Math.floor(wert)) return fehler();
-
-        int n = (int) wert;
-        if (n > 5000) return fehler();
-
-        BigInteger ergebnis = BigInteger.ONE;
-        for (int i = 2; i <= n; i++)
-        {
-            ergebnis = ergebnis.multiply(BigInteger.valueOf(i));
-        }
-
-        zustand.deleteAusdruck(start, zustand.getAusdruckLaenge());
-        zustand.appendAusdruck(ergebnis.toString());
-        zustand.setGleichGedrueckt(false);
-        return ergebnis.toString();
+        return termRahmen.zweiArgumentFunktion(funktionsName);
     }
 
     public boolean endetMitOperatorOderKlammerAuf()
     {
-        if (zustand.isAusdruckLeer()) return true;
-
-        char zeichen = letztesZeichen();
-        return AusdruckTermFinder.istOperatorZeichen(zeichen) || zeichen == '(' || zeichen == ';';
-    }
-
-    /**
-     * Für Funktionen mit zwei Argumenten wie nCr(n;k): der letzte Term wird das erste Argument,
-     * danach steht schon das {@code ;} und man tippt direkt das zweite.
-     */
-    public String zweiArgumentFunktion(String funktionsName)
-    {
-        resetNachGleichWennNoetig();
-
-        if (endetMitOperatorOderKlammerAuf())
-        {
-            zustand.appendAusdruck(funktionsName + "(");
-            return zustand.getAusdruckText();
-        }
-
-        int start = startLetzterTerm();
-        String term = start < zustand.getAusdruckLaenge() ? zustand.getAusdruckTeilText(start) : "";
-        zustand.deleteAusdruck(start, zustand.getAusdruckLaenge());
-        zustand.appendAusdruck(funktionsName + "(" + term + (term.isEmpty() ? "" : ";"));
-        zustand.setGleichGedrueckt(false);
-        return zustand.getAusdruckText();
+        return endetMitOperatorOderKlammerAuf(zustand);
     }
 
     /** Trennt Funktionsargumente; nur innerhalb einer offenen Klammer und nach einem Wert sinnvoll. */
@@ -469,65 +332,16 @@ public class AusdruckEditor
         return zustand.getAusdruckText();
     }
 
-    private String letztenTermEinrahmen(String praefix, String suffix)
+    /** Direkt nach einem Wert (z. B. „2“ vor „(“ oder „π“) wird ein implizites Mal eingefügt. */
+    private void malVorNeuemWert()
     {
-        resetNachGleichWennNoetig();
+        if (zustand.isAusdruckLeer()) return;
 
-        if (zustand.isAusdruckLeer() || endetMitOperatorOderKlammerAuf())
+        char letztesZeichen = letztesZeichen(zustand);
+        if (Character.isDigit(letztesZeichen) || letztesZeichen == ')' || letztesZeichen == ',')
         {
-            return zustand.getAusdruckText();
+            zustand.appendAusdruck("*");
         }
-
-        int start = startLetzterTerm();
-        if (start < 0 || start >= zustand.getAusdruckLaenge())
-        {
-            return zustand.getAusdruckText();
-        }
-
-        String term = zustand.getAusdruckTeilText(start);
-        zustand.deleteAusdruck(start, zustand.getAusdruckLaenge());
-        zustand.appendAusdruck(praefix);
-        zustand.appendAusdruck(term);
-        zustand.appendAusdruck(suffix);
-
-        zustand.setGleichGedrueckt(false);
-        return zustand.getAusdruckText();
-    }
-
-    private int startLetzterTerm()
-    {
-        return AusdruckTermFinder.startLetzterTerm(zustand.getAusdruckText());
-    }
-
-    private void resetNachGleichWennNoetig()
-    {
-        if (!zustand.isGleichGedrueckt()) return;
-
-        zustand.clearAusdruck();
-        zustand.setGleichGedrueckt(false);
-    }
-
-    private String wendeAufLetzteZahlAn(DoubleUnaryOperator operation, DoublePredicate eingabeGueltig)
-    {
-        if (!kannLetzteZahlBearbeiten()) return zustand.getAusdruckText();
-
-        int start = startLetzteZahl();
-        double eingabe = letzteZahlAlsDouble();
-
-        if (!eingabeGueltig.test(eingabe)) return fehler();
-
-        double ergebnis = operation.applyAsDouble(eingabe);
-        if (!Double.isFinite(ergebnis)) return fehler();
-
-        ersetzeLetzteZahl(start, ergebnis);
-        return formatiereZahl(ergebnis);
-    }
-
-    private boolean kannLetzteZahlBearbeiten()
-    {
-        if (zustand.isAusdruckLeer()) return false;
-        if (endetMitOperatorOderKlammerAuf()) return false;
-        return letztesZeichen() != ')';
     }
 
     private boolean kannKlammerSchliessen()
@@ -535,13 +349,8 @@ public class AusdruckEditor
         if (zustand.isAusdruckLeer()) return false;
         if (AusdruckTermFinder.zaehleOffeneKlammern(zustand.getAusdruckText()) <= 0) return false;
 
-        char zeichen = letztesZeichen();
+        char zeichen = letztesZeichen(zustand);
         return !AusdruckTermFinder.istOperatorZeichen(zeichen) && zeichen != '(';
-    }
-
-    private char letztesZeichen()
-    {
-        return zustand.getAusdruckZeichen(zustand.getAusdruckLaenge() - 1);
     }
 
     private int startLetzteZahl()
@@ -549,40 +358,27 @@ public class AusdruckEditor
         return AusdruckTermFinder.startLetzteZahl(zustand.getAusdruckText());
     }
 
-    private double letzteZahlAlsDouble()
+    // Gemeinsame Prüfungen, auch für die Helfer AusdruckTermRahmen und LetzteZahlBearbeitung.
+
+    static boolean endetMitOperatorOderKlammerAuf(RechnerZustand zustand)
     {
-        int start = startLetzteZahl();
-        String zahl = zustand.getAusdruckTeilText(start).replace(',', '.');
-        return Double.parseDouble(zahl);
+        if (zustand.isAusdruckLeer()) return true;
+
+        char zeichen = letztesZeichen(zustand);
+        return AusdruckTermFinder.istOperatorZeichen(zeichen) || zeichen == '(' || zeichen == ';';
     }
 
-    private String interneDarstellung(double wert)
+    static char letztesZeichen(RechnerZustand zustand)
     {
-        return zahlenFormatierer.interneDarstellung(wert);
+        return zustand.getAusdruckZeichen(zustand.getAusdruckLaenge() - 1);
     }
 
-    private String formatiereZahl(double wert)
+    /** Nach „=“ beginnt eine neue Eingabe mit leerem Ausdruck. */
+    static void resetNachGleichWennNoetig(RechnerZustand zustand)
     {
-        return zahlenFormatierer.formatiereZahl(wert);
-    }
+        if (!zustand.isGleichGedrueckt()) return;
 
-    private void ersetzeLetzteZahl(int start, double wert)
-    {
-        zustand.deleteAusdruck(start, zustand.getAusdruckLaenge());
-        zustand.appendAusdruck(interneDarstellung(wert));
-        zustand.setGleichGedrueckt(false);
-    }
-
-    private String normalisiereOperator(String operator)
-    {
-        return AusdruckNormalisierung.operator(operator);
-    }
-
-    private String fehler()
-    {
         zustand.clearAusdruck();
-        zustand.clearVerlauf();
-        zustand.setGleichGedrueckt(true);
-        return FEHLER_TEXT;
+        zustand.setGleichGedrueckt(false);
     }
 }
