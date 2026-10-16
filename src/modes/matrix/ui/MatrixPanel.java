@@ -12,14 +12,13 @@ import common.state.RechnerModus;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
+import ui.shell.DateiDialog;
 import ui.shell.ModePanel;
 import ui.shell.StatusAnzeige;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -30,6 +29,7 @@ import java.util.List;
 public class MatrixPanel extends JPanel implements ModePanel
 {
     private static final int ERGEBNIS_BREITE = 330;
+    private static final String CSV_DATEI = "CSV-Datei";
 
     private final MatrixRechnerService service = new MatrixRechnerService();
     private final MatrixFormatter formatter = new MatrixFormatter();
@@ -203,38 +203,23 @@ public class MatrixPanel extends JPanel implements ModePanel
     private void showGleichungssystem()
     {
         LgsLoesung loesung = service.loese(matrixA.lese(), matrixB.lese());
-        String text = loesung.art() == LgsLoesung.Art.EINDEUTIG
-                ? formatter.formatiereLoesung(loesung.loesung())
-                : "Stufenform (A|b):" + System.lineSeparator() + formatter.formatiere(loesung.stufenform());
-        showMitSchritten(text, loesung.schritte());
+        showMitSchritten(formatter.formatiereLgs(loesung), loesung.schritte());
         statusAnzeige.zeigeErfolg(loesung.meldung());
     }
 
     private void showMitSchritten(String ergebnis, List<RechenSchritt> schritte)
     {
-        String text = ergebnis;
-        if (schritteBox.isSelected() && !schritte.isEmpty())
-        {
-            text += System.lineSeparator() + System.lineSeparator() + formatter.formatiereSchritte(schritte);
-        }
-        resultArea.setText(text);
+        resultArea.setText(formatter.mitSchritten(ergebnis, schritte, schritteBox.isSelected()));
         resultArea.setCaretPosition(0);
     }
 
     private void exportCsv(MatrixEingabeGitter gitter, String vorschlag)
     {
         String csv = MatrixCsv.schreibe(gitter.lese());
-        JFileChooser chooser = csvChooser("Matrix als CSV exportieren");
-        chooser.setSelectedFile(new File(vorschlag));
-        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+        Path file = DateiDialog.waehleZumSpeichern(this, "Matrix als CSV exportieren", CSV_DATEI, "csv", vorschlag);
+        if (file == null)
         {
             return;
-        }
-
-        Path file = chooser.getSelectedFile().toPath();
-        if (!file.getFileName().toString().toLowerCase().endsWith(".csv"))
-        {
-            file = file.resolveSibling(file.getFileName() + ".csv");
         }
 
         try
@@ -251,29 +236,21 @@ public class MatrixPanel extends JPanel implements ModePanel
 
     private void importCsv(MatrixEingabeGitter gitter, String name)
     {
-        JFileChooser chooser = csvChooser("CSV in Matrix " + name + " laden");
-        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
+        Path file = DateiDialog.waehleZumOeffnen(this, "CSV in Matrix " + name + " laden", CSV_DATEI, "csv");
+        if (file == null)
         {
             return;
         }
 
         try
         {
-            gitter.setze(MatrixCsv.lese(Files.readString(chooser.getSelectedFile().toPath(), StandardCharsets.UTF_8)));
+            gitter.setze(MatrixCsv.lese(Files.readString(file, StandardCharsets.UTF_8)));
             statusAnzeige.zeigeErfolg("Matrix " + name + " geladen");
         }
         catch (IOException e)
         {
             statusAnzeige.zeigeFehler("Datei konnte nicht gelesen werden (UTF-8 erwartet).");
         }
-    }
-
-    private JFileChooser csvChooser(String titel)
-    {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(titel);
-        chooser.setFileFilter(new FileNameExtensionFilter("CSV-Datei", "csv"));
-        return chooser;
     }
 
     private void clearMatrices()

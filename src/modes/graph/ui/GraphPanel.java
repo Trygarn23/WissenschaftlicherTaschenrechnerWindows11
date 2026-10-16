@@ -5,15 +5,15 @@ import common.state.RechnerModus;
 import common.state.WinkelModus;
 import modes.graph.formatting.FunktionslistenFormat;
 import modes.graph.formatting.GraphFormatter;
-import modes.graph.logic.FlaechenRechner;
+import modes.graph.logic.GraphAnalyse;
 import modes.graph.logic.GraphEvaluator;
-import modes.graph.logic.GraphIntersectionService;
 import modes.graph.logic.KurvendiskussionService;
 import modes.graph.model.Flaeche;
 import modes.graph.model.GraphPunkt;
 import modes.graph.model.GraphState;
 import modes.graph.model.KurvendiskussionResult;
 import modes.graph.model.Tangente;
+import ui.shell.DateiDialog;
 import ui.shell.ModePanel;
 import ui.shell.StatusAnzeige;
 import ui.theme.AppTheme;
@@ -21,32 +21,28 @@ import ui.theme.ModernButtonStyler;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.Path;
 
 /** Graph-Modus: verbindet Funktionsliste, Steuerleiste, Parameter-Regler, Analyse-Ausgabe und Zeichenfläche. */
 public class GraphPanel extends JPanel implements ModePanel
 {
     private static final int SEITENLEISTE_BREITE = 300;
+    private static final String FUNKTIONSLISTEN = "Funktionslisten (*.txt)";
 
     private final GraphState state = new GraphState();
     private final GraphEvaluator evaluator = new GraphEvaluator();
     private final KurvendiskussionService kurvendiskussionService = new KurvendiskussionService(evaluator);
-    private final GraphIntersectionService intersectionService = new GraphIntersectionService(evaluator);
-    private final FlaechenRechner flaechenRechner = new FlaechenRechner(evaluator);
+    private final GraphAnalyse analyse = new GraphAnalyse(evaluator);
     private final GraphCanvasPanel canvasPanel = new GraphCanvasPanel(state, evaluator);
     private final GraphFormatter formatter = new GraphFormatter();
 
@@ -59,8 +55,6 @@ public class GraphPanel extends JPanel implements ModePanel
 
     private AppTheme theme;
     private WinkelModus winkelModus = WinkelModus.DEG;
-    private Tangente tangente;
-    private Flaeche flaeche;
 
     public GraphPanel()
     {
@@ -149,8 +143,7 @@ public class GraphPanel extends JPanel implements ModePanel
         }
 
         // Indizes verschieben sich, Tangente und Fläche würden sonst an der falschen Kurve hängen.
-        tangente = null;
-        flaeche = null;
+        analyse.verwerfeAlles();
         neuAufbauen();
     }
 
@@ -246,8 +239,17 @@ public class GraphPanel extends JPanel implements ModePanel
                 winkelModus
         );
 
+        String fehler = analyse.aktualisiere(state, winkelModus);
+        if (fehler != null)
+        {
+            statusAnzeige.zeigeFehler(fehler);
+        }
+        Tangente tangente = analyse.getTangente();
+        Flaeche flaeche = analyse.getFlaeche();
+        canvasPanel.setTangente(tangente);
+        canvasPanel.setFlaeche(flaeche);
+
         StringBuilder text = new StringBuilder();
-        aktualisiereTangenteUndFlaeche();
         if (tangente != null)
         {
             text.append("\n").append(formatter.formatiereTangente(tangente));
@@ -257,51 +259,25 @@ public class GraphPanel extends JPanel implements ModePanel
             text.append("\n").append(formatter.formatiereFlaeche(flaeche));
         }
 
-        analyseAusgabe.zeigeAnalyse(result, intersections(), text.toString());
+        analyseAusgabe.zeigeAnalyse(result, analyse.schnittpunkte(state, winkelModus), text.toString());
         canvasPanel.setKurvendiskussionResult(result);
-    }
-
-    /** Tangente und Fläche hängen an Funktion und Stelle; bei geänderten Ausdrücken/Parametern neu rechnen. */
-    private void aktualisiereTangenteUndFlaeche()
-    {
-        if (tangente != null)
-        {
-            tangente = evaluator.tangente(tangente.funktionIndex(),
-                    state.getFunktion(tangente.funktionIndex()).getAusdruck(), tangente.x0(), winkelModus);
-        }
-        if (flaeche != null)
-        {
-            try
-            {
-                flaeche = flaechenRechner.berechne(flaeche.funktionIndex(),
-                        state.getFunktion(flaeche.funktionIndex()).getAusdruck(), flaeche.a(), flaeche.b(), winkelModus);
-            }
-            catch (IllegalArgumentException e)
-            {
-                flaeche = null;
-                statusAnzeige.zeigeFehler(e.getMessage());
-            }
-        }
-        canvasPanel.setTangente(tangente);
-        canvasPanel.setFlaeche(flaeche);
     }
 
     private void setzeTangente(int funktionIndex, double x)
     {
-        Tangente neu = evaluator.tangente(funktionIndex, state.getFunktion(funktionIndex).getAusdruck(), x, winkelModus);
+        Tangente neu = analyse.setzeTangente(state, funktionIndex, x, winkelModus);
         if (neu == null)
         {
             statusAnzeige.zeigeFehler("An dieser Stelle gibt es keine Tangente");
             return;
         }
-        tangente = neu;
         updateAnalysis();
         statusAnzeige.zeigeErfolg(formatter.formatiereTangente(neu));
     }
 
     private void entferneTangente()
     {
-        tangente = null;
+        analyse.entferneTangente();
         updateAnalysis();
     }
 
@@ -310,8 +286,7 @@ public class GraphPanel extends JPanel implements ModePanel
         try
         {
             syncFunctionsFromUi();
-            flaeche = flaechenRechner.berechne(state.getAktiveFunktionIndex(), state.getAktiveFunktion().getAusdruck(),
-                    ZahlenEingabe.lese(textA), ZahlenEingabe.lese(textB), winkelModus);
+            Flaeche flaeche = analyse.berechneFlaeche(state, ZahlenEingabe.lese(textA), ZahlenEingabe.lese(textB), winkelModus);
             updateAnalysis();
             statusAnzeige.zeigeErfolg("Integral = " + formatter.formatiereZahl(flaeche.integral()));
         }
@@ -323,24 +298,22 @@ public class GraphPanel extends JPanel implements ModePanel
 
     private void entferneFlaeche()
     {
-        flaeche = null;
+        analyse.entferneFlaeche();
         updateAnalysis();
     }
 
     private void oeffneFunktionsliste()
     {
-        JFileChooser chooser = dateiDialog("Funktionslisten (*.txt)", "txt");
-        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
+        Path datei = DateiDialog.waehleZumOeffnen(this, null, FUNKTIONSLISTEN, "txt");
+        if (datei == null)
         {
             return;
         }
 
         try
         {
-            String text = Files.readString(chooser.getSelectedFile().toPath(), StandardCharsets.UTF_8);
-            state.ersetzeFunktionen(FunktionslistenFormat.lese(text));
-            tangente = null;
-            flaeche = null;
+            state.ersetzeFunktionen(FunktionslistenFormat.lese(Files.readString(datei, StandardCharsets.UTF_8)));
+            analyse.verwerfeAlles();
             neuAufbauen();
             statusAnzeige.zeigeErfolg(state.getFunktionen().size() + " Funktionen geladen");
         }
@@ -356,7 +329,7 @@ public class GraphPanel extends JPanel implements ModePanel
 
     private void speichereFunktionsliste()
     {
-        File datei = waehleSpeicherort("Funktionslisten (*.txt)", "txt");
+        Path datei = DateiDialog.waehleZumSpeichern(this, null, FUNKTIONSLISTEN, "txt", null);
         if (datei == null)
         {
             return;
@@ -365,8 +338,8 @@ public class GraphPanel extends JPanel implements ModePanel
         try
         {
             funktionsliste.uebernehmeInState();
-            Files.writeString(datei.toPath(), FunktionslistenFormat.schreibe(state.getFunktionen()), StandardCharsets.UTF_8);
-            statusAnzeige.zeigeErfolg("Gespeichert: " + datei.getName());
+            Files.writeString(datei, FunktionslistenFormat.schreibe(state.getFunktionen()), StandardCharsets.UTF_8);
+            statusAnzeige.zeigeErfolg("Gespeichert: " + datei.getFileName());
         }
         catch (IOException e)
         {
@@ -376,7 +349,7 @@ public class GraphPanel extends JPanel implements ModePanel
 
     private void speichereAlsPng()
     {
-        File datei = waehleSpeicherort("PNG-Bilder (*.png)", "png");
+        Path datei = DateiDialog.waehleZumSpeichern(this, null, "PNG-Bilder (*.png)", "png", null);
         if (datei == null)
         {
             return;
@@ -384,59 +357,13 @@ public class GraphPanel extends JPanel implements ModePanel
 
         try
         {
-            canvasPanel.speichereAlsPng(datei);
-            statusAnzeige.zeigeErfolg("Bild gespeichert: " + datei.getName());
+            canvasPanel.speichereAlsPng(datei.toFile());
+            statusAnzeige.zeigeErfolg("Bild gespeichert: " + datei.getFileName());
         }
         catch (IOException | IllegalStateException e)
         {
             statusAnzeige.zeigeFehler("Bild konnte nicht gespeichert werden");
         }
-    }
-
-    /** Fragt nach dem Speicherort und hängt die Endung an, falls sie fehlt; {@code null} bei Abbruch. */
-    private File waehleSpeicherort(String beschreibung, String endung)
-    {
-        JFileChooser chooser = dateiDialog(beschreibung, endung);
-        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
-        {
-            return null;
-        }
-        File datei = chooser.getSelectedFile();
-        return datei.getName().toLowerCase(java.util.Locale.ROOT).endsWith("." + endung) ? datei : new File(datei.getPath() + "." + endung);
-    }
-
-    private static JFileChooser dateiDialog(String beschreibung, String endung)
-    {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileFilter(new FileNameExtensionFilter(beschreibung, endung));
-        return chooser;
-    }
-
-    private List<GraphPunkt> intersections()
-    {
-        if (state.getFunktionen().size() < 2 || !state.getAktiveFunktion().isSichtbar())
-        {
-            return List.of();
-        }
-
-        List<GraphPunkt> punkte = new ArrayList<>();
-        for (int index = 0; index < state.getFunktionen().size(); index++)
-        {
-            if (index == state.getAktiveFunktionIndex() || !state.getFunktion(index).isSichtbar())
-            {
-                continue;
-            }
-
-            // Eine ungültige Nebenfunktion liefert einfach keine Schnittpunkte (NaN), statt alles zu blockieren.
-            punkte.addAll(intersectionService.findeSchnittpunkte(
-                    state.getAktiveFunktion().getAusdruck(),
-                    state.getFunktion(index).getAusdruck(),
-                    state.getXMin(),
-                    state.getXMax(),
-                    winkelModus
-            ));
-        }
-        return punkte;
     }
 
     private void applyThemeToChildren(Component component)

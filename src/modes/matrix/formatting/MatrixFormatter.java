@@ -1,6 +1,7 @@
 package modes.matrix.formatting;
 
 import common.formatting.ZahlenAnzeige;
+import modes.matrix.model.LgsLoesung;
 import modes.matrix.model.Matrix;
 import modes.matrix.model.RechenSchritt;
 
@@ -63,5 +64,23 @@ public class MatrixFormatter
                     .append(System.lineSeparator()).append(formatiere(schritt.zwischenstand()));
         }
         return builder.toString();
+    }
+
+    /** Eindeutige Lösung als x1 = …, sonst die Stufenform (A|b). */
+    public String formatiereLgs(LgsLoesung loesung)
+    {
+        return loesung.art() == LgsLoesung.Art.EINDEUTIG
+                ? formatiereLoesung(loesung.loesung())
+                : "Stufenform (A|b):" + System.lineSeparator() + formatiere(loesung.stufenform());
+    }
+
+    /** Hängt die Rechenschritte an das Ergebnis, wenn gewünscht und vorhanden. */
+    public String mitSchritten(String ergebnis, List<RechenSchritt> schritte, boolean zeigeSchritte)
+    {
+        if (!zeigeSchritte || schritte.isEmpty())
+        {
+            return ergebnis;
+        }
+        return ergebnis + System.lineSeparator() + System.lineSeparator() + formatiereSchritte(schritte);
     }
 }
