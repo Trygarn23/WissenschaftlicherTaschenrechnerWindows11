@@ -25,13 +25,15 @@ Alles ab 2026-10-08 (aktueller Stand, Version `0.5.0-local`).
 - Parser-Umbau, Tastatur, Einstellungs-Layout und Modus-Hervorhebung überarbeitet.
 - Todo-Liste stark erweitert.
 - Konstanten-Favoriten als Stern statt Checkbox.
-- Aufgeräumt: toter Code und unbenutzte Imports entfernt, magische Zahlen benannt, `AusdruckEditor`, `TaschenrechnerUI`, `GraphPanel` und `MatrixPanel` verkleinert.
+- Aufgeräumt: toter Code und unbenutzte Imports entfernt, magische Zahlen benannt, `AusdruckEditor`, `TaschenrechnerUI`, `GraphPanel` und `MatrixPanel` verkleinert, gemeinsame Formular-/Theme-Hilfe `ModusFormular` für die einfachen Modi.
 
 ### Behoben
 - Parser: `a x` wird als `a·x` gelesen statt als unbekannter Name `ax`.
 - Graph: Funktionen wie `1/x`, die bei x = 0 nicht definiert sind, galten als ungültig.
 - Mini-Rechner übernimmt einen Theme-Wechsel sofort.
 - Kaputte Settings-/Session-Datei (abgeschnittenes Unicode-Escape) hat das Laden abstürzen lassen.
+- Die zweite Display-Zeile (Live-Vorschau, offene Klammern, Fehlermeldung) hatte die Höhe 0 und war unsichtbar.
+- `S↔D` statt `S⇔D`, weil Segoe UI kein ⇔ hat.
 
 ## 2026-10-04
 

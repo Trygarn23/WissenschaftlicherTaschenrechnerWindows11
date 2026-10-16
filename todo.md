@@ -551,7 +551,7 @@
 - [x] `ShellActionRegistry` weiter beobachten: Wird sie zu groß? → Nein, Aktionen sind jetzt Einzeiler über `mitRefresh(...)`.
 - [x] Persistence-Orchestrierung aus `TaschenrechnerUI` in einen Shell-Service auslagern.
 - [x] `GraphPanel`, `MatrixPanel` und `AusdruckEditor` in weiteren sicheren Schritten verkleinern. → GraphPanel 489→416 (`GraphAnalyse`), MatrixPanel 307→284 (`DateiDialog`, Formatter), AusdruckEditor 588→384.
-- [ ] Gemeinsame Theme-Hilfen für einfache Mode-Panels prüfen, ohne Spezialpanels zu verbiegen.
+- [x] Gemeinsame Theme-Hilfen für einfache Mode-Panels prüfen, ohne Spezialpanels zu verbiegen. → `ModusFormular` für Bruch, Datum, Finanz, Gleichung, Logik, Netzwerk, Vektor, Komplex (netto −168 Zeilen).
 - [ ] Optional `StandardActionFactory` nur einführen, falls Standardaktionen wachsen.
 - [ ] Optional `WissenschaftlichActionFactory` einführen, falls wissenschaftliche Actions wachsen.
 - [x] `KeyboardShortcutBinder` mit Tooltips synchron halten → gemeinsame Tabelle `Tastenkuerzel`, abgesichert per Test.
@@ -599,7 +599,7 @@
 - [x] Theme Default-Rollen für Disabled, Hover, Pressed, Danger, Grid, Canvas und Popup ergänzen.
 - [x] Action-Bar-Popup und Graph-Canvas auf semantische Theme-Rollen umstellen.
 - [ ] Benutzerdefinierte Themes erst nach Theme-Palette planen.
-- [ ] Layouts auf gemeinsame Hilfsmethoden reduzieren.
+- [x] Layouts auf gemeinsame Hilfsmethoden reduzieren. → `ModusFormular.labelUeber/styleEingabe/styleAuswahl`; Verlauf-Dateidialoge nutzen `DateiDialog`.
 - [ ] Große UI-Klassen verkleinern: `TaschenrechnerUI`, `ProgrammiererPanel`, `HistoryPanel`.
 - [x] `HistoryPanel` bei strukturiertem Verlauf aufteilen.
 - [x] `HistoryPanel` nach `ui.history` verschieben.
@@ -738,6 +738,8 @@ Große Brocken zuerst, kleine als Lückenfüller.
 
 Verifikation der Bugfixes: 210 Java-Quelldateien kompiliert, 722 JUnit-Tests erfolgreich (keine übersprungen), UI-Bildprüfung für Einstellungen, Gleichungen, LGS, Logik und Graph. Testläufe mit separatem `user.home`; echte Einstellungen unverändert. Windows-Skalierung und sämtliche Themes nicht manuell durchgetestet.
 
+Verifikation Runde 2026-10-16/17: 828 JUnit-Tests grün (Testläufe mit separatem `user.home`). Sichtprüfung nur als Offscreen-Bild (Dark/Light): Wissenschaftlich mit Klammerfarben und Vorschau, Fehlerstelle, Einheiten-Panel mit Favoriten, gruppiertes f(x)-Popup. Nicht von Hand durchgeklickt: Cursor per Maus, STO/RCL-Menü, Dialoge für eigene Funktionen und Statistik, Graph-/Matrix-Dateidialoge, Windows-Skalierung.
+
 ### Build / Release
 - [ ] Maven oder Gradle entscheiden und einführen (Voraussetzung für GitHub Actions).
 - [ ] Ausführbare `.jar` bauen und auf einem zweiten Rechner ohne IntelliJ starten.
@@ -756,11 +758,13 @@ Verifikation der Bugfixes: 210 Java-Quelldateien kompiliert, 722 JUnit-Tests erf
 - [x] Konstanten-Dialog: Favoriten als Stern statt Checkbox (dafür `StarIcon` public machen).
 - [ ] Alle neuen Modi einmal in der echten App durchklicken (nur über Tests geprüft, Layout nicht angeschaut).
 - [x] Wissenschaftlich: neue Parserfunktionen (nCr, nPr, ggT, kgV) als Buttons/f(x)-Menü anbieten, sobald der Parser-Teil fertig ist. → im f(x)-Menü inkl. `;` und `n!`, `;` auch per Shift+Komma.
-- [ ] `docs/` steht in der `.gitignore`, die neuen Docs sind trotzdem mit `-f` committet → entscheiden: Docs öffentlich ins Repo (Zeile aus `.gitignore` raus) oder wieder lokal halten.
+- [x] `docs/` steht in der `.gitignore`, die neuen Docs waren trotzdem mit `-f` committet → entschieden: Docs bleiben lokal, aus den Commits entfernt.
 - [x] STO/RCL-Auswahlmenü (A–F) übernimmt das Theme nicht.
 - [x] Cursor im Display: Konstanten-Dialog, Befehlssuche und Einfügen aus der Zwischenablage ignorieren die Cursorposition; Pos1/Ende/Entf fehlen. → Konstanten an der Cursorstelle (mit × auf beiden Seiten), Pos1/Ende/Entf gebunden; Einfügen aus der Zwischenablage ersetzt bewusst weiter den Ausdruck.
 - [x] Eigene Funktion löschen, die von einer anderen benutzt wird → die andere meldet erst beim Rechnen einen Fehler; besser vorher warnen. → Warnung mit Liste der abhängigen Funktionen.
-- [ ] f(x)-Popup wird mit 16 Einträgen + Favoriten voll → bei Gelegenheit in Gruppen (Trigonometrie / Kombinatorik / Speicher) aufteilen.
+- [x] f(x)-Popup wird mit 16 Einträgen + Favoriten voll → bei Gelegenheit in Gruppen (Trigonometrie / Kombinatorik / Speicher) aufteilen. → drei beschriftete Gruppen.
+- [x] Zweite Display-Zeile (Live-Vorschau, „2 offen“, Fehlermeldung) war unsichtbar: Die rechtsbündige Textpane bekam nach dem Layout die Höhe 0 → feste Höhe aus der Schrift. Per Offscreen-Bild der echten App geprüft.
+- [x] `S⇔D` zeigte ein Kästchen (Segoe UI hat kein ⇔) → heißt jetzt `S↔D`.
 
 ---
 
