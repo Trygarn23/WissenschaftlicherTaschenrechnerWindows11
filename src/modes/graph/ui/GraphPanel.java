@@ -40,6 +40,8 @@ import java.util.List;
 /** Graph-Modus: verbindet Funktionsliste, Steuerleiste, Parameter-Regler, Analyse-Ausgabe und Zeichenfläche. */
 public class GraphPanel extends JPanel implements ModePanel
 {
+    private static final int SEITENLEISTE_BREITE = 300;
+
     private final GraphState state = new GraphState();
     private final GraphEvaluator evaluator = new GraphEvaluator();
     private final KurvendiskussionService kurvendiskussionService = new KurvendiskussionService(evaluator);
@@ -114,7 +116,7 @@ public class GraphPanel extends JPanel implements ModePanel
     {
         JPanel sidebar = new JPanel(new BorderLayout(0, 10));
         sidebar.setOpaque(false);
-        sidebar.setPreferredSize(new Dimension(300, 0));
+        sidebar.setPreferredSize(new Dimension(SEITENLEISTE_BREITE, 0));
 
         funktionsliste.add(statusLabel, BorderLayout.SOUTH);
 

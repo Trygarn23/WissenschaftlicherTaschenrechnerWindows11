@@ -27,6 +27,15 @@ public class DisplayPanel extends JPanel
 {
     private static final int MAIN_TEXT_COMPACT_LIMIT = 18;
     private static final int MAIN_TEXT_TINY_LIMIT = 32;
+    private static final float TINY_FONT_MIN = 22f;
+    private static final float TINY_FONT_SHRINK = 20f;
+    private static final float COMPACT_FONT_MIN = 28f;
+    private static final float COMPACT_FONT_SHRINK = 12f;
+    private static final int MIN_HEIGHT = 112;
+    private static final int PREFERRED_HEIGHT = 148;
+    private static final double ERROR_HIGHLIGHT_BLEND = 0.35;
+    private static final int SUCCESS_PULSE_MS = 220;
+    private static final int ERROR_PULSE_MS = 240;
 
     private final JTextPane recDisplay = new JTextPane();
     private final JTextPane mainDisplay = new JTextPane();
@@ -45,8 +54,8 @@ public class DisplayPanel extends JPanel
         setLayout(new BorderLayout());
         setOpaque(false);
         setBorder(new EmptyBorder(0, 0, 0, 0));
-        setMinimumSize(new Dimension(0, 112));
-        setPreferredSize(new Dimension(0, 148));
+        setMinimumSize(new Dimension(0, MIN_HEIGHT));
+        setPreferredSize(new Dimension(0, PREFERRED_HEIGHT));
 
         configurePane(recDisplay);
         configurePane(mainDisplay);
@@ -192,7 +201,7 @@ public class DisplayPanel extends JPanel
         StyleConstants.setForeground(style, ERROR_COLOR);
         if (currentTheme != null)
         {
-            StyleConstants.setBackground(style, currentTheme.blend(currentTheme.displayBackground(), ERROR_COLOR, 0.35));
+            StyleConstants.setBackground(style, currentTheme.blend(currentTheme.displayBackground(), ERROR_COLOR, ERROR_HIGHLIGHT_BLEND));
         }
         mainDisplay.getStyledDocument().setCharacterAttributes(Math.min(index, length - 1), 1, style, false);
     }
@@ -282,7 +291,7 @@ public class DisplayPanel extends JPanel
     {
         if (currentTheme != null)
         {
-            AnimationSupport.pulseBackground(displayArea, currentTheme.successPulseColor(), 220);
+            AnimationSupport.pulseBackground(displayArea, currentTheme.successPulseColor(), SUCCESS_PULSE_MS);
         }
     }
 
@@ -290,7 +299,7 @@ public class DisplayPanel extends JPanel
     {
         if (currentTheme != null)
         {
-            AnimationSupport.pulseBackground(displayArea, currentTheme.errorPulseColor(), 240);
+            AnimationSupport.pulseBackground(displayArea, currentTheme.errorPulseColor(), ERROR_PULSE_MS);
         }
     }
 
@@ -311,11 +320,11 @@ public class DisplayPanel extends JPanel
 
         if (length > MAIN_TEXT_TINY_LIMIT)
         {
-            mainDisplay.setFont(displayFont.deriveFont(Math.max(22f, displayFont.getSize2D() - 20f)));
+            mainDisplay.setFont(displayFont.deriveFont(Math.max(TINY_FONT_MIN, displayFont.getSize2D() - TINY_FONT_SHRINK)));
         }
         else if (length > MAIN_TEXT_COMPACT_LIMIT)
         {
-            mainDisplay.setFont(displayFont.deriveFont(Math.max(28f, displayFont.getSize2D() - 12f)));
+            mainDisplay.setFont(displayFont.deriveFont(Math.max(COMPACT_FONT_MIN, displayFont.getSize2D() - COMPACT_FONT_SHRINK)));
         }
         else
         {

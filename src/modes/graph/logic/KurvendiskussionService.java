@@ -11,6 +11,14 @@ import java.util.function.DoubleUnaryOperator;
 public class KurvendiskussionService
 {
     private static final int SAMPLES = 360;
+    private static final int BISEKTION_SCHRITTE = 48;
+    /** Rasterwert gilt direkt als Nullstelle, wenn er so nah an 0 liegt. */
+    private static final double NULL_TOLERANZ_RASTER = 1e-7;
+    private static final double NULL_TOLERANZ_BISEKTION = 1e-10;
+    /** Punkte mit kleinerem x-Abstand gelten als Duplikat. */
+    private static final double MIN_X_ABSTAND_PUNKTE = 1e-3;
+    private static final double MIN_ABLEITUNGS_SCHRITT = 1e-4;
+    private static final double ABLEITUNGS_TEILUNGEN = 10_000.0;
     private static final int MAX_PUNKTE_PRO_KATEGORIE = 8;
 
     private final GraphEvaluator evaluator;
@@ -23,7 +31,7 @@ public class KurvendiskussionService
     public KurvendiskussionResult analysiere(String ausdruck, double xMin, double xMax, WinkelModus winkelModus)
     {
         DoubleUnaryOperator f = x -> evaluator.wertOderNaN(ausdruck, x, winkelModus);
-        double h = Math.max(1e-4, (xMax - xMin) / 10_000.0);
+        double h = Math.max(MIN_ABLEITUNGS_SCHRITT, (xMax - xMin) / ABLEITUNGS_TEILUNGEN);
 
         GraphPunkt yAchse = berechneYAchsenSchnittpunkt(f);
         List<GraphPunkt> nullstellen = findeNullstellen(f, xMin, xMax);
@@ -67,7 +75,7 @@ public class KurvendiskussionService
 
             if (Double.isFinite(prevY) && Double.isFinite(y))
             {
-                if (Math.abs(y) < 1e-7)
+                if (Math.abs(y) < NULL_TOLERANZ_RASTER)
                 {
                     fuegeEinzigartigHinzu(punkte, new GraphPunkt(x, yResolver.applyAsDouble(x)));
                 }
@@ -89,12 +97,12 @@ public class KurvendiskussionService
     {
         double fLinks = sicherAuswerten(funktion, links);
 
-        for (int i = 0; i < 48; i++)
+        for (int i = 0; i < BISEKTION_SCHRITTE; i++)
         {
             double mitte = (links + rechts) / 2.0;
             double fMitte = sicherAuswerten(funktion, mitte);
 
-            if (!Double.isFinite(fMitte) || Math.abs(fMitte) < 1e-10)
+            if (!Double.isFinite(fMitte) || Math.abs(fMitte) < NULL_TOLERANZ_BISEKTION)
             {
                 return mitte;
             }
@@ -139,7 +147,7 @@ public class KurvendiskussionService
     {
         for (GraphPunkt vorhanden : punkte)
         {
-            if (Math.abs(vorhanden.getX() - punkt.getX()) < 1e-3)
+            if (Math.abs(vorhanden.getX() - punkt.getX()) < MIN_X_ABSTAND_PUNKTE)
             {
                 return;
             }

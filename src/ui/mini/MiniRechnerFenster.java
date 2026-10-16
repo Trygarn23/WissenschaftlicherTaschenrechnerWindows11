@@ -14,6 +14,9 @@ import java.awt.event.WindowEvent;
  */
 public final class MiniRechnerFenster extends JFrame
 {
+    private static final int BREITE = 320;
+    private static final int HOEHE = 170;
+
     private static MiniRechnerFenster offen;
 
     private final MiniRechnerPanel panel;
@@ -29,7 +32,7 @@ public final class MiniRechnerFenster extends JFrame
         setContentPane(panel);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setAlwaysOnTop(true);
-        setSize(320, 170);
+        setSize(BREITE, HOEHE);
         setLocationRelativeTo(owner);
         addWindowListener(new WindowAdapter()
         {

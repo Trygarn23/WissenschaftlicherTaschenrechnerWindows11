@@ -40,6 +40,7 @@ import java.util.function.IntConsumer;
 public class GraphCanvasPanel extends JPanel
 {
     private static final int HOVER_VERZOEGERUNG_MS = 500;
+    private static final int PULS_DAUER_MS = 220;
     /** Maximaler Abstand in Pixeln, bis zu dem ein Klick noch eine Funktionskurve trifft. */
     private static final double KLICK_TOLERANZ_KURVE_PX = 11.0;
     /** Maximaler Abstand in Pixeln, bis zu dem ein Rechtsklick noch einen Analysepunkt trifft. */
@@ -156,7 +157,7 @@ public class GraphCanvasPanel extends JPanel
 
     public void pulseRefresh()
     {
-        AnimationSupport.animate(220,
+        AnimationSupport.animate(PULS_DAUER_MS,
                 progress -> {
                     refreshPulse = Math.sin(progress * Math.PI);
                     repaint();

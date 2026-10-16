@@ -16,6 +16,9 @@ import java.util.function.Consumer;
 /** Modaler Dialog zum Suchen und Einfügen von Konstanten. Nach dem Einfügen schließt er sich. */
 public final class KonstantenDialog extends JDialog
 {
+    private static final int BREITE = 780;
+    private static final int HOEHE = 580;
+
     private KonstantenDialog(Frame owner, AppTheme theme, KonstantenFavoriten favoriten, EigeneKonstanten eigene, Consumer<String> einfuegen)
     {
         super(owner, "Konstanten", true);
@@ -37,7 +40,7 @@ public final class KonstantenDialog extends JDialog
                 panel.fokussiereSuche();
             }
         });
-        setSize(780, 580);
+        setSize(BREITE, HOEHE);
         setLocationRelativeTo(owner);
     }
 

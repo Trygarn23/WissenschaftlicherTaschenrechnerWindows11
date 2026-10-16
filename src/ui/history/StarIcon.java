@@ -10,6 +10,9 @@ import java.awt.geom.Path2D;
  */
 public final class StarIcon implements Icon
 {
+    /** Größe des Sterns auf Favoriten-Buttons (Verlauf, Konstanten, Einheiten). */
+    public static final int BUTTON_GROESSE = 14;
+
     private final boolean filled;
     private final int size;
 

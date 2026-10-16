@@ -39,10 +39,14 @@ import java.util.List;
 
 public class StatistikPanel extends JPanel implements ModePanel
 {
+    private static final int EINGABE_BREITE = 360;
+    private static final int DIAGRAMM_BREITE = 440;
+    private static final String BEISPIEL_DATEN = "1\n2\n2\n4\n5\n8";
+
     private final StatistikState state = new StatistikState();
     private final StatistikRechnerService service = new StatistikRechnerService();
     private final StatistikTabellenText tabellenText = new StatistikTabellenText();
-    private final JTextArea textInput = new JTextArea("1\n2\n2\n4\n5\n8");
+    private final JTextArea textInput = new JTextArea(BEISPIEL_DATEN);
     private final JTextField klassenField = new JTextField("0");
     private final JCheckBox sortierenBox = new JCheckBox("Daten sortieren");
     private final JComboBox<StatistikDiagrammTyp> diagrammBox = new JComboBox<>(StatistikDiagrammTyp.values());
@@ -115,7 +119,7 @@ public class StatistikPanel extends JPanel implements ModePanel
     {
         JPanel panel = new JPanel(new BorderLayout(0, 12));
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(360, 0));
+        panel.setPreferredSize(new Dimension(EINGABE_BREITE, 0));
 
         JLabel title = new JLabel("Statistik");
         title.setFont(AppFonts.fett(24));
@@ -153,7 +157,7 @@ public class StatistikPanel extends JPanel implements ModePanel
     {
         JPanel panel = new JPanel(new BorderLayout(0, 10));
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(440, 0));
+        panel.setPreferredSize(new Dimension(DIAGRAMM_BREITE, 0));
 
         diagrammBox.addActionListener(e -> {
             diagrammPanel.setDiagrammTyp((StatistikDiagrammTyp) diagrammBox.getSelectedItem());
@@ -263,7 +267,7 @@ public class StatistikPanel extends JPanel implements ModePanel
 
     private void beispiel()
     {
-        textInput.setText("1\n2\n2\n4\n5\n8");
+        textInput.setText(BEISPIEL_DATEN);
         tabellenPanel.fuelleBeispiel();
         werteTextAus();
     }

@@ -25,6 +25,22 @@ import java.awt.geom.Path2D;
 final class GraphZeichner
 {
     private static final AppTheme FALLBACK_THEME = new DarkTheme();
+    private static final double PULS_MAX_DECKKRAFT = 0.16;
+    private static final int PULS_ECKENRADIUS = 18;
+    /** Rasterlinien so nah an 0 bekommen kein y-Label (dort steht schon die x-Achse). */
+    private static final double ACHSEN_LABEL_TOLERANZ = 1e-9;
+    private static final float LINIENBREITE_AKTIV = 3.5f;
+    private static final float LINIENBREITE_INAKTIV = 2.5f;
+    private static final int FLAECHE_ALPHA = 60;
+    private static final int SCHRAFFUR_ALPHA = 130;
+    private static final int SCHRAFFUR_ABSTAND = 8;
+    private static final int MARKER_RADIUS = 7;
+    private static final int MARKER_KERN_RADIUS = 3;
+    private static final int MARKER_LABEL_ABSTAND = 8;
+    private static final int HOVER_INNENABSTAND_X = 10;
+    private static final int HOVER_INNENABSTAND_Y = 5;
+    private static final int HOVER_RAND = 6;
+    private static final int HOVER_ECKENRADIUS = 10;
 
     /** Alles, was für ein Bild gebraucht wird. {@code hoverPunkt} ist {@code null}, wenn nichts angezeigt werden soll. */
     record Szene(
@@ -75,9 +91,9 @@ final class GraphZeichner
         }
 
         Graphics2D pulseGraphics = (Graphics2D) g.create();
-        pulseGraphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) (0.16 * refreshPulse)));
+        pulseGraphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) (PULS_MAX_DECKKRAFT * refreshPulse)));
         pulseGraphics.setColor(theme.successPulseColor());
-        pulseGraphics.fillRoundRect(0, 0, k.breite(), k.hoehe(), 18, 18);
+        pulseGraphics.fillRoundRect(0, 0, k.breite(), k.hoehe(), PULS_ECKENRADIUS, PULS_ECKENRADIUS);
         pulseGraphics.dispose();
     }
 
@@ -102,7 +118,7 @@ final class GraphZeichner
             int py = k.zuBildschirmY(y);
             g.setColor(grid);
             g.drawLine(0, py, k.breite(), py);
-            if (Math.abs(y) > 1e-9)
+            if (Math.abs(y) > ACHSEN_LABEL_TOLERANZ)
             {
                 zeichneLabel(g, labels, formatter.formatiereAchsenwert(y), Math.max(4, k.zuBildschirmX(0) + 6), py - 4);
             }
@@ -171,7 +187,7 @@ final class GraphZeichner
                 letzterY = py;
             }
 
-            float breite = index == state.getAktiveFunktionIndex() ? 3.5f : 2.5f;
+            float breite = index == state.getAktiveFunktionIndex() ? LINIENBREITE_AKTIV : LINIENBREITE_INAKTIV;
             g.setStroke(new BasicStroke(breite, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g.setColor(funktion.getFarbe());
             g.draw(path);
@@ -214,12 +230,12 @@ final class GraphZeichner
 
         Color farbe = funktion.getFarbe();
         Graphics2D flaechenGrafik = (Graphics2D) g.create();
-        flaechenGrafik.setColor(new Color(farbe.getRed(), farbe.getGreen(), farbe.getBlue(), 60));
+        flaechenGrafik.setColor(new Color(farbe.getRed(), farbe.getGreen(), farbe.getBlue(), FLAECHE_ALPHA));
         flaechenGrafik.fill(form);
         flaechenGrafik.clip(form);
-        flaechenGrafik.setColor(new Color(farbe.getRed(), farbe.getGreen(), farbe.getBlue(), 130));
+        flaechenGrafik.setColor(new Color(farbe.getRed(), farbe.getGreen(), farbe.getBlue(), SCHRAFFUR_ALPHA));
         flaechenGrafik.setStroke(new BasicStroke(1f));
-        for (int x = pxA - k.hoehe(); x <= pxB; x += 8)
+        for (int x = pxA - k.hoehe(); x <= pxB; x += SCHRAFFUR_ABSTAND)
         {
             flaechenGrafik.drawLine(x, k.hoehe(), x + k.hoehe(), 0);
         }
@@ -285,12 +301,12 @@ final class GraphZeichner
         int y = k.zuBildschirmY(punkt.getY());
 
         g.setColor(background);
-        g.fillOval(x - 7, y - 7, 14, 14);
+        g.fillOval(x - MARKER_RADIUS, y - MARKER_RADIUS, 2 * MARKER_RADIUS, 2 * MARKER_RADIUS);
         g.setColor(color);
         g.setStroke(new BasicStroke(2f));
-        g.drawOval(x - 7, y - 7, 14, 14);
-        g.fillOval(x - 3, y - 3, 6, 6);
-        g.drawString(label, x + 8, y - 8);
+        g.drawOval(x - MARKER_RADIUS, y - MARKER_RADIUS, 2 * MARKER_RADIUS, 2 * MARKER_RADIUS);
+        g.fillOval(x - MARKER_KERN_RADIUS, y - MARKER_KERN_RADIUS, 2 * MARKER_KERN_RADIUS, 2 * MARKER_KERN_RADIUS);
+        g.drawString(label, x + MARKER_LABEL_ABSTAND, y - MARKER_LABEL_ABSTAND);
     }
 
     private void zeichneBereich(Graphics2D g, GraphKoordinaten k, Color secondary)
@@ -312,21 +328,21 @@ final class GraphZeichner
         String text = "x = " + formatter.formatiereZahl(k.zuWeltX(hoverPunkt.x))
                 + "   y = " + formatter.formatiereZahl(k.zuWeltY(hoverPunkt.y));
         FontMetrics metrics = g.getFontMetrics();
-        int breite = metrics.stringWidth(text) + 20;
-        int hoehe = metrics.getHeight() + 10;
-        int x = Math.min(hoverPunkt.x + 14, Math.max(6, k.breite() - breite - 6));
+        int breite = metrics.stringWidth(text) + 2 * HOVER_INNENABSTAND_X;
+        int hoehe = metrics.getHeight() + 2 * HOVER_INNENABSTAND_Y;
+        int x = Math.min(hoverPunkt.x + 14, Math.max(HOVER_RAND, k.breite() - breite - HOVER_RAND));
         int y = hoverPunkt.y - hoehe - 12;
-        if (y < 6)
+        if (y < HOVER_RAND)
         {
-            y = Math.min(k.hoehe() - hoehe - 6, hoverPunkt.y + 16);
+            y = Math.min(k.hoehe() - hoehe - HOVER_RAND, hoverPunkt.y + 16);
         }
 
         g.setColor(theme.popupBackground());
-        g.fillRoundRect(x, y, breite, hoehe, 10, 10);
+        g.fillRoundRect(x, y, breite, hoehe, HOVER_ECKENRADIUS, HOVER_ECKENRADIUS);
         g.setColor(theme.cardBorder());
-        g.drawRoundRect(x, y, breite, hoehe, 10, 10);
+        g.drawRoundRect(x, y, breite, hoehe, HOVER_ECKENRADIUS, HOVER_ECKENRADIUS);
         g.setColor(theme.popupForeground());
-        g.drawString(text, x + 10, y + metrics.getAscent() + 5);
+        g.drawString(text, x + HOVER_INNENABSTAND_X, y + metrics.getAscent() + HOVER_INNENABSTAND_Y);
     }
 
     private void zeichneLabel(Graphics2D g, Color color, String text, int x, int y)

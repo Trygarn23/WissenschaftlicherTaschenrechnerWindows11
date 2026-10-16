@@ -21,6 +21,8 @@ import java.util.function.Supplier;
 
 public class NetzwerkPanel extends JPanel implements ModePanel
 {
+    private static final int EINGABE_BREITE = 340;
+
     private final JTextField adressField = new JTextField("192.168.1.10/26");
     private final JTextField maskenField = new JTextField();
     private final JTextField teilnetzField = new JTextField("4");
@@ -88,7 +90,7 @@ public class NetzwerkPanel extends JPanel implements ModePanel
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(340, 0));
+        panel.setPreferredSize(new Dimension(EINGABE_BREITE, 0));
 
         panel.add(section("Subnetz (IPv4)",
                 wrapField("IP-Adresse, z. B. 192.168.1.10/26", adressField),

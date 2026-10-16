@@ -10,6 +10,8 @@ public final class AppSettings
     public static final String VERSION = "0.5.0-local";
     /** Aufbau der Einstellungsdatei. Hochzählen, wenn sich Bedeutung oder Namen von Feldern ändern. */
     public static final int DATEI_VERSION = 2;
+    static final int MIN_NACHKOMMASTELLEN = 2;
+    static final int MAX_NACHKOMMASTELLEN = 15;
 
     private ThemeType themeType = ThemeType.DARK;
     private RechnerModus startModus = RechnerModus.STANDARD;
@@ -90,7 +92,7 @@ public final class AppSettings
 
     public void setNachkommastellen(int nachkommastellen)
     {
-        this.nachkommastellen = Math.max(2, Math.min(15, nachkommastellen));
+        this.nachkommastellen = Math.max(MIN_NACHKOMMASTELLEN, Math.min(MAX_NACHKOMMASTELLEN, nachkommastellen));
     }
 
     public ZahlenFormatModus getZahlenFormatModus()

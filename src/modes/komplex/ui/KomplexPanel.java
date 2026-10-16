@@ -21,6 +21,8 @@ import java.util.List;
 
 public class KomplexPanel extends JPanel implements ModePanel, KomplexView
 {
+    private static final int EINGABE_BREITE = 340;
+
     private final KomplexPresenter presenter;
 
     private final JTextField aRealField = new JTextField("0");
@@ -151,7 +153,7 @@ public class KomplexPanel extends JPanel implements ModePanel, KomplexView
     {
         JPanel panel = new JPanel(new BorderLayout(0, 14));
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(340, 0));
+        panel.setPreferredSize(new Dimension(EINGABE_BREITE, 0));
 
         JPanel fieldsPanel = new JPanel(new GridLayout(0, 1, 0, 12));
         fieldsPanel.setOpaque(false);

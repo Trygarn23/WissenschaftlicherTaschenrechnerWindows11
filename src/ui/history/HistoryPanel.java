@@ -25,6 +25,9 @@ public class HistoryPanel extends JPanel
 {
     private static final int BREITE = 220;
     private static final int BREITE_EINGEKLAPPT = 44;
+    private static final int ABSTAND = 6;
+    private static final int ZEILEN_HOEHE = 58;
+    private static final int PULS_DAUER_MS = 180;
 
     /** Eintrag in der Filterauswahl: alle, nur Favoriten oder ein bestimmter Modus. */
     private record FilterOption(String label, RechnerModus mode, boolean favoritesOnly)
@@ -41,7 +44,7 @@ public class HistoryPanel extends JPanel
 
     private final HistorySearchField historySearchField = new HistorySearchField(this::applyFilter);
     private final JComboBox<FilterOption> filterBox = new JComboBox<>();
-    private final JButton favoriteButton = new JButton(new StarIcon(false, 14));
+    private final JButton favoriteButton = new JButton(new StarIcon(false, StarIcon.BUTTON_GROESSE));
     private final JButton moreButton = new JButton("Mehr");
     private final JButton collapseButton = new JButton("›");
     private final JPopupMenu moreMenu = new JPopupMenu();
@@ -50,7 +53,7 @@ public class HistoryPanel extends JPanel
     private final JList<VerlaufEintrag> historyList = new JList<>(filteredHistoryModel);
     private final JScrollPane historyScroll = new JScrollPane(historyList);
     private final JLabel emptyLabel = new JLabel("Noch nix gerechnet. Mutig.");
-    private final JPanel historyTop = new JPanel(new BorderLayout(6, 6));
+    private final JPanel historyTop = new JPanel(new BorderLayout(ABSTAND, ABSTAND));
 
     private final Predicate<String> deleteConfirmation;
 
@@ -74,7 +77,7 @@ public class HistoryPanel extends JPanel
     {
         this.deleteConfirmation = deleteConfirmation != null ? deleteConfirmation : this::askUser;
 
-        setLayout(new BorderLayout(6, 6));
+        setLayout(new BorderLayout(ABSTAND, ABSTAND));
         setOpaque(false);
         setPreferredSize(new Dimension(BREITE, 0));
 
@@ -87,7 +90,7 @@ public class HistoryPanel extends JPanel
         historyList.setFont(AppFonts.normal(14));
         historyList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         historyList.setFocusable(false);
-        historyList.setFixedCellHeight(58);
+        historyList.setFixedCellHeight(ZEILEN_HOEHE);
         historyList.setCellRenderer(new HistoryEntryRenderer(
                 historySearchField::getText,
                 () -> currentTheme,
@@ -115,12 +118,12 @@ public class HistoryPanel extends JPanel
         collapseButton.setToolTipText("Verlauf einklappen");
         collapseButton.addActionListener(e -> setEingeklappt(!eingeklappt));
 
-        JPanel historyActions = new JPanel(new GridLayout(1, 2, 6, 0));
+        JPanel historyActions = new JPanel(new GridLayout(1, 2, ABSTAND, 0));
         historyActions.setOpaque(false);
         historyActions.add(favoriteButton);
         historyActions.add(moreButton);
 
-        JPanel searchRow = new JPanel(new BorderLayout(6, 0));
+        JPanel searchRow = new JPanel(new BorderLayout(ABSTAND, 0));
         searchRow.setOpaque(false);
         searchRow.add(historySearchField, BorderLayout.CENTER);
 
@@ -130,7 +133,7 @@ public class HistoryPanel extends JPanel
         historyTop.add(filterBox, BorderLayout.CENTER);
         historyTop.add(historyActions, BorderLayout.SOUTH);
 
-        JPanel header = new JPanel(new BorderLayout(6, 6));
+        JPanel header = new JPanel(new BorderLayout(ABSTAND, ABSTAND));
         header.setOpaque(false);
         header.add(collapseButton, BorderLayout.NORTH);
         header.add(historyTop, BorderLayout.CENTER);
@@ -318,7 +321,7 @@ public class HistoryPanel extends JPanel
         applyFilter();
         if (currentTheme != null)
         {
-            AnimationSupport.pulseBackground(historyList, currentTheme.softAccentBackground(), 180);
+            AnimationSupport.pulseBackground(historyList, currentTheme.softAccentBackground(), PULS_DAUER_MS);
         }
     }
 
@@ -460,7 +463,7 @@ public class HistoryPanel extends JPanel
 
         if (currentTheme != null)
         {
-            AnimationSupport.pulseBackground(favoriteButton, currentTheme.successPulseColor(), 180);
+            AnimationSupport.pulseBackground(favoriteButton, currentTheme.successPulseColor(), PULS_DAUER_MS);
         }
     }
 

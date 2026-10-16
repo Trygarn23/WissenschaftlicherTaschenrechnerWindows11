@@ -2,6 +2,9 @@ package common.units;
 
 public record Einheit(EinheitKategorie kategorie, String name, String symbol, double faktorZurBasiseinheit, double offsetZurBasiseinheit)
 {
+    /** Kleinere Umrechnungsfaktoren gelten als 0. */
+    private static final double MIN_FAKTOR_BETRAG = 1e-15;
+
     public Einheit
     {
         if (kategorie == null)
@@ -14,7 +17,7 @@ public record Einheit(EinheitKategorie kategorie, String name, String symbol, do
             throw new IllegalArgumentException("Einheit braucht Name und Symbol.");
         }
 
-        if (!Double.isFinite(faktorZurBasiseinheit) || Math.abs(faktorZurBasiseinheit) < 1e-15)
+        if (!Double.isFinite(faktorZurBasiseinheit) || Math.abs(faktorZurBasiseinheit) < MIN_FAKTOR_BETRAG)
         {
             throw new IllegalArgumentException("Faktor muss endlich und ungleich 0 sein.");
         }

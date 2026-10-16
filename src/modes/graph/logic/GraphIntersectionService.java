@@ -9,6 +9,12 @@ import java.util.List;
 public class GraphIntersectionService
 {
     private static final int SAMPLES = 360;
+    private static final int BISEKTION_SCHRITTE = 48;
+    /** Rasterwert gilt direkt als Nullstelle, wenn er so nah an 0 liegt. */
+    private static final double NULL_TOLERANZ_RASTER = 1e-7;
+    private static final double NULL_TOLERANZ_BISEKTION = 1e-10;
+    /** Punkte mit kleinerem x-Abstand gelten als Duplikat. */
+    private static final double MIN_X_ABSTAND_PUNKTE = 1e-3;
     private static final int MAX_INTERSECTIONS = 8;
 
     private final GraphEvaluator evaluator;
@@ -32,7 +38,7 @@ public class GraphIntersectionService
 
             if (Double.isFinite(prevDiff) && Double.isFinite(diff))
             {
-                if (Math.abs(diff) < 1e-7)
+                if (Math.abs(diff) < NULL_TOLERANZ_RASTER)
                 {
                     fuegeEinzigartigHinzu(result, punkt(ersterAusdruck, x, winkelModus));
                 }
@@ -54,12 +60,12 @@ public class GraphIntersectionService
     {
         double fLinks = differenz(ersterAusdruck, zweiterAusdruck, links, winkelModus);
 
-        for (int i = 0; i < 48; i++)
+        for (int i = 0; i < BISEKTION_SCHRITTE; i++)
         {
             double mitte = (links + rechts) / 2.0;
             double fMitte = differenz(ersterAusdruck, zweiterAusdruck, mitte, winkelModus);
 
-            if (!Double.isFinite(fMitte) || Math.abs(fMitte) < 1e-10)
+            if (!Double.isFinite(fMitte) || Math.abs(fMitte) < NULL_TOLERANZ_BISEKTION)
             {
                 return mitte;
             }
@@ -98,7 +104,7 @@ public class GraphIntersectionService
 
         for (GraphPunkt vorhanden : punkte)
         {
-            if (Math.abs(vorhanden.getX() - punkt.getX()) < 1e-3)
+            if (Math.abs(vorhanden.getX() - punkt.getX()) < MIN_X_ABSTAND_PUNKTE)
             {
                 return;
             }

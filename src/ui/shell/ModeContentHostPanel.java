@@ -15,6 +15,10 @@ import java.util.Map;
 
 public class ModeContentHostPanel extends JPanel
 {
+    private static final double FADE_START_ALPHA = 0.72;
+    private static final int FADE_DURATION_MS = 220;
+    private static final int CORNER_ARC = 18;
+
     private final CardLayout cardLayout = new CardLayout();
     private final Map<RechnerModus, JPanel> modePanels = new EnumMap<>(RechnerModus.class);
 
@@ -48,12 +52,12 @@ public class ModeContentHostPanel extends JPanel
     {
         setOpaque(false);
         fadeOverlayColor = theme == null ? Color.BLACK : theme.softAccentBackground();
-        fadeOverlayAlpha = 0.72;
+        fadeOverlayAlpha = FADE_START_ALPHA;
         repaint();
 
-        AnimationSupport.animate(220,
+        AnimationSupport.animate(FADE_DURATION_MS,
                 progress -> {
-                    fadeOverlayAlpha = 0.72 * (1.0 - progress);
+                    fadeOverlayAlpha = FADE_START_ALPHA * (1.0 - progress);
                     repaint();
                 },
                 () -> {
@@ -74,7 +78,7 @@ public class ModeContentHostPanel extends JPanel
         Graphics2D g = (Graphics2D) graphics.create();
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) fadeOverlayAlpha));
         g.setColor(fadeOverlayColor);
-        g.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
+        g.fillRoundRect(0, 0, getWidth(), getHeight(), CORNER_ARC, CORNER_ARC);
         g.dispose();
     }
 }

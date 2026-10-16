@@ -19,6 +19,7 @@ import java.util.List;
 public class FinanzPanel extends JPanel implements ModePanel
 {
     private static final int MAX_FELDER = 3;
+    private static final int EINGABE_BREITE = 340;
 
     private final JComboBox<FinanzRechnung> rechnungBox = new JComboBox<>(FinanzRechnung.values());
     private final List<JLabel> feldLabels = new ArrayList<>();
@@ -75,7 +76,7 @@ public class FinanzPanel extends JPanel implements ModePanel
     {
         JPanel panel = new JPanel(new BorderLayout(0, 14));
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(340, 0));
+        panel.setPreferredSize(new Dimension(EINGABE_BREITE, 0));
 
         JPanel fieldsPanel = new JPanel(new GridLayout(0, 1, 0, 6));
         fieldsPanel.setOpaque(false);

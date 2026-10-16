@@ -29,6 +29,8 @@ import java.util.List;
 
 public class MatrixPanel extends JPanel implements ModePanel
 {
+    private static final int ERGEBNIS_BREITE = 330;
+
     private final MatrixRechnerService service = new MatrixRechnerService();
     private final MatrixFormatter formatter = new MatrixFormatter();
 
@@ -131,7 +133,7 @@ public class MatrixPanel extends JPanel implements ModePanel
     {
         JPanel panel = new JPanel(new BorderLayout(0, 10));
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(330, 0));
+        panel.setPreferredSize(new Dimension(ERGEBNIS_BREITE, 0));
 
         JLabel title = new JLabel("Ergebnis");
         title.setFont(AppFonts.fett(24));

@@ -22,6 +22,10 @@ import java.util.function.Supplier;
 
 public class GleichungPanel extends JPanel implements ModePanel
 {
+    private static final int EINGABE_BREITE = 340;
+    private static final int SYSTEM_SCROLL_BREITE = 320;
+    private static final int SYSTEM_SCROLL_MAX_HOEHE = 360;
+
     private final GleichungsLoeser loeser = new GleichungsLoeser();
 
     private final JTextField aField = new JTextField("1");
@@ -137,7 +141,7 @@ public class GleichungPanel extends JPanel implements ModePanel
         oben.add(eingaben, BorderLayout.CENTER);
         JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.setOpaque(false);
-        wrapper.setPreferredSize(new Dimension(340, 0));
+        wrapper.setPreferredSize(new Dimension(EINGABE_BREITE, 0));
         wrapper.add(oben, BorderLayout.NORTH);
         return wrapper;
     }
@@ -167,7 +171,7 @@ public class GleichungPanel extends JPanel implements ModePanel
             }
         }
         JScrollPane scroll = new JScrollPane(grid);
-        scroll.setPreferredSize(new Dimension(320, Math.min(360, grid.getPreferredSize().height + 24)));
+        scroll.setPreferredSize(new Dimension(SYSTEM_SCROLL_BREITE, Math.min(SYSTEM_SCROLL_MAX_HOEHE, grid.getPreferredSize().height + 24)));
         systemPanel.add(scroll, BorderLayout.CENTER);
         // Ein Knopf für alle Größen; alte Knöpfe nicht in der Theme-Liste behalten.
         buttons.removeIf(b -> b.getText().equals("System lösen"));

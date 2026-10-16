@@ -20,6 +20,7 @@ public class BruchPanel extends JPanel implements ModePanel
 {
     // Ab diesem Nenner wird eine Dezimaleingabe wie 0,333333333333 als Näherung gedeutet (→ 1/3).
     private static final long NAEHERUNG_MAX_NENNER = 10_000;
+    private static final int EINGABE_BREITE = 340;
 
     private final JTextField aField = new JTextField("3/4");
     private final JTextField bField = new JTextField("1/6");
@@ -84,7 +85,7 @@ public class BruchPanel extends JPanel implements ModePanel
     {
         JPanel panel = new JPanel(new BorderLayout(0, 14));
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(340, 0));
+        panel.setPreferredSize(new Dimension(EINGABE_BREITE, 0));
 
         JPanel fieldsPanel = new JPanel(new GridLayout(0, 1, 0, 12));
         fieldsPanel.setOpaque(false);

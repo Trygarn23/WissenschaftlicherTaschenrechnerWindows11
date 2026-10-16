@@ -19,6 +19,18 @@ import java.util.List;
 
 class StatistikDiagrammPanel extends JPanel
 {
+    private static final Dimension PREFERRED_SIZE = new Dimension(420, 260);
+    private static final Dimension MIN_SIZE = new Dimension(320, 220);
+    /** Plotbereich von Histogramm und Streudiagramm. */
+    private static final int PLOT_LEFT = 42;
+    private static final int PLOT_TOP = 26;
+    private static final int PLOT_MARGIN = 64;
+    private static final int TITLE_BASELINE = 18;
+    private static final int POINT_RADIUS = 4;
+    private static final int WHISKER_HALF_HEIGHT = 20;
+    private static final int LABEL_MIN_X = 6;
+    private static final int LABEL_MAX_WIDTH = 110;
+
     private final StatistikFormatter formatter = new StatistikFormatter();
     private StatistikErgebnis ergebnis;
     private StatistikDiagrammTyp diagrammTyp = StatistikDiagrammTyp.HISTOGRAMM;
@@ -26,8 +38,8 @@ class StatistikDiagrammPanel extends JPanel
 
     StatistikDiagrammPanel()
     {
-        setPreferredSize(new Dimension(420, 260));
-        setMinimumSize(new Dimension(320, 220));
+        setPreferredSize(PREFERRED_SIZE);
+        setMinimumSize(MIN_SIZE);
     }
 
     void setErgebnis(StatistikErgebnis ergebnis)
@@ -77,10 +89,10 @@ class StatistikDiagrammPanel extends JPanel
     private void drawHistogramm(Graphics2D g2)
     {
         List<StatistikKlasse> klassen = ergebnis.getHistogramm();
-        int left = 42;
-        int top = 26;
-        int width = getWidth() - 64;
-        int height = getHeight() - 64;
+        int left = PLOT_LEFT;
+        int top = PLOT_TOP;
+        int width = getWidth() - PLOT_MARGIN;
+        int height = getHeight() - PLOT_MARGIN;
         int max = klassen.stream().mapToInt(StatistikKlasse::anzahl).max().orElse(1);
 
         drawAxes(g2, left, top, width, height);
@@ -99,7 +111,7 @@ class StatistikDiagrammPanel extends JPanel
         }
 
         g2.setColor(theme.secondaryDisplayForeground());
-        g2.drawString("Histogramm", left, 18);
+        g2.drawString("Histogramm", left, TITLE_BASELINE);
     }
 
     private void drawBoxplot(Graphics2D g2)
@@ -123,8 +135,8 @@ class StatistikDiagrammPanel extends JPanel
         g2.setStroke(new BasicStroke(2f));
         g2.setColor(theme.secondaryDisplayForeground());
         g2.drawLine(minX, centerY, maxX, centerY);
-        g2.drawLine(minX, centerY - 20, minX, centerY + 20);
-        g2.drawLine(maxX, centerY - 20, maxX, centerY + 20);
+        g2.drawLine(minX, centerY - WHISKER_HALF_HEIGHT, minX, centerY + WHISKER_HALF_HEIGHT);
+        g2.drawLine(maxX, centerY - WHISKER_HALF_HEIGHT, maxX, centerY + WHISKER_HALF_HEIGHT);
 
         g2.setColor(theme.functionButtonBackground());
         g2.fillRect(q1X, centerY - boxHeight / 2, Math.max(1, q3X - q1X), boxHeight);
@@ -144,10 +156,10 @@ class StatistikDiagrammPanel extends JPanel
     private void drawStreudiagramm(Graphics2D g2)
     {
         List<StatistikDatenpunkt> daten = ergebnis.getDatenpunkte();
-        int left = 42;
-        int top = 26;
-        int width = getWidth() - 64;
-        int height = getHeight() - 64;
+        int left = PLOT_LEFT;
+        int top = PLOT_TOP;
+        int width = getWidth() - PLOT_MARGIN;
+        int height = getHeight() - PLOT_MARGIN;
 
         double minX = daten.stream().mapToDouble(StatistikDatenpunkt::x).min().orElse(0.0);
         double maxX = daten.stream().mapToDouble(StatistikDatenpunkt::x).max().orElse(1.0);
@@ -162,11 +174,11 @@ class StatistikDiagrammPanel extends JPanel
         {
             int x = left + (int) Math.round((punkt.x() - minX) / spanX * width);
             int y = top + height - (int) Math.round((punkt.y() - minY) / spanY * height);
-            g2.fillOval(x - 4, y - 4, 8, 8);
+            g2.fillOval(x - POINT_RADIUS, y - POINT_RADIUS, 2 * POINT_RADIUS, 2 * POINT_RADIUS);
         }
 
         g2.setColor(theme.secondaryDisplayForeground());
-        g2.drawString("Streudiagramm", left, 18);
+        g2.drawString("Streudiagramm", left, TITLE_BASELINE);
     }
 
     private void drawAxes(Graphics2D g2, int left, int top, int width, int height)
@@ -187,6 +199,6 @@ class StatistikDiagrammPanel extends JPanel
     private void drawLabel(Graphics2D g2, String text, int x, int y)
     {
         g2.setColor(theme.secondaryDisplayForeground());
-        g2.drawString(text, Math.max(6, Math.min(x, getWidth() - 110)), y);
+        g2.drawString(text, Math.max(LABEL_MIN_X, Math.min(x, getWidth() - LABEL_MAX_WIDTH)), y);
     }
 }

@@ -22,6 +22,8 @@ import java.util.List;
 
 public class DatumPanel extends JPanel implements ModePanel
 {
+    private static final int TABS_BREITE = 360;
+
     private final JTextField vonField = new JTextField();
     private final JTextField bisField = new JTextField();
     private final JCheckBox feiertageBox = new JCheckBox("Bundesweite Feiertage abziehen");
@@ -53,7 +55,7 @@ public class DatumPanel extends JPanel implements ModePanel
         tabs.addTab("Zeitraum", buildZeitraumTab());
         tabs.addTab("Rechnen", buildRechnenTab());
         tabs.addTab("Stunden", buildStundenTab());
-        tabs.setPreferredSize(new Dimension(360, 0));
+        tabs.setPreferredSize(new Dimension(TABS_BREITE, 0));
 
         add(tabs, BorderLayout.WEST);
         add(buildResultPanel(), BorderLayout.CENTER);

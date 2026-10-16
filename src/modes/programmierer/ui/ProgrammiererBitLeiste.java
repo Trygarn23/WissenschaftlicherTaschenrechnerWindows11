@@ -14,10 +14,12 @@ import java.util.function.IntConsumer;
 class ProgrammiererBitLeiste extends JPanel
 {
     private static final int BITS = 64;
+    private static final int BITS_PRO_ZEILE = 32;
+    private static final int BITS_PRO_GRUPPE = 4;
 
     private final JButton[] bitButtons = new JButton[BITS];
-    private final JPanel[] gruppen = new JPanel[BITS / 4];
-    private final JLabel[] nummern = new JLabel[BITS / 4];
+    private final JPanel[] gruppen = new JPanel[BITS / BITS_PRO_GRUPPE];
+    private final JLabel[] nummern = new JLabel[BITS / BITS_PRO_GRUPPE];
     private final JPanel obereZeile;
     private AppTheme theme = new DarkTheme();
 
@@ -27,19 +29,19 @@ class ProgrammiererBitLeiste extends JPanel
         setOpaque(false);
         setBorder(new EmptyBorder(0, 0, 6, 0));
 
-        obereZeile = baueZeile(63, bitListener);
+        obereZeile = baueZeile(BITS - 1, bitListener);
         add(obereZeile);
-        add(baueZeile(31, bitListener));
+        add(baueZeile(BITS_PRO_ZEILE - 1, bitListener));
     }
 
     void refresh(ProgrammiererLogik logik)
     {
         int aktiveBits = logik.getWortbreite().getBits();
-        obereZeile.setVisible(aktiveBits > 32);
+        obereZeile.setVisible(aktiveBits > BITS_PRO_ZEILE);
 
         for (int gruppe = 0; gruppe < gruppen.length; gruppe++)
         {
-            gruppen[gruppe].setVisible(gruppe * 4 < aktiveBits);
+            gruppen[gruppe].setVisible(gruppe * BITS_PRO_GRUPPE < aktiveBits);
         }
 
         for (int bit = 0; bit < BITS; bit++)
@@ -67,7 +69,7 @@ class ProgrammiererBitLeiste extends JPanel
         JPanel zeile = new JPanel(new GridLayout(1, 8, 8, 0));
         zeile.setOpaque(false);
 
-        for (int gruppenStart = hoechstesBit; gruppenStart > hoechstesBit - 32; gruppenStart -= 4)
+        for (int gruppenStart = hoechstesBit; gruppenStart > hoechstesBit - BITS_PRO_ZEILE; gruppenStart -= BITS_PRO_GRUPPE)
         {
             zeile.add(baueGruppe(gruppenStart, bitListener));
         }
@@ -77,9 +79,9 @@ class ProgrammiererBitLeiste extends JPanel
 
     private JPanel baueGruppe(int hoechstesBit, IntConsumer bitListener)
     {
-        int niedrigstesBit = hoechstesBit - 3;
+        int niedrigstesBit = hoechstesBit - (BITS_PRO_GRUPPE - 1);
 
-        JPanel bits = new JPanel(new GridLayout(1, 4, 1, 0));
+        JPanel bits = new JPanel(new GridLayout(1, BITS_PRO_GRUPPE, 1, 0));
         bits.setOpaque(false);
         for (int bit = hoechstesBit; bit >= niedrigstesBit; bit--)
         {
@@ -88,13 +90,13 @@ class ProgrammiererBitLeiste extends JPanel
 
         JLabel nummer = new JLabel(String.valueOf(niedrigstesBit), SwingConstants.RIGHT);
         nummer.setFont(AppFonts.normal(10));
-        nummern[niedrigstesBit / 4] = nummer;
+        nummern[niedrigstesBit / BITS_PRO_GRUPPE] = nummer;
 
         JPanel gruppe = new JPanel(new BorderLayout(0, 1));
         gruppe.setOpaque(false);
         gruppe.add(bits, BorderLayout.CENTER);
         gruppe.add(nummer, BorderLayout.SOUTH);
-        gruppen[niedrigstesBit / 4] = gruppe;
+        gruppen[niedrigstesBit / BITS_PRO_GRUPPE] = gruppe;
         return gruppe;
     }
 

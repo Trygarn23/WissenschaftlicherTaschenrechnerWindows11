@@ -33,6 +33,8 @@ public final class FunktionsRegistry
     {
     }
 
+    /** cos-Betrag, unter dem tan als Polstelle gilt. */
+    private static final double TAN_POL_TOLERANZ = 1e-12;
     private static final double GROESSTE_EXAKTE_GANZZAHL = 9_007_199_254_740_992.0; // 2^53
 
     private static final Map<String, Funktion> EINGEBAUT = Map.ofEntries(
@@ -273,7 +275,7 @@ public final class FunktionsRegistry
 
     private static double tangens(double bogen)
     {
-        if (Math.abs(Math.cos(bogen)) < 1e-12)
+        if (Math.abs(Math.cos(bogen)) < TAN_POL_TOLERANZ)
         {
             throw bereichsFehler("tan ist hier nicht definiert");
         }

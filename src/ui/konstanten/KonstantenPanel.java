@@ -31,6 +31,10 @@ import java.util.function.Consumer;
 public class KonstantenPanel extends JPanel
 {
     private static final String ALLE_KATEGORIEN = "Alle Kategorien";
+    private static final int ZEILEN_HOEHE = 26;
+    private static final int FAVORIT_SPALTE_MAX_BREITE = 70;
+    private static final int NAME_SPALTE_BREITE = 240;
+    private static final int WERT_SPALTE_BREITE = 170;
     private static final String[] SPALTEN = {"Favorit", "Name", "Symbol", "Wert", "Einheit"};
 
     private final KonstantenFavoriten favoriten;
@@ -173,15 +177,15 @@ public class KonstantenPanel extends JPanel
 
     private void konfiguriereTabelle()
     {
-        tabelle.setRowHeight(26);
+        tabelle.setRowHeight(ZEILEN_HOEHE);
         tabelle.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabelle.setFillsViewportHeight(true);
         tabelle.getTableHeader().setReorderingAllowed(false);
-        tabelle.getColumnModel().getColumn(0).setMaxWidth(70);
+        tabelle.getColumnModel().getColumn(0).setMaxWidth(FAVORIT_SPALTE_MAX_BREITE);
         tabelle.getColumnModel().getColumn(0).setCellRenderer(new SternZelle());
         tabelle.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(new SternZelle()));
-        tabelle.getColumnModel().getColumn(1).setPreferredWidth(240);
-        tabelle.getColumnModel().getColumn(3).setPreferredWidth(170);
+        tabelle.getColumnModel().getColumn(1).setPreferredWidth(NAME_SPALTE_BREITE);
+        tabelle.getColumnModel().getColumn(3).setPreferredWidth(WERT_SPALTE_BREITE);
         tabelle.getSelectionModel().addListSelectionListener(e -> zeigeDetails());
 
         tabelle.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
@@ -340,8 +344,8 @@ public class KonstantenPanel extends JPanel
         SternZelle()
         {
             setHorizontalAlignment(CENTER);
-            setIcon(new StarIcon(false, 14));
-            setSelectedIcon(new StarIcon(true, 14));
+            setIcon(new StarIcon(false, StarIcon.BUTTON_GROESSE));
+            setSelectedIcon(new StarIcon(true, StarIcon.BUTTON_GROESSE));
             setToolTipText("Als Favorit markieren");
         }
 

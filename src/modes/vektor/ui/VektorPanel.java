@@ -19,6 +19,8 @@ import java.util.function.Supplier;
 
 public class VektorPanel extends JPanel implements ModePanel
 {
+    private static final int EINGABE_BREITE = 360;
+
     private final JComboBox<String> dimensionBox = new JComboBox<>(new String[] {"2D", "3D"});
     private final JTextField aX = new JTextField("0");
     private final JTextField aY = new JTextField("0");
@@ -85,7 +87,7 @@ public class VektorPanel extends JPanel implements ModePanel
     {
         JPanel panel = new JPanel(new BorderLayout(0, 14));
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(360, 0));
+        panel.setPreferredSize(new Dimension(EINGABE_BREITE, 0));
 
         JPanel fieldsPanel = new JPanel(new GridLayout(0, 1, 0, 10));
         fieldsPanel.setOpaque(false);

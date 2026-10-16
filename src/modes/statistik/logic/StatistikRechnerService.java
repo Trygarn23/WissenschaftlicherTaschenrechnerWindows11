@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 
 public class StatistikRechnerService
 {
+    /** Kleinere Beträge gelten bei Nennern und Pivots als 0. */
+    private static final double NULL_TOLERANZ = 1e-12;
     private static final Pattern ZAHL_PATTERN =
             Pattern.compile("[-+]?(?:\\d+(?:[,.]\\d+)?|[,.]\\d+)(?:[eE][-+]?\\d+)?");
 
@@ -255,7 +257,7 @@ public class StatistikRechnerService
         double mittelY = daten.stream().mapToDouble(p -> p.y() * p.gewicht()).sum() / gewichtSumme;
         double sxx = daten.stream().mapToDouble(p -> p.gewicht() * Math.pow(p.x() - mittelX, 2)).sum();
 
-        if (Math.abs(sxx) < 1e-12)
+        if (Math.abs(sxx) < NULL_TOLERANZ)
         {
             return null;
         }
@@ -320,7 +322,7 @@ public class StatistikRechnerService
                 }
             }
 
-            if (Math.abs(matrix[besteZeile][pivot]) < 1e-12)
+            if (Math.abs(matrix[besteZeile][pivot]) < NULL_TOLERANZ)
             {
                 return null;
             }
@@ -360,7 +362,7 @@ public class StatistikRechnerService
                 .mapToDouble(p -> Math.pow(p.y() - mittelY, 2))
                 .sum();
 
-        if (Math.abs(total) < 1e-12)
+        if (Math.abs(total) < NULL_TOLERANZ)
         {
             return 1.0;
         }

@@ -300,7 +300,7 @@ public class EinheitenSidePanel extends JPanel
     private void aktualisiereFavoritStern()
     {
         boolean favorit = aktuelleUmrechnung().map(favoriten::istFavorit).orElse(false);
-        favoriteButton.setIcon(new StarIcon(favorit, 14));
+        favoriteButton.setIcon(new StarIcon(favorit, StarIcon.BUTTON_GROESSE));
         favoriteButton.setText(favorit ? "Gemerkt" : "Favorit");
     }
 

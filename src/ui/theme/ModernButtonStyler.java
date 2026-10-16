@@ -22,6 +22,7 @@ public final class ModernButtonStyler
     private static final String FOCUSABLE_KEY = "modern.focusable";
     private static final String LISTENER_KEY = "modern.listenerInstalled";
     private static final int BUTTON_ANIMATION_MS = 130;
+    private static final int CLICK_PULSE_MS = 140;
 
     private ModernButtonStyler()
     {
@@ -98,7 +99,7 @@ public final class ModernButtonStyler
         Color base = (Color) button.getClientProperty(BASE_BACKGROUND_KEY);
         if (theme != null && base != null)
         {
-            AnimationSupport.pulseBackground(button, theme.hoverBackground(base), 140);
+            AnimationSupport.pulseBackground(button, theme.hoverBackground(base), CLICK_PULSE_MS);
         }
     }
 

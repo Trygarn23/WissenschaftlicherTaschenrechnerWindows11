@@ -17,6 +17,9 @@ public record Bruch(long zaehler, long nenner)
 
     private static final String UEBERLAUF = "Die Zahlen sind zu groß für eine exakte Bruchrechnung.";
     private static final double TOLERANZ = 1e-10;
+    /** Ab diesem Betrag passt kein Kettenbruch mehr sicher in long. */
+    private static final double MAX_BETRAG_DEZIMAL = 1e18;
+    private static final int MAX_KETTENBRUCH_GLIEDER = 64;
     private static final Pattern GEMISCHT = Pattern.compile("(-?)(\\d+)\\s+(\\d+)\\s*/\\s*(\\d+)");
 
     public Bruch
@@ -104,13 +107,13 @@ public record Bruch(long zaehler, long nenner)
      */
     public static Optional<Bruch> ausDezimal(double wert, long maxNenner)
     {
-        if (!Double.isFinite(wert) || Math.abs(wert) >= 1e18)
+        if (!Double.isFinite(wert) || Math.abs(wert) >= MAX_BETRAG_DEZIMAL)
         {
             return Optional.empty();
         }
         long h1 = 1, h2 = 0, k1 = 0, k2 = 1;
         double rest = wert;
-        for (int i = 0; i < 64; i++)
+        for (int i = 0; i < MAX_KETTENBRUCH_GLIEDER; i++)
         {
             long a = (long) Math.floor(rest);
             long h;

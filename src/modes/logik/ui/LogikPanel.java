@@ -22,6 +22,7 @@ import java.util.List;
 public class LogikPanel extends JPanel implements ModePanel
 {
     private static final String BEISPIEL = "A ∧ (B ∨ ¬C)";
+    private static final int EINGABE_BREITE = 340;
 
     private final WahrheitstabellenRechner rechner = new WahrheitstabellenRechner();
     private final TabellenAuswertung auswertung = new TabellenAuswertung();
@@ -99,7 +100,7 @@ public class LogikPanel extends JPanel implements ModePanel
     {
         JPanel panel = new JPanel(new BorderLayout(0, 14));
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(340, 0));
+        panel.setPreferredSize(new Dimension(EINGABE_BREITE, 0));
 
         JPanel eingabe = new JPanel(new BorderLayout(0, 6));
         eingabe.setOpaque(false);

@@ -5,6 +5,10 @@ public final class Verteilungen
 {
     private static final int MAX_N = 10_000_000;
     private static final double GRENZE_Z = 8.5;
+    private static final int MAX_QUANTIL_SCHRITTE = 200;
+    private static final double QUANTIL_TOLERANZ = 1e-15;
+    /** ln(√(2π)) */
+    private static final double LN_WURZEL_2PI = 0.91893853320467274178;
 
     private Verteilungen()
     {
@@ -73,7 +77,7 @@ public final class Verteilungen
         // Bisektion: langsam, aber robust; Φ ist streng monoton.
         double unten = -GRENZE_Z;
         double oben = GRENZE_Z;
-        for (int i = 0; i < 200 && oben - unten > 1e-15; i++)
+        for (int i = 0; i < MAX_QUANTIL_SCHRITTE && oben - unten > QUANTIL_TOLERANZ; i++)
         {
             double mitte = (unten + oben) / 2.0;
             if (phi(mitte) < wahrscheinlichkeit)
@@ -114,8 +118,7 @@ public final class Verteilungen
             term *= quadrat / i;
             summe += term;
         }
-        // 0.9189... = ln(√(2π))
-        double wert = 0.5 + summe * Math.exp(-0.5 * quadrat - 0.91893853320467274178);
+        double wert = 0.5 + summe * Math.exp(-0.5 * quadrat - LN_WURZEL_2PI);
         return Math.min(1.0, Math.max(0.0, wert));
     }
 

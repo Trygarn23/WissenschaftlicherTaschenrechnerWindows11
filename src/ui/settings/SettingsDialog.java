@@ -18,6 +18,13 @@ import java.util.function.UnaryOperator;
 
 public final class SettingsDialog extends JDialog
 {
+    private static final int MIN_WIDTH = 680;
+    private static final int WIDTH_RESERVE = 40;
+    private static final int MIN_HEIGHT = 520;
+    private static final int DEFAULT_HEIGHT = 720;
+    private static final int SCROLL_UNIT_INCREMENT = 16;
+    private static final int APPLY_PULSE_MS = 180;
+
     private final AppTheme theme;
     private final SettingsRows rows;
     private AppSettings workingSettings;
@@ -52,9 +59,9 @@ public final class SettingsDialog extends JDialog
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         rebuildContent();
-        int breite = Math.max(680, getContentPane().getPreferredSize().width + 40);
-        setMinimumSize(new Dimension(breite, 520));
-        setSize(new Dimension(breite, 720));
+        int breite = Math.max(MIN_WIDTH, getContentPane().getPreferredSize().width + WIDTH_RESERVE);
+        setMinimumSize(new Dimension(breite, MIN_HEIGHT));
+        setSize(new Dimension(breite, DEFAULT_HEIGHT));
         setLocationRelativeTo(owner);
     }
 
@@ -121,7 +128,7 @@ public final class SettingsDialog extends JDialog
         scroll.setBorder(null);
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        scroll.getVerticalScrollBar().setUnitIncrement(SCROLL_UNIT_INCREMENT);
 
         content.add(header, BorderLayout.NORTH);
         content.add(scroll, BorderLayout.CENTER);
@@ -165,7 +172,7 @@ public final class SettingsDialog extends JDialog
                 rows.combo("Winkelmodus", "DEG = Grad (sin 90 = 1), RAD = Bogenmaß (sin π/2 = 1).", WinkelModus.values(),
                         workingSettings.getWinkelModus(), workingSettings::setWinkelModus),
                 rows.spinner("Präzision", "Wie viele Nachkommastellen höchstens angezeigt werden.",
-                        workingSettings.getNachkommastellen(), 2, 15, workingSettings::setNachkommastellen),
+                        workingSettings.getNachkommastellen(), AppSettings.MIN_NACHKOMMASTELLEN, AppSettings.MAX_NACHKOMMASTELLEN, workingSettings::setNachkommastellen),
                 rows.combo("Zahlenformat", "AUTO wählt selbst, ob normal oder wissenschaftlich (1,2e-5) angezeigt wird.",
                         ZahlenFormatModus.values(), workingSettings.getZahlenFormatModus(), workingSettings::setZahlenFormatModus)
         };
@@ -213,7 +220,7 @@ public final class SettingsDialog extends JDialog
         right.add(rows.button("Zurücksetzen", this::resetToAppliedValues));
         right.add(rows.button("Abbrechen", this::dispose));
         JButton applyButton = rows.button("Anwenden", this::publish);
-        applyButton.addActionListener(e -> AnimationSupport.pulseBackground(applyButton, theme.successPulseColor(), 180));
+        applyButton.addActionListener(e -> AnimationSupport.pulseBackground(applyButton, theme.successPulseColor(), APPLY_PULSE_MS));
         right.add(applyButton);
         right.add(rows.button("Speichern", () -> {
             publish();

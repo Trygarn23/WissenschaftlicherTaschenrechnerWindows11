@@ -13,6 +13,8 @@ import java.awt.Color;
  */
 public final class StatusAnzeige
 {
+    private static final int PULS_DAUER_MS = 200;
+
     private final JLabel label;
     private final JComponent[] hervorheben;
     private AppTheme theme;
@@ -59,7 +61,7 @@ public final class StatusAnzeige
     {
         for (JComponent komponente : hervorheben)
         {
-            AnimationSupport.pulseBackground(komponente, farbe, 200);
+            AnimationSupport.pulseBackground(komponente, farbe, PULS_DAUER_MS);
         }
     }
 }
