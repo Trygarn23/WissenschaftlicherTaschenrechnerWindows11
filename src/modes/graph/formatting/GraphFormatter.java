@@ -3,7 +3,6 @@ package modes.graph.formatting;
 import modes.graph.model.Flaeche;
 import modes.graph.model.GraphPunkt;
 import modes.graph.model.Tangente;
-import modes.graph.model.KurvendiskussionResult;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,16 +47,6 @@ public class GraphFormatter
             return "keine gefunden";
         }
         return punkte.stream().map(this::formatierePunkt).collect(Collectors.joining(", "));
-    }
-
-    public String formatiereKurvendiskussion(KurvendiskussionResult result, List<GraphPunkt> schnittpunkte)
-    {
-        return "Y-Achse: " + formatierePunkt(result.getYAchsenSchnittpunkt()) + "\n"
-                + "Nullstellen: " + formatierePunkte(result.getNullstellen()) + "\n"
-                + "Extrema: " + formatierePunkte(result.getExtremstellen()) + "\n"
-                + "Wendestellen: " + formatierePunkte(result.getWendestellen()) + "\n"
-                + "Schnitt mit anderen: " + formatierePunkte(schnittpunkte) + "\n"
-                + "Hinweis: numerische Näherung im sichtbaren x-Bereich.";
     }
 
     /** z. B. „Tangente an x = 1: t(x) = 2·x − 1“. */

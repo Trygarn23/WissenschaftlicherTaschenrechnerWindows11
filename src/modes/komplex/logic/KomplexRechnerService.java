@@ -28,14 +28,4 @@ public class KomplexRechnerService
     {
         return zahl.konjugiert();
     }
-
-    public KomplexeZahl ausPolarDeg(double betrag, double phaseDeg)
-    {
-        return KomplexeZahl.ausPolar(betrag, Math.toRadians(phaseDeg));
-    }
-
-    public KomplexeZahl ausPolarRad(double betrag, double phaseRad)
-    {
-        return KomplexeZahl.ausPolar(betrag, phaseRad);
-    }
 }

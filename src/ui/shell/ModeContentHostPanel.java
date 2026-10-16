@@ -44,16 +44,6 @@ public class ModeContentHostPanel extends JPanel
         animateModeChange(theme);
     }
 
-    public void pulse(AppTheme theme)
-    {
-        animateModeChange(theme);
-    }
-
-    public JPanel getModePanel(RechnerModus modus)
-    {
-        return modePanels.get(modus);
-    }
-
     private void animateModeChange(AppTheme theme)
     {
         setOpaque(false);

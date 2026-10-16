@@ -25,11 +25,6 @@ public class StatistikState
         sortiereWennNoetig();
     }
 
-    public boolean isSortiert()
-    {
-        return sortiert;
-    }
-
     public void setSortiert(boolean sortiert)
     {
         this.sortiert = sortiert;

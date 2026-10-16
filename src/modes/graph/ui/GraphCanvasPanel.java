@@ -82,12 +82,6 @@ public class GraphCanvasPanel extends JPanel
         registriereMaussteuerung();
     }
 
-    public void setState(GraphState state)
-    {
-        this.state = state;
-        repaint();
-    }
-
     public void setWinkelModus(WinkelModus winkelModus)
     {
         this.winkelModus = winkelModus;

@@ -242,21 +242,6 @@ public class HistoryPanel extends JPanel
         return historySearchField.isFocusOwner();
     }
 
-    public boolean hasSearchSelection()
-    {
-        return historySearchField.getSelectionStart() != historySearchField.getSelectionEnd();
-    }
-
-    public int getSearchCaretPosition()
-    {
-        return historySearchField.getCaretPosition();
-    }
-
-    public void clearSearch()
-    {
-        historySearchField.clear();
-    }
-
     public boolean isEingeklappt()
     {
         return eingeklappt;
@@ -319,16 +304,6 @@ public class HistoryPanel extends JPanel
     public List<VerlaufEintrag> getAllStructuredEntries()
     {
         return modelEntries(allHistoryModel);
-    }
-
-    public void addEntry(String entry)
-    {
-        if (entry == null || entry.isBlank())
-        {
-            return;
-        }
-
-        addStructuredEntry(VerlaufTextMapper.ausLegacyText(entry, RechnerModus.STANDARD));
     }
 
     public void addStructuredEntry(VerlaufEintrag entry)

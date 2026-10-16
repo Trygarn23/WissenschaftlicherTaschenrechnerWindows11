@@ -8,7 +8,6 @@ import ui.theme.ModernButtonStyler;
 import javax.swing.JButton;
 import javax.swing.JPopupMenu;
 import javax.swing.JPanel;
-import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.util.Arrays;

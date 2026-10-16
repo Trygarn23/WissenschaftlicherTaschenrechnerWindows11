@@ -10,7 +10,6 @@ import ui.theme.themes.DarkTheme;
 
 import javax.swing.JPanel;
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;

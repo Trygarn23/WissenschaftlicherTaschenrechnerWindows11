@@ -70,11 +70,6 @@ public interface AppTheme
         return blend(panelBackground(), modeButtonActiveBackground(), 0.20);
     }
 
-    default Color dangerSoftBackground()
-    {
-        return blend(panelBackground(), dangerBackground(), 0.22);
-    }
-
     default Color successPulseColor()
     {
         return blend(panelBackground(), graphNullstelleColor(), 0.35);
@@ -83,11 +78,6 @@ public interface AppTheme
     default Color errorPulseColor()
     {
         return blend(panelBackground(), dangerBackground(), 0.35);
-    }
-
-    default Color menuHoverBackground()
-    {
-        return hoverBackground(popupOptionBackground());
     }
 
     default Color menuActiveBackground()
@@ -118,11 +108,6 @@ public interface AppTheme
     default Color dangerBackground()
     {
         return operatorButtonBackground();
-    }
-
-    default Color dangerForeground()
-    {
-        return operatorButtonForeground();
     }
 
     default Color canvasBackground()

@@ -68,11 +68,6 @@ public class EinheitenSidePanelHost extends JPanel
         return geoeffnet;
     }
 
-    public int getAktuelleBreite()
-    {
-        return currentWidth;
-    }
-
     public void applyTheme(AppTheme theme)
     {
         sidePanel.applyTheme(theme);

@@ -163,14 +163,6 @@ public class RechnerZustand
         }
     }
 
-    public void appendVerlauf(String text)
-    {
-        if (text != null)
-        {
-            verlauf.append(text);
-        }
-    }
-
     public void clearVerlauf()
     {
         verlauf.setLength(0);

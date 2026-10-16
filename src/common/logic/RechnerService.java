@@ -39,11 +39,6 @@ public class RechnerService
         return ausdruckEditor;
     }
 
-    protected RechnerZustand getZustand()
-    {
-        return zustand;
-    }
-
     public String eingabeZahl(String ziffer)
     {
         return ausdruckEditor.eingabeZahl(ziffer);

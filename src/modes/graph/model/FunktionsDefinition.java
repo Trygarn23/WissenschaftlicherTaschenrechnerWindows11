@@ -36,11 +36,6 @@ public class FunktionsDefinition
         return farbe;
     }
 
-    public void setFarbe(Color farbe)
-    {
-        this.farbe = farbe;
-    }
-
     public boolean isSichtbar()
     {
         return sichtbar;
