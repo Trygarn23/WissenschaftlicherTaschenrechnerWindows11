@@ -5,7 +5,7 @@ import modes.bruch.model.Bruch;
 import java.util.Optional;
 
 /**
- * Sucht zu einer Dezimalzahl eine einfache exakte Form für die S⇔D-Taste:
+ * Sucht zu einer Dezimalzahl eine einfache exakte Form für die S↔D-Taste:
  * Bruch mit kleinem Nenner (0,75 → 3/4), Wurzel (0,7071… → √2/2) oder Vielfaches von π (2,356… → 3π/4).
  */
 public final class ExakteForm

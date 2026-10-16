@@ -17,7 +17,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class WissenschaftlichPanel extends JPanel implements ModePanel
@@ -34,21 +36,25 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
             "ln", "±", "0", ",", "="
     };
 
-    private static final String[] FX_FUNCTIONS = {
-            "sin", "cos", "tan",
-            "asin", "acos", "atan",
-            "sinh", "cosh", "tanh",
-            "nCr", "nPr", ";",
-            "ggT", "kgV", "n!",
-            "S⇔D", "STO", "RCL",
-            "Mehr Stellen"
-    };
+    /** Gruppen des f(x)-Popups in Anzeigereihenfolge; die Favoriten folgen derselben Reihenfolge. */
+    private static final Map<String, String[]> FX_GROUPS = new LinkedHashMap<>();
+
+    static
+    {
+        FX_GROUPS.put("Trigonometrie", new String[] {
+                "sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh"});
+        FX_GROUPS.put("Kombinatorik & Zahlen", new String[] {
+                "nCr", "nPr", ";", "ggT", "kgV", "n!"});
+        FX_GROUPS.put("Ergebnis & Speicher", new String[] {
+                "S↔D", "Mehr Stellen", "STO", "RCL"});
+    }
 
     private Consumer<String> functionSelectionListener;
     private JPopupMenu functionPopupMenu;
     private JPanel functionPopupContent;
     private JLabel functionPopupTitleLabel;
     private final List<JButton> functionPopupButtons = new ArrayList<>();
+    private final List<JLabel> functionGroupLabels = new ArrayList<>();
 
     /** Per Rechtsklick angeheftete Funktionen; die Namensliste ist dieselbe Logik wie bei Konstanten-Favoriten. */
     private final KonstantenFavoriten favoriten;
@@ -112,6 +118,12 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
             functionPopupTitleLabel.setForeground(theme.displayForeground());
         }
 
+        for (JLabel label : functionGroupLabels)
+        {
+            label.setFont(theme.buttonFont().deriveFont(Font.BOLD));
+            label.setForeground(theme.displayForeground());
+        }
+
         for (JButton button : functionPopupButtons)
         {
             styleFunctionButton(button);
@@ -161,14 +173,29 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
         functionPopupTitleLabel = new JLabel("Funktionen (Rechtsklick: anheften)");
         functionPopupTitleLabel.setFont(AppFonts.fett(14));
 
-        JPanel buttonGrid = new JPanel(new GridLayout(0, 3, 6, 6));
-        buttonGrid.setOpaque(false);
+        JPanel groups = new JPanel();
+        groups.setLayout(new BoxLayout(groups, BoxLayout.Y_AXIS));
+        groups.setOpaque(false);
 
-        for (String functionName : FX_FUNCTIONS)
+        for (Map.Entry<String, String[]> group : FX_GROUPS.entrySet())
         {
-            JButton fnButton = createPopupFunctionButton(functionName);
-            functionPopupButtons.add(fnButton);
-            buttonGrid.add(fnButton);
+            JLabel label = new JLabel(group.getKey());
+            label.setFont(AppFonts.fett(12));
+            label.setBorder(new EmptyBorder(4, 0, 4, 0));
+            label.setAlignmentX(Component.LEFT_ALIGNMENT);
+            functionGroupLabels.add(label);
+            groups.add(label);
+
+            JPanel grid = new JPanel(new GridLayout(0, 3, 6, 6));
+            grid.setOpaque(false);
+            grid.setAlignmentX(Component.LEFT_ALIGNMENT);
+            for (String functionName : group.getValue())
+            {
+                JButton fnButton = createPopupFunctionButton(functionName);
+                functionPopupButtons.add(fnButton);
+                grid.add(fnButton);
+            }
+            groups.add(grid);
         }
 
         JPanel north = new JPanel(new BorderLayout(0, 8));
@@ -179,7 +206,7 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
         aktualisiereFavoriten();
 
         functionPopupContent.add(north, BorderLayout.NORTH);
-        functionPopupContent.add(buttonGrid, BorderLayout.CENTER);
+        functionPopupContent.add(groups, BorderLayout.CENTER);
         functionPopupMenu.add(functionPopupContent);
 
         triggerButton.addActionListener(e -> functionPopupMenu.show(triggerButton, 0, triggerButton.getHeight()));
@@ -256,11 +283,14 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
     private void aktualisiereFavoriten()
     {
         favoritesRow.removeAll();
-        for (String functionName : FX_FUNCTIONS)
+        for (String[] group : FX_GROUPS.values())
         {
-            if (favoriten.istFavorit(functionName))
+            for (String functionName : group)
             {
-                favoritesRow.add(createPopupFunctionButton(functionName));
+                if (favoriten.istFavorit(functionName))
+                {
+                    favoritesRow.add(createPopupFunctionButton(functionName));
+                }
             }
         }
         favoritesRow.setVisible(favoritesRow.getComponentCount() > 0);

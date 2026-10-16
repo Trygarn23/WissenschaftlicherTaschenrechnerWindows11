@@ -160,10 +160,10 @@ public class ShellActionRegistryTest
         rechner.berechne();
 
         // Act
-        registry.ausfuehren("S⇔D");
+        registry.ausfuehren("S↔D");
         String exakt = extraInfo.get();
         int refreshVorher = refreshCount.get();
-        registry.ausfuehren("S⇔D");
+        registry.ausfuehren("S↔D");
 
         // Assert
         assertEquals("= 3/4", exakt);
@@ -222,11 +222,11 @@ public class ShellActionRegistryTest
     void neueFunktionsmenueAktionen_ShouldExistAndHaveTooltips()
     {
         // Act & Assert
-        for (String aktion : new String[]{"S⇔D", "Mehr Stellen", "STO A", "RCL F"})
+        for (String aktion : new String[]{"S↔D", "Mehr Stellen", "STO A", "RCL F"})
         {
             assertTrue(registry.kennt(aktion), "Keine Aktion für " + aktion);
         }
-        for (String taste : new String[]{"S⇔D", "STO", "RCL", "Mehr Stellen"})
+        for (String taste : new String[]{"S↔D", "STO", "RCL", "Mehr Stellen"})
         {
             assertNotNull(ButtonTooltips.textFor(taste), "Kein Tooltip für " + taste);
         }

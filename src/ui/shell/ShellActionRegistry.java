@@ -28,7 +28,7 @@ public class ShellActionRegistry
     private final Runnable evaluate;
     private final VariablenSpeicher variablen;
     private final Map<String, Runnable> actions = new HashMap<>();
-    /** Ausdruck, zu dem S⇔D gerade die exakte Form zeigt; der nächste Druck schaltet zurück auf dezimal. */
+    /** Ausdruck, zu dem S↔D gerade die exakte Form zeigt; der nächste Druck schaltet zurück auf dezimal. */
     private String exaktAngezeigtFuer;
 
     /** Variablen A–F nur im Speicher, z. B. für Tests. */
@@ -152,7 +152,7 @@ public class ShellActionRegistry
         }
         mitRefresh(";", w::trennzeichen);
 
-        actions.put("S⇔D", this::exaktUmschalten);
+        actions.put("S↔D", this::exaktUmschalten);
         actions.put("Mehr Stellen", () -> refreshWithExtraInfo.accept("= " + rechner.formatiereVolleGenauigkeit(rechner.aktuellerWertOder0())));
     }
 
