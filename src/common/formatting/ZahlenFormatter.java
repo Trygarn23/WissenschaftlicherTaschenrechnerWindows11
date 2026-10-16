@@ -104,6 +104,17 @@ public class ZahlenFormatter
         return text.replace('.', ',');
     }
 
+    /** Alle Stellen, die ein double hergibt (bis 17 signifikante), unabhängig von der Nachkommastellen-Einstellung. */
+    public String volleGenauigkeit(double wert)
+    {
+        double absolut = Math.abs(wert);
+        if (wert != 0.0 && (absolut >= SCIENTIFIC_UPPER_LIMIT || absolut < SCIENTIFIC_LOWER_LIMIT))
+        {
+            return Double.toString(wert).replace('.', ',').replace('E', 'e');
+        }
+        return interneDarstellung(wert);
+    }
+
     public void setNachkommastellen(int nachkommastellen)
     {
         this.nachkommastellen = Math.max(MIN_NACHKOMMASTELLEN, Math.min(MAX_NACHKOMMASTELLEN, nachkommastellen));

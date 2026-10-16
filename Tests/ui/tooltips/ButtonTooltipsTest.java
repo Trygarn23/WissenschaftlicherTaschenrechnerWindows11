@@ -44,7 +44,7 @@ public class ButtonTooltipsTest
         // Act & Assert
         assertAllButtonsHaveTooltips(panel);
         assertEquals("Sinusfunktion", findButton(panel, "sin").getToolTipText());
-        assertEquals("Öffnet weitere Funktionen: Trigonometrie, nCr, nPr, ggT, kgV, n!", findButton(panel, "f(x) ▼").getToolTipText());
+        assertEquals("Öffnet weitere Funktionen: Trigonometrie, nCr, nPr, ggT, kgV, n!, S⇔D, Variablen", findButton(panel, "f(x) ▼").getToolTipText());
     }
 
     @Test

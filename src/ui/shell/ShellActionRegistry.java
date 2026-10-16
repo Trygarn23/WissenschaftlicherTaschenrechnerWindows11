@@ -1,6 +1,8 @@
 package ui.shell;
 
 import common.logic.RechnerService;
+import modes.wissenschaftlich.logic.ExakteForm;
+import modes.wissenschaftlich.logic.VariablenSpeicher;
 import modes.wissenschaftlich.logic.WissenschaftlichOperationen;
 import ui.shortcuts.Tastenkuerzel;
 
@@ -17,8 +19,12 @@ public class ShellActionRegistry
     private final Runnable refresh;
     private final Consumer<String> refreshWithExtraInfo;
     private final Runnable evaluate;
+    private final VariablenSpeicher variablen;
     private final Map<String, Runnable> actions = new HashMap<>();
+    /** Ausdruck, zu dem S⇔D gerade die exakte Form zeigt; der nächste Druck schaltet zurück auf dezimal. */
+    private String exaktAngezeigtFuer;
 
+    /** Variablen A–F nur im Speicher, z. B. für Tests. */
     public ShellActionRegistry(
             RechnerService rechner,
             WissenschaftlichOperationen wissenschaftlichOperationen,
@@ -26,8 +32,20 @@ public class ShellActionRegistry
             Consumer<String> refreshWithExtraInfo,
             Runnable evaluate)
     {
+        this(rechner, wissenschaftlichOperationen, refresh, refreshWithExtraInfo, evaluate, new VariablenSpeicher(null));
+    }
+
+    public ShellActionRegistry(
+            RechnerService rechner,
+            WissenschaftlichOperationen wissenschaftlichOperationen,
+            Runnable refresh,
+            Consumer<String> refreshWithExtraInfo,
+            Runnable evaluate,
+            VariablenSpeicher variablen)
+    {
         this.rechner = rechner;
         this.wissenschaftlichOperationen = wissenschaftlichOperationen;
+        this.variablen = variablen;
         this.refresh = refresh;
         this.refreshWithExtraInfo = refreshWithExtraInfo;
         this.evaluate = evaluate;
@@ -112,6 +130,24 @@ public class ShellActionRegistry
             mitRefresh(funktion, () -> w.zweiArgumente(funktion));
         }
         mitRefresh(";", w::trennzeichen);
+
+        actions.put("S⇔D", this::exaktUmschalten);
+        actions.put("Mehr Stellen", () -> refreshWithExtraInfo.accept("= " + rechner.formatiereVolleGenauigkeit(rechner.aktuellerWert())));
+    }
+
+    private void exaktUmschalten()
+    {
+        String ausdruck = rechner.getAusdruckText();
+        if (ausdruck.equals(exaktAngezeigtFuer))
+        {
+            exaktAngezeigtFuer = null;
+            refresh.run();
+            return;
+        }
+        exaktAngezeigtFuer = ausdruck;
+        refreshWithExtraInfo.accept(ExakteForm.finde(rechner.aktuellerWert())
+                .map(form -> "= " + form)
+                .orElse("Keine exakte Form gefunden"));
     }
 
     private void initMemoryActions()
@@ -123,6 +159,21 @@ public class ShellActionRegistry
         mitRefresh("MR", rechner::speicherAbrufen);
         actions.put("M+", () -> refreshWithExtraInfo.accept("M = " + rechner.speicherAddieren()));
         actions.put("M-", () -> refreshWithExtraInfo.accept("M = " + rechner.speicherSubtrahieren()));
+
+        for (String name : VariablenSpeicher.NAMEN)
+        {
+            actions.put("STO " + name, () -> {
+                double wert = rechner.aktuellerWert();
+                variablen.speichere(name, wert);
+                refreshWithExtraInfo.accept(name + " = " + rechner.formatiereZahl(wert));
+            });
+            actions.put("RCL " + name, () -> variablen.wert(name).ifPresentOrElse(
+                    wert -> {
+                        rechner.zahlEinsetzen(wert);
+                        refresh.run();
+                    },
+                    () -> refreshWithExtraInfo.accept(name + " ist leer")));
+        }
     }
 
     /**

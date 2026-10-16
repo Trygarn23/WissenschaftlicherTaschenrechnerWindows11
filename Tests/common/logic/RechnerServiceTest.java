@@ -483,4 +483,22 @@ public class RechnerServiceTest
         assertEquals("1.234,5", liveAnzeige);
         assertEquals("1.234,5", result);
     }
+
+    @Test
+    void ans_ShouldInsertLastResultIntoNewExpression_WhenUsedAfterEquals()
+    {
+        // Arrange
+        rechner.setAusdruckText("2+3");
+        rechner.berechne();
+
+        // Act
+        rechner.eingabeZahl("4");
+        rechner.operatorSetzen("×");
+        rechner.ans();
+        String ergebnis = rechner.berechne();
+
+        // Assert
+        assertEquals("20", ergebnis);
+        assertEquals("4*5 = 20", rechner.getVerlauf());
+    }
 }

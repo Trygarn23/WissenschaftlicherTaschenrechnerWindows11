@@ -189,6 +189,23 @@ public class RechnerService
         return zahlenFormatierer.formatiereZahl(zahl);
     }
 
+    public String formatiereVolleGenauigkeit(double zahl)
+    {
+        return zahlenFormatierer.volleGenauigkeit(zahl);
+    }
+
+    /** Setzt eine Zahl wie MR in den Ausdruck ein (z. B. für RCL). */
+    public String zahlEinsetzen(double zahl)
+    {
+        return ausdruckEditor.konstanteEinsetzen(zahl);
+    }
+
+    /** Wert des aktuellen Ausdrucks (nach „=“ also das Ergebnis), 0 wenn er nicht ausrechenbar ist. */
+    public double aktuellerWert()
+    {
+        return berechnungsService.aktuellerWertOder0();
+    }
+
     public String formatiereLiveAnzeige()
     {
         return zahlenFormatierer.formatiereLiveAnzeige(zustand.getAusdruckText());

@@ -57,6 +57,12 @@ public final class AppDateien
         return datei(benutzerordner(), "eigene_funktionen.txt");
     }
 
+    /** Variablen A–F (STO/RCL). */
+    public static Path variablen()
+    {
+        return datei(benutzerordner(), "variablen.properties");
+    }
+
     /** Letzte Eingabe, falls die App abstürzt oder hart beendet wird. */
     public static Path wiederherstellung()
     {

@@ -152,6 +152,86 @@ public class ShellActionRegistryTest
         assertAllStandardButtonsHaveActions(panel);
     }
 
+    @Test
+    void sdTaste_ShouldToggleBetweenExactFormAndDecimal_WhenPressedTwice()
+    {
+        // Arrange
+        rechner.setAusdruckText("3÷4");
+        rechner.berechne();
+
+        // Act
+        registry.ausfuehren("S⇔D");
+        String exakt = extraInfo.get();
+        int refreshVorher = refreshCount.get();
+        registry.ausfuehren("S⇔D");
+
+        // Assert
+        assertEquals("= 3/4", exakt);
+        assertEquals(refreshVorher + 1, refreshCount.get());
+    }
+
+    @Test
+    void stoUndRcl_ShouldStoreResultAndInsertItAsNumber()
+    {
+        // Arrange
+        rechner.setAusdruckText("2+3");
+        rechner.berechne();
+
+        // Act
+        registry.ausfuehren("STO A");
+        String gespeichert = extraInfo.get();
+        registry.ausfuehren("C");
+        registry.ausfuehren("2");
+        registry.ausfuehren("+");
+        registry.ausfuehren("RCL A");
+
+        // Assert
+        assertEquals("A = 5", gespeichert);
+        assertEquals("2+5", rechner.formatiereLiveAnzeige());
+        assertEquals("7", rechner.berechne());
+    }
+
+    @Test
+    void rcl_ShouldShowHint_WhenVariableIsEmpty()
+    {
+        // Act
+        registry.ausfuehren("RCL F");
+
+        // Assert
+        assertEquals("F ist leer", extraInfo.get());
+        assertEquals("0", rechner.formatiereLiveAnzeige());
+    }
+
+    @Test
+    void mehrStellen_ShouldShowFullPrecision_WithoutChangingSetting()
+    {
+        // Arrange
+        rechner.setNachkommastellen(2);
+        rechner.setAusdruckText("1÷3");
+        rechner.berechne();
+
+        // Act
+        registry.ausfuehren("Mehr Stellen");
+
+        // Assert
+        assertEquals("= 0,3333333333333333", extraInfo.get());
+        assertEquals(2, rechner.getNachkommastellen());
+    }
+
+    @Test
+    void neueFunktionsmenueAktionen_ShouldExistAndHaveTooltips()
+    {
+        // Act & Assert
+        for (String aktion : new String[]{"S⇔D", "Mehr Stellen", "STO A", "RCL F"})
+        {
+            assertTrue(registry.kennt(aktion), "Keine Aktion für " + aktion);
+        }
+        for (String taste : new String[]{"S⇔D", "STO", "RCL", "Mehr Stellen"})
+        {
+            assertNotNull(ButtonTooltips.textFor(taste), "Kein Tooltip für " + taste);
+        }
+    }
+
     private void assertAllStandardButtonsHaveActions(Container container)
     {
         for (Component component : container.getComponents())

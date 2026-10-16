@@ -7,6 +7,7 @@ import common.logic.BerechnungsErgebnis;
 import common.logic.RechnerService;
 import common.persistence.AppDateien;
 import common.state.RechnerModus;
+import modes.wissenschaftlich.logic.VariablenSpeicher;
 import modes.wissenschaftlich.logic.WissenschaftlichOperationen;
 import ui.animation.AnimationSupport;
 import ui.befehle.BefehlsDialog;
@@ -64,7 +65,8 @@ public class TaschenrechnerUI extends JFrame
         configureFrame();
         buildLayout();
 
-        shellActionRegistry = new ShellActionRegistry(rechner, wissenschaftlichOperationen, this::refresh, this::refreshWithExtraInfo, this::evaluate);
+        shellActionRegistry = new ShellActionRegistry(rechner, wissenschaftlichOperationen, this::refresh, this::refreshWithExtraInfo, this::evaluate,
+                new VariablenSpeicher(AppDateien.variablen()));
 
         initModeContent();
         wireShellEvents();

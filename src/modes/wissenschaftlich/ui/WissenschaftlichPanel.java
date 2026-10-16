@@ -1,6 +1,7 @@
 package modes.wissenschaftlich.ui;
 
 import common.state.RechnerModus;
+import modes.wissenschaftlich.logic.VariablenSpeicher;
 import ui.shell.ModePanel;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
@@ -34,7 +35,9 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
             "asin", "acos", "atan",
             "sinh", "cosh", "tanh",
             "nCr", "nPr", ";",
-            "ggT", "kgV", "n!"
+            "ggT", "kgV", "n!",
+            "S⇔D", "STO", "RCL",
+            "Mehr Stellen"
     };
 
     private Consumer<String> functionSelectionListener;
@@ -143,7 +146,11 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
 
             fnButton.addActionListener(e -> {
                 functionPopupMenu.setVisible(false);
-                if (functionSelectionListener != null)
+                if ("STO".equals(functionName) || "RCL".equals(functionName))
+                {
+                    showVariableMenu(triggerButton, functionName);
+                }
+                else if (functionSelectionListener != null)
                 {
                     functionSelectionListener.accept(functionName);
                 }
@@ -160,5 +167,23 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
         triggerButton.addActionListener(e -> functionPopupMenu.show(triggerButton, 0, triggerButton.getHeight()));
 
         return triggerButton;
+    }
+
+    /** Kleines Auswahlmenü A–F; gemeldet wird z. B. „STO A“ oder „RCL C“. */
+    private void showVariableMenu(JComponent anchor, String command)
+    {
+        JPopupMenu variableMenu = new JPopupMenu();
+        for (String name : VariablenSpeicher.NAMEN)
+        {
+            JMenuItem item = new JMenuItem(command + " " + name);
+            item.addActionListener(e -> {
+                if (functionSelectionListener != null)
+                {
+                    functionSelectionListener.accept(command + " " + name);
+                }
+            });
+            variableMenu.add(item);
+        }
+        variableMenu.show(anchor, 0, anchor.getHeight());
     }
 }

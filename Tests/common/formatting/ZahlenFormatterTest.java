@@ -82,4 +82,21 @@ public class ZahlenFormatterTest
         // Assert
         assertEquals("1,234e3", actual);
     }
+
+    @Test
+    void volleGenauigkeit_ShouldShowAllDoubleDigits_WhenPrecisionSettingIsLow()
+    {
+        // Arrange
+        formatter.setNachkommastellen(2);
+
+        // Act
+        String drittel = formatter.volleGenauigkeit(1.0 / 3);
+        String summe = formatter.volleGenauigkeit(0.1 + 0.2);
+        String gross = formatter.volleGenauigkeit(1.25e20);
+
+        // Assert
+        assertEquals("0,3333333333333333", drittel);
+        assertEquals("0,30000000000000004", summe);
+        assertEquals("1,25e20", gross);
+    }
 }
