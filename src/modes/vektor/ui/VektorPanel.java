@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 public class VektorPanel extends JPanel implements ModePanel
 {
     private static final int EINGABE_BREITE = 360;
+    private static final int ZEILEN_ABSTAND = 10;
 
     private final JComboBox<String> dimensionBox = new JComboBox<>(new String[] {"2D", "3D"});
     private final JTextField aX = new JTextField("0");
@@ -80,12 +81,20 @@ public class VektorPanel extends JPanel implements ModePanel
         panel.setOpaque(false);
         panel.setPreferredSize(new Dimension(EINGABE_BREITE, 0));
 
-        JPanel fieldsPanel = new JPanel(new GridLayout(0, 1, 0, 10));
+        // Kein GridLayout: das macht jede Zeile so hoch wie einen ganzen Vektorblock,
+        // dann war die 2D/3D-Auswahl riesig und für die Knöpfe blieb kaum Platz.
+        JPanel fieldsPanel = new JPanel(new GridBagLayout());
         fieldsPanel.setOpaque(false);
-        fieldsPanel.add(dimensionBox);
-        fieldsPanel.add(buildVektorInput("a", aX, aY, aZ));
-        fieldsPanel.add(buildVektorInput("b", bX, bY, bZ));
-        fieldsPanel.add(ModusFormular.labelUeber("Skalar k", skalarField));
+        GridBagConstraints zeile = new GridBagConstraints();
+        zeile.gridx = 0;
+        zeile.fill = GridBagConstraints.HORIZONTAL;
+        zeile.weightx = 1;
+        zeile.insets = new Insets(0, 0, ZEILEN_ABSTAND, 0);
+        for (JComponent komponente : List.of(dimensionBox, buildVektorInput("a", aX, aY, aZ),
+                buildVektorInput("b", bX, bY, bZ), ModusFormular.labelUeber("Skalar k", skalarField)))
+        {
+            fieldsPanel.add(komponente, zeile);
+        }
 
         JPanel controls = new JPanel(new GridLayout(0, 2, 8, 8));
         controls.setOpaque(false);
