@@ -22,11 +22,6 @@ final class ProgrammiererButtonStyler
             return theme.operatorButtonBackground();
         }
 
-        if (isToggle(text))
-        {
-            return theme.toggleButtonBackground();
-        }
-
         if (isSpecial(text))
         {
             return theme.specialButtonBackground();
@@ -45,11 +40,6 @@ final class ProgrammiererButtonStyler
         if (isOperator(text) || isBitOperation(text))
         {
             return theme.operatorButtonForeground();
-        }
-
-        if (isToggle(text))
-        {
-            return theme.toggleButtonForeground();
         }
 
         if (isSpecial(text))
@@ -97,18 +87,13 @@ final class ProgrammiererButtonStyler
 
     private static boolean isOperator(String text)
     {
-        return "+".equals(text) || "-".equals(text);
+        return "+".equals(text) || "-".equals(text) || "×".equals(text);
     }
 
     private static boolean isBitOperation(String text)
     {
         return "NOT".equals(text) || "AND".equals(text) || "OR".equals(text) || "XOR".equals(text)
                 || "<<".equals(text) || ">>".equals(text) || ">>>".equals(text);
-    }
-
-    private static boolean isToggle(String text)
-    {
-        return "SIGNED".equals(text) || "UNSIGNED".equals(text);
     }
 
     private static boolean isSpecial(String text)

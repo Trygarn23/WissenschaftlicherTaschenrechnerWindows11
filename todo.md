@@ -752,7 +752,7 @@ Verifikation Runde 2026-10-16/17: 828 JUnit-Tests grün (Testläufe mit separate
 - [x] Parser: `-x^2` wird als `(-x)^2` gerechnet, richtig wäre `-(x^2)` → Parser-Agent hatte den Auftrag, Ergebnis prüfen. → behoben: `-2^2 = -4`, `2^-2 = 0,25`, `(-2)^2 = 4`.
 - [x] Parser: Leerzeichen werden entfernt, dadurch wird `a x` zu `ax` (ungültig) statt `a·x`. → Leerzeichen zwischen zwei Namen wird zu `·`.
 - [x] Graph: `istGueltig` prüft nur bei x = 0, deshalb gilt z. B. `1/x` beim Zeichnen als ungültig. → prüft jetzt mehrere Probestellen.
-- [ ] PRG: Multiplikation gibt es jetzt (Numpad *), aber keinen Button – Tastenraster ist voll.
+- [x] PRG: Multiplikation gibt es jetzt (Numpad *), aber keinen Button – Tastenraster ist voll. → `SIGNED` sitzt jetzt neben den Wortbreiten, im Raster ist Platz für `×`.
 - [x] Tastenkürzel-Übersicht um Strg+K, Strg+Shift+K und PRG-Numpad-* ergänzen. → plus eigener PRG-Abschnitt.
 - [x] Mini-Rechner übernimmt Theme-Wechsel erst beim nächsten Öffnen.
 - [x] Konstanten-Dialog: Favoriten als Stern statt Checkbox (dafür `StarIcon` public machen).

@@ -54,6 +54,37 @@ public class ProgrammiererPanelTest
     }
 
     @Test
+    void panel_ShouldMultiply_WhenTimesButtonIsClicked()
+    {
+        // Arrange
+        ProgrammiererPanel panel = new ProgrammiererPanel();
+
+        // Act
+        findButton(panel, "6").doClick();
+        findButton(panel, "×").doClick();
+        findButton(panel, "7").doClick();
+        findButton(panel, "=").doClick();
+
+        // Assert
+        assertNotNull(findLabelContaining(panel, "DEC: 42"));
+    }
+
+    @Test
+    void panel_ShouldShowSignedToggleNextToWordWidths()
+    {
+        // Arrange
+        ProgrammiererPanel panel = new ProgrammiererPanel();
+        JButton toggle = findButton(panel, "SIGNED");
+
+        // Act
+        toggle.doClick();
+
+        // Assert
+        assertEquals("UNSIGNED", toggle.getText());
+        assertSame(findButton(panel, "QWORD").getParent(), toggle.getParent());
+    }
+
+    @Test
     void panel_ShouldRegisterKeyboardActionsForDigitsAndHexLetters()
     {
         // Arrange

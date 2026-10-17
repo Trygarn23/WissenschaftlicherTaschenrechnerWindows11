@@ -25,11 +25,17 @@ class ProgrammiererOptionsPanel extends JPanel
     private AppTheme currentTheme = new DarkTheme();
     private Basis currentBasis = Basis.DEC;
     private Wortbreite currentWortbreite = Wortbreite.QWORD;
+    private boolean currentUnsigned;
+    private final JButton unsignedButton = new JButton("SIGNED");
 
-    ProgrammiererOptionsPanel(Consumer<Basis> basisListener, Consumer<Wortbreite> wortbreiteListener)
+    ProgrammiererOptionsPanel(Consumer<Basis> basisListener, Consumer<Wortbreite> wortbreiteListener,
+                              Runnable unsignedListener)
     {
         setLayout(new BorderLayout(8, 8));
         setOpaque(false);
+
+        styleModeButton(unsignedButton);
+        unsignedButton.addActionListener(e -> unsignedListener.run());
 
         add(buildBasisPanel(basisListener), BorderLayout.NORTH);
         add(buildWortbreitePanel(wortbreiteListener), BorderLayout.SOUTH);
@@ -56,7 +62,7 @@ class ProgrammiererOptionsPanel extends JPanel
 
     JPanel buildWortbreitePanel(Consumer<Wortbreite> wortbreiteListener)
     {
-        JPanel panel = new JPanel(new GridLayout(1, 4, 8, 0));
+        JPanel panel = new JPanel(new GridLayout(1, 5, 8, 0));
         panel.setOpaque(false);
         panel.setBorder(new EmptyBorder(6, 0, 0, 0));
 
@@ -64,14 +70,16 @@ class ProgrammiererOptionsPanel extends JPanel
         panel.add(createWortbreiteButton("WORD", Wortbreite.WORD, wortbreiteListener));
         panel.add(createWortbreiteButton("DWORD", Wortbreite.DWORD, wortbreiteListener));
         panel.add(createWortbreiteButton("QWORD", Wortbreite.QWORD, wortbreiteListener));
+        panel.add(unsignedButton);
 
         return panel;
     }
 
-    void refresh(Basis basis, Wortbreite wortbreite)
+    void refresh(Basis basis, Wortbreite wortbreite, boolean unsigned)
     {
         currentBasis = basis;
         currentWortbreite = wortbreite;
+        currentUnsigned = unsigned;
 
         for (Map.Entry<Basis, JButton> entry : basisButtons.entrySet())
         {
@@ -82,12 +90,16 @@ class ProgrammiererOptionsPanel extends JPanel
         {
             setModeButtonActive(entry.getValue(), entry.getKey() == wortbreite);
         }
+
+        unsignedButton.setText(unsigned ? "UNSIGNED" : "SIGNED");
+        ButtonTooltips.apply(unsignedButton, unsignedButton.getText());
+        setModeButtonActive(unsignedButton, unsigned);
     }
 
     void applyTheme(AppTheme theme)
     {
         currentTheme = theme;
-        refresh(currentBasis, currentWortbreite);
+        refresh(currentBasis, currentWortbreite, currentUnsigned);
     }
 
     private JButton createBasisButton(String text, Basis basis, Consumer<Basis> listener)

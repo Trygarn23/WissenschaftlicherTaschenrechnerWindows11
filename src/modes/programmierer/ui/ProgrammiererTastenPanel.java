@@ -22,7 +22,6 @@ class ProgrammiererTastenPanel extends JPanel
     private AppTheme currentTheme = new DarkTheme();
     private Basis currentBasis = Basis.DEC;
     private boolean currentUnsigned;
-    private JButton unsignedButton;
 
     ProgrammiererTastenPanel(Consumer<String> buttonListener)
     {
@@ -33,9 +32,9 @@ class ProgrammiererTastenPanel extends JPanel
         String[] texte = {
                 "A", "B", "C", "D", "←",
                 "E", "F", "NOT", "<<", ">>",
-                "7", "8", "9", "AND", "OR",
-                "4", "5", "6", "XOR", "CLR",
-                "1", "2", "3", ">>>", "SIGNED",
+                "7", "8", "9", "AND", ">>>",
+                "4", "5", "6", "OR", "CLR",
+                "1", "2", "3", "XOR", "×",
                 "±", "0", "=", "+", "-"
         };
 
@@ -47,11 +46,6 @@ class ProgrammiererTastenPanel extends JPanel
             add(btn);
 
             tastenButtons.put(text, btn);
-
-            if ("SIGNED".equals(text))
-            {
-                unsignedButton = btn;
-            }
         }
     }
 
@@ -61,7 +55,6 @@ class ProgrammiererTastenPanel extends JPanel
         currentUnsigned = unsigned;
         updateDigitButtonsByBasis(basis, unsigned);
         updateActionButtons();
-        updateUnsignedButton(unsigned);
     }
 
     void applyTheme(AppTheme theme)
@@ -123,25 +116,13 @@ class ProgrammiererTastenPanel extends JPanel
             String text = entry.getKey();
             JButton button = entry.getValue();
 
-            if (text.matches("[0-9A-F]") || button == unsignedButton || "±".equals(text))
+            if (text.matches("[0-9A-F]") || "±".equals(text))
             {
                 continue;
             }
 
-            setButtonEnabledState(button, button.getText(), true);
+            setButtonEnabledState(button, text, true);
         }
-    }
-
-    private void updateUnsignedButton(boolean unsigned)
-    {
-        if (unsignedButton == null)
-        {
-            return;
-        }
-
-        unsignedButton.setText(unsigned ? "UNSIGNED" : "SIGNED");
-        ButtonTooltips.apply(unsignedButton, unsignedButton.getText());
-        setButtonEnabledState(unsignedButton, unsignedButton.getText(), true);
     }
 
     private void setButtonEnabledState(JButton button, String text, boolean enabled)

@@ -21,7 +21,7 @@ public class ProgrammiererPanel extends JPanel implements ModePanel
     private final ProgrammiererFormatter formatter = new ProgrammiererFormatter();
     private final ProgrammiererDisplayPanel displayPanel = new ProgrammiererDisplayPanel(this::oeffneIeeeDialog);
     private final ProgrammiererBitLeiste bitLeiste = new ProgrammiererBitLeiste(this::kippeBit);
-    private final ProgrammiererOptionsPanel optionsPanel = new ProgrammiererOptionsPanel(this::setBasis, this::setWortbreite);
+    private final ProgrammiererOptionsPanel optionsPanel = new ProgrammiererOptionsPanel(this::setBasis, this::setWortbreite, this::toggleUnsigned);
     private final ProgrammiererTastenPanel tastenPanel = new ProgrammiererTastenPanel(this::handleButton);
     private AppTheme theme = new DarkTheme();
 
@@ -51,6 +51,12 @@ public class ProgrammiererPanel extends JPanel implements ModePanel
         refreshAnzeige();
     }
 
+    private void toggleUnsigned()
+    {
+        logik.toggleUnsigned();
+        refreshAnzeige();
+    }
+
     private void setWortbreite(Wortbreite wortbreite)
     {
         logik.setWortbreite(wortbreite);
@@ -75,7 +81,6 @@ public class ProgrammiererPanel extends JPanel implements ModePanel
             case "×" -> logik.mal();
             case "=" -> logik.berechne();
             case "±" -> logik.vorzeichenWechseln();
-            case "SIGNED", "UNSIGNED" -> logik.toggleUnsigned();
             default -> logik.digitEingeben(text);
         }
 
@@ -157,7 +162,7 @@ public class ProgrammiererPanel extends JPanel implements ModePanel
     private void refreshAnzeige()
     {
         displayPanel.refresh(logik, formatter);
-        optionsPanel.refresh(logik.getBasis(), logik.getWortbreite());
+        optionsPanel.refresh(logik.getBasis(), logik.getWortbreite(), logik.isUnsigned());
         tastenPanel.refresh(logik.getBasis(), logik.isUnsigned());
         bitLeiste.refresh(logik);
     }
