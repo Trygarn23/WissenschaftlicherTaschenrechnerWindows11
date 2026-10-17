@@ -68,9 +68,10 @@ public final class TastenkuerzelDialog extends JDialog
 
         abschnitte.put("Programmierer", List.of(
                 new Eintrag("0 – 9, A – F", "Ziffern, je nach Basis"),
-                new Eintrag("+  −  Num *", "Plus, Minus, Mal (Mal nur über den Nummernblock)"),
+                new Eintrag("+  −  Num *", "Plus, Minus, Mal"),
                 new Eintrag("Enter", "Ergebnis"),
-                new Eintrag("Backspace", "Letzte Ziffer löschen"),
+                new Eintrag("Backspace", "Letzte Ziffer löschen (←)"),
+                new Eintrag(Tastenkuerzel.PROGRAMMIERER_CLR_TEXT, "Alles löschen (CLR)"),
                 new Eintrag("!  &  |  ^", "NOT, AND, OR, XOR"),
                 new Eintrag(",  .", "Shift links, Shift rechts")
         ));
@@ -84,7 +85,7 @@ public final class TastenkuerzelDialog extends JDialog
                 new Eintrag("Pos1 / Ende", "Cursor an den Anfang / ans Ende des Ausdrucks"),
                 new Eintrag("Entf", "Zeichen rechts vom Cursor löschen"),
                 new Eintrag(Tastenkuerzel.RUECKGAENGIG_TEXT, "Mit C/CE gelöschte Eingabe zurückholen"),
-                new Eintrag(Tastenkuerzel.PROGRAMMIERER_CLR_TEXT, "Suche verlassen, im PRG-Modus CLR"),
+                new Eintrag(Tastenkuerzel.PROGRAMMIERER_CLR_TEXT, "Suche verlassen"),
                 new Eintrag(Tastenkuerzel.HILFE_TEXT, "Diese Übersicht öffnen")
         ));
         return abschnitte;

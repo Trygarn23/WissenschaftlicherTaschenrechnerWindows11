@@ -25,7 +25,7 @@
 - [x] Statusanzeige bei Winkelmoduswechsel sofort aktualisieren.
 - [x] History/Suche bei ausgeblendeten Modi nicht per Tastatur fokussierbar machen.
 - [x] `ESC`-Verhalten festlegen: Suche defokussieren, Eingabe löschen oder Fenster schließen. → Suche verlassen, sonst wie `CE`; Fenster schließt Esc nicht mehr.
-- [ ] Einheitliche Benennung im UI festlegen: `CLR`, `C`, `CE`, `←`, `Backspace`.
+- [x] Einheitliche Benennung im UI festlegen: `CLR`, `C`, `CE`, `←`, `Backspace`. → Tabelle „Lösch-Tasten“ in der README; `CLR` bleibt nur im PRG (dort ist `C` eine Hex-Ziffer), Formular-Modi nutzen „Leeren“.
 - [ ] Tastaturbedienung für jeden Modus vereinheitlichen.
 - [ ] Fokusreihenfolge pro Modus festlegen.
 - [ ] Accessibility verbessern: Kontrast, Screenreader-Namen, Tooltips, Fokusrahmen.

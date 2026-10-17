@@ -35,7 +35,8 @@ Dieses Projekt ist ein selbst entwickelter wissenschaftlicher Taschenrechner in 
 
 - Ganzzahlrechner für `BIN`, `OCT`, `DEC` und `HEX`
 - Wortbreiten `BYTE`, `WORD`, `DWORD` und `QWORD`
-- Signed/Unsigned-Umschaltung
+- Signed/Unsigned-Umschaltung direkt neben den Wortbreiten
+- Grundrechenarten `+`, `-`, `×`
 - Bitoperationen `AND`, `OR`, `XOR`, `NOT`
 - Shifts `<<`, `>>` und `>>>`
 - Parallele Anzeige der Zahl in mehreren Basen
@@ -172,6 +173,18 @@ Die Modi sind weitgehend getrennt aufgebaut. Gemeinsame Logik wie Parser, Verlau
 - **Logik und Model auf Deutsch** (`berechne`, `formatiereZahl`, `RechnerZustand`).
 - Innerhalb einer Klasse nicht mischen: die privaten Hilfsmethoden einer Klasse sind alle in einer Sprache.
 - Texte für die Oberfläche immer mit echten Umlauten („öffnen“, nicht „oeffnen“).
+
+### Lösch-Tasten
+
+| Taste | Bedeutung | Tastatur |
+|---|---|---|
+| `←` | letztes Zeichen löschen | Backspace |
+| `CE` | nur die aktuelle Eingabe löschen | Esc |
+| `C` | alles löschen | – |
+| `CLR` | nur im Programmierer: alles löschen, weil `C` dort eine Hex-Ziffer ist | Esc |
+| „Leeren“ | in Formular-Modi (Matrix, Statistik, Logik) alle Eingabefelder leeren | – |
+
+Auf Buttons steht immer das Symbol (`←`), „Backspace“ nur in Tastenkürzel-Übersichten.
 
 ### Gespeicherte Dateien
 
