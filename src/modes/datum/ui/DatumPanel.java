@@ -12,6 +12,7 @@ import ui.shell.StatusAnzeige;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
+import ui.theme.ThemeTabbedPaneUI;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -72,8 +73,7 @@ public class DatumPanel extends JPanel implements ModePanel
     public void applyTheme(AppTheme theme)
     {
         setBackground(theme.windowBackground());
-        tabs.setBackground(theme.panelBackground());
-        tabs.setForeground(theme.displayForeground());
+        ThemeTabbedPaneUI.apply(tabs, theme);
 
         for (JTextComponent eingabe : List.of(vonField, bisField, datumField, anzahlField, zeitenArea))
         {

@@ -10,6 +10,7 @@ import modes.statistik.model.StatistikState;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
+import ui.theme.ThemeTabbedPaneUI;
 import ui.shell.ModePanel;
 
 import javax.swing.JButton;
@@ -90,8 +91,7 @@ public class StatistikPanel extends JPanel implements ModePanel
         setBackground(theme.windowBackground());
         applyThemeRecursively(this);
 
-        tabs.setBackground(theme.panelBackground());
-        tabs.setForeground(theme.displayForeground());
+        ThemeTabbedPaneUI.apply(tabs, theme);
         textInput.setBackground(theme.inputBackground());
         textInput.setForeground(theme.displayForeground());
         textInput.setCaretColor(theme.displayForeground());

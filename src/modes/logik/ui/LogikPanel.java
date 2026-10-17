@@ -11,6 +11,7 @@ import ui.shell.StatusAnzeige;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.ModernButtonStyler;
+import ui.theme.ThemeTabbedPaneUI;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -87,8 +88,7 @@ public class LogikPanel extends JPanel implements ModePanel
         normalformArea.setBackground(theme.inputBackground());
         normalformArea.setForeground(theme.displayForeground());
         normalformArea.setFont(AppFonts.symbole(14));
-        tabs.setBackground(theme.panelBackground());
-        tabs.setForeground(theme.displayForeground());
+        ThemeTabbedPaneUI.apply(tabs, theme);
 
         ModusFormular.faerbeKinder(this, theme, komponente ->
         {
