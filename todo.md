@@ -123,7 +123,7 @@
 - [x] Nützliche Einheitenumrechnungen direkt aus einem Ergebnis starten. → Befehlssuche „Ergebnis umrechnen“ öffnet das Einheiten-Panel mit dem Wert.
 - [x] Häufig genutzte Funktionen als Favoriten anheften. → Rechtsklick im f(x)-Popup heftet an, Zeile oben im Popup.
 - [x] Ergebnis bei Bedarf mit mehr Nachkommastellen anschauen, ohne die Einstellung dauerhaft umzubauen. → „Mehr Stellen“ im f(x)-Popup.
-- [ ] Wissenschaftliches `f(x)`-Popup optisch in allen Themes angleichen.
+- [x] Wissenschaftliches `f(x)`-Popup optisch in allen Themes angleichen. → nutzt jetzt die Popup-Rollen und Rahmen-Buttons wie die Aktionsleiste; vorher waren die Knöpfe in Win11, Matrix und Azubi unsichtbar (gleiche Farbe wie der Hintergrund). Offscreen in allen 7 Themes geprüft.
 - [ ] Wissenschaftliches Panel bei kleiner Fenstergröße stabilisieren.
 - [x] S⇔D-Taste wie beim Casio: Ergebnis exakt anzeigen, z. B. 0,333… → 1/3 oder 1,414… → √2. → `ExakteForm`: Brüche, a√n/q, Vielfache von π; Taste im f(x)-Popup.
 - [x] `nCr` und `nPr` ergänzen. → Parser: `nCr(n;k)`, `nPr(n;k)` (Trennzeichen `;`, weil Komma das Dezimalzeichen ist). Buttons fehlen noch.

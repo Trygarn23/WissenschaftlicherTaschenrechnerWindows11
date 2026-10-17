@@ -8,6 +8,7 @@ import ui.shell.ModePanel;
 import ui.theme.AppFonts;
 import ui.theme.AppTheme;
 import ui.theme.CalculatorButtonStyler;
+import ui.theme.ModernButtonStyler;
 import ui.tooltips.ButtonTooltips;
 
 import javax.swing.*;
@@ -109,19 +110,19 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
 
         if (functionPopupContent != null)
         {
-            functionPopupContent.setBackground(theme.panelBackground());
+            functionPopupContent.setBackground(theme.popupBackground());
         }
 
         if (functionPopupTitleLabel != null)
         {
             functionPopupTitleLabel.setFont(theme.buttonFont().deriveFont(Font.BOLD));
-            functionPopupTitleLabel.setForeground(theme.displayForeground());
+            functionPopupTitleLabel.setForeground(theme.popupForeground());
         }
 
         for (JLabel label : functionGroupLabels)
         {
             label.setFont(theme.buttonFont().deriveFont(Font.BOLD));
-            label.setForeground(theme.displayForeground());
+            label.setForeground(theme.popupForeground());
         }
 
         for (JButton button : functionPopupButtons)
@@ -140,12 +141,9 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
         {
             return;
         }
-        button.setFont(theme.buttonFont());
-        button.setBackground(theme.functionButtonBackground());
-        button.setForeground(theme.functionButtonForeground());
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setOpaque(true);
+        // Wie im Aktionsleisten-Popup: mit Rahmen, sonst verschwinden die Knöpfe in Themes,
+        // deren Funktionstasten dieselbe Farbe wie der Hintergrund haben (Win11, Matrix, Azubi).
+        ModernButtonStyler.styleButton(button, theme, theme.popupOptionBackground(), theme.popupOptionForeground());
     }
 
     private JButton createButton(String text)
@@ -266,14 +264,14 @@ public class WissenschaftlichPanel extends JPanel implements ModePanel
             if (theme != null)
             {
                 item.setFont(theme.buttonFont());
-                item.setBackground(theme.functionButtonBackground());
-                item.setForeground(theme.functionButtonForeground());
+                item.setBackground(theme.popupOptionBackground());
+                item.setForeground(theme.popupOptionForeground());
             }
             variableMenu.add(item);
         }
         if (theme != null)
         {
-            variableMenu.setBackground(theme.panelBackground());
+            variableMenu.setBackground(theme.popupBackground());
             variableMenu.setBorder(BorderFactory.createLineBorder(theme.modeBorder(), 1));
         }
         variableMenu.show(anchor, 0, anchor.getHeight());
