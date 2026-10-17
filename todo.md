@@ -35,7 +35,10 @@
   - [x] Umlaute in Fehlermeldungen und Einheitennamen korrigiert (z. B. „benötigt“, „Länge“, „Fuß“).
   - [x] Graph-Meldungen enden jetzt auch mit Punkt; Division/Modulo durch 0 heißt überall „nicht definiert“ (vorher dreimal anders). Regel steht in der README.
 - [ ] In-App-Hilfe planen, aber ohne nerviges Tutorial-Gedöns.
-- [ ] Performance bei langen Ausdrücken, vielen History-Einträgen und großen Matrizen messen.
+- [x] Performance bei langen Ausdrücken, vielen History-Einträgen und großen Matrizen messen. → gemessen am 18.10.2026, alles im grünen Bereich, nichts umgebaut:
+  - Parser: 1.000 Terme (~11.000 Zeichen) 6 ms, 5.000 Terme (~59.000 Zeichen) 13 ms, 500 Klammerebenen < 1 ms.
+  - Matrix: max. 6×6, Inverse + Determinante + Produkt 10.000-mal zusammen ~0,5 s, also ~50 µs pro Durchgang.
+  - Verlauf: 10.000 Einträge laden 32 ms, neuer Eintrag 11 ms; bei 50.000 Einträgen 39 ms pro neuem Eintrag (alles wird neu gefiltert). Erst bei sehr großen Verläufen spürbar.
 - [x] Letzte Eingabe nach einem Absturz wieder anbieten, damit nicht alles einfach weg ist. → `LetzteEingabeSicherung`, Statuszeile meldet „Letzte Eingabe wiederhergestellt“.
 - [x] Einmal Rückgängig anbieten, wenn man aus Versehen den Ausdruck gelöscht hat. → Strg+Z nach C/CE, solange noch nichts Neues getippt wurde.
 - [x] Klammerpaare beim Tippen sichtbar zusammengehörig markieren. → Paare werden je Verschachtelungstiefe farbig/fett, `KlammerPaare`.
