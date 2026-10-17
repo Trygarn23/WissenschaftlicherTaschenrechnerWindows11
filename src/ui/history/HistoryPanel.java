@@ -3,6 +3,7 @@ package ui.history;
 import common.history.VerlaufEintrag;
 import common.history.VerlaufExport;
 import common.history.VerlaufJson;
+import common.history.VerlaufListe;
 import common.history.VerlaufStatistik;
 import common.history.VerlaufTextMapper;
 import common.state.RechnerModus;
@@ -16,7 +17,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -39,7 +39,7 @@ public class HistoryPanel extends JPanel
         }
     }
 
-    private final DefaultListModel<VerlaufEintrag> allHistoryModel = new DefaultListModel<>();
+    private final VerlaufListe verlauf = new VerlaufListe();
     private final DefaultListModel<VerlaufEintrag> filteredHistoryModel = new DefaultListModel<>();
 
     private final HistorySearchField historySearchField = new HistorySearchField(this::applyFilter);
@@ -57,8 +57,6 @@ public class HistoryPanel extends JPanel
 
     private final Predicate<String> deleteConfirmation;
 
-    /** Stand vor dem letzten Löschen. Gilt nur, bis sich der Verlauf wieder anders ändert. */
-    private List<VerlaufEintrag> undoSnapshot;
     private boolean eingeklappt;
 
     private ActionListener entriesChangedListener;
@@ -256,7 +254,7 @@ public class HistoryPanel extends JPanel
         this.eingeklappt = eingeklappt;
         historyTop.setVisible(!eingeklappt);
         historyScroll.setVisible(!eingeklappt);
-        emptyLabel.setVisible(!eingeklappt && allHistoryModel.isEmpty());
+        emptyLabel.setVisible(!eingeklappt && verlauf.istLeer());
         collapseButton.setText(eingeklappt ? "‹" : "›");
         collapseButton.setToolTipText(eingeklappt ? "Verlauf ausklappen" : "Verlauf einklappen");
         setPreferredSize(new Dimension(eingeklappt ? BREITE_EINGEKLAPPT : BREITE, 0));
@@ -280,45 +278,28 @@ public class HistoryPanel extends JPanel
 
     public void setAllStructuredEntries(List<VerlaufEintrag> entries)
     {
-        setUndoSnapshot(null);
-        allHistoryModel.clear();
-
-        for (VerlaufEintrag entry : entries)
-        {
-            if (entry != null && !entry.toLegacyText().isBlank())
-            {
-                allHistoryModel.addElement(entry);
-            }
-        }
-
-        applyFilter();
+        verlauf.ersetzeAlle(entries);
+        refreshEntries();
     }
 
     public List<String> getAllEntries()
     {
-        List<String> result = new ArrayList<>();
-        for (int i = 0; i < allHistoryModel.size(); i++)
-        {
-            result.add(allHistoryModel.getElementAt(i).toLegacyText());
-        }
-        return result;
+        return verlauf.alle().stream().map(VerlaufEintrag::toLegacyText).toList();
     }
 
     public List<VerlaufEintrag> getAllStructuredEntries()
     {
-        return modelEntries(allHistoryModel);
+        return verlauf.alle();
     }
 
     public void addStructuredEntry(VerlaufEintrag entry)
     {
-        if (entry == null || entry.toLegacyText().isBlank())
+        if (!verlauf.fuegeHinzu(entry))
         {
             return;
         }
 
-        setUndoSnapshot(null);
-        allHistoryModel.addElement(entry);
-        applyFilter();
+        refreshEntries();
         if (currentTheme != null)
         {
             AnimationSupport.pulseBackground(historyList, currentTheme.softAccentBackground(), PULS_DAUER_MS);
@@ -328,11 +309,8 @@ public class HistoryPanel extends JPanel
     /** Fügt importierte Einträge hinzu; was schon genauso im Verlauf steht, kommt nicht doppelt rein. */
     void importEntries(List<VerlaufEintrag> imported)
     {
-        LinkedHashSet<VerlaufEintrag> merged = new LinkedHashSet<>(getAllStructuredEntries());
-        merged.addAll(imported);
-        List<VerlaufEintrag> sorted = new ArrayList<>(merged);
-        sorted.sort((a, b) -> a.getZeitpunkt().compareTo(b.getZeitpunkt()));
-        setAllStructuredEntries(sorted);
+        verlauf.importiere(imported);
+        refreshEntries();
         fireEntriesChanged();
     }
 
@@ -389,7 +367,7 @@ public class HistoryPanel extends JPanel
 
     private void deleteAllEntries()
     {
-        if (!allHistoryModel.isEmpty() && deleteConfirmation.test("Den kompletten Verlauf löschen?"))
+        if (!verlauf.istLeer() && deleteConfirmation.test("Den kompletten Verlauf löschen?"))
         {
             removeEntries(getAllStructuredEntries());
         }
@@ -397,35 +375,25 @@ public class HistoryPanel extends JPanel
 
     private void removeEntries(List<VerlaufEintrag> entries)
     {
-        List<VerlaufEintrag> before = getAllStructuredEntries();
-        for (VerlaufEintrag entry : entries)
-        {
-            allHistoryModel.removeElement(entry);
-        }
-        setUndoSnapshot(before);
-        applyFilter();
+        verlauf.entferne(entries);
+        refreshEntries();
         fireEntriesChanged();
     }
 
     private void undoDelete()
     {
-        if (undoSnapshot == null)
+        if (verlauf.macheLoeschenRueckgaengig())
         {
-            return;
+            refreshEntries();
+            fireEntriesChanged();
         }
-
-        List<VerlaufEintrag> restored = undoSnapshot;
-        setUndoSnapshot(null);
-        allHistoryModel.clear();
-        restored.forEach(allHistoryModel::addElement);
-        applyFilter();
-        fireEntriesChanged();
     }
 
-    private void setUndoSnapshot(List<VerlaufEintrag> snapshot)
+    /** Nach jeder Änderung am Verlauf: neu filtern und Rückgängig passend freischalten. */
+    private void refreshEntries()
     {
-        undoSnapshot = snapshot;
-        undoItem.setEnabled(snapshot != null);
+        undoItem.setEnabled(verlauf.kannRueckgaengig());
+        applyFilter();
     }
 
     private void fireEntriesChanged()
@@ -445,14 +413,12 @@ public class HistoryPanel extends JPanel
     private void toggleSelectedFavorite()
     {
         VerlaufEintrag selected = historyList.getSelectedValue();
-        int modelIndex = allHistoryModel.indexOf(selected);
-        if (selected == null || modelIndex < 0)
+        VerlaufEintrag updated = selected == null ? null : verlauf.schalteFavorit(selected).orElse(null);
+        if (updated == null)
         {
             return;
         }
 
-        VerlaufEintrag updated = selected.toggleFavorit();
-        allHistoryModel.set(modelIndex, updated);
         applyFilter();
         selectUpdatedEntry(updated);
 
@@ -496,7 +462,7 @@ public class HistoryPanel extends JPanel
         visible.forEach(filteredHistoryModel::addElement);
 
         int last = filteredHistoryModel.size() - 1;
-        emptyLabel.setVisible(!eingeklappt && allHistoryModel.isEmpty());
+        emptyLabel.setVisible(!eingeklappt && verlauf.istLeer());
         if (last >= 0)
         {
             historyList.ensureIndexIsVisible(last);
@@ -505,15 +471,10 @@ public class HistoryPanel extends JPanel
 
     private List<VerlaufEintrag> visibleEntries()
     {
-        return modelEntries(filteredHistoryModel);
-    }
-
-    private static List<VerlaufEintrag> modelEntries(DefaultListModel<VerlaufEintrag> model)
-    {
         List<VerlaufEintrag> result = new ArrayList<>();
-        for (int i = 0; i < model.size(); i++)
+        for (int i = 0; i < filteredHistoryModel.size(); i++)
         {
-            result.add(model.getElementAt(i));
+            result.add(filteredHistoryModel.getElementAt(i));
         }
         return result;
     }

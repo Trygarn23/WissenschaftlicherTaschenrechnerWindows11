@@ -603,6 +603,8 @@
 - [ ] Benutzerdefinierte Themes erst nach Theme-Palette planen.
 - [x] Layouts auf gemeinsame Hilfsmethoden reduzieren. → `ModusFormular.labelUeber/styleEingabe/styleAuswahl`; Verlauf-Dateidialoge nutzen `DateiDialog`.
 - [ ] Große UI-Klassen verkleinern: `TaschenrechnerUI`, `ProgrammiererPanel`, `HistoryPanel`.
+  - [x] `HistoryPanel` 520→481: Löschen/Rückgängig/Import/Favorit stecken jetzt in `VerlaufListe` (ohne Swing, 5 Tests).
+  - [x] `ProgrammiererPanel` ist nach dem Aufteilen nur noch ~190 Zeilen, kein Handlungsbedarf mehr.
 - [x] `HistoryPanel` bei strukturiertem Verlauf aufteilen.
 - [x] `HistoryPanel` nach `ui.history` verschieben.
 - [x] `HistoryEntryRenderer` aus `HistoryPanel` auslagern.
