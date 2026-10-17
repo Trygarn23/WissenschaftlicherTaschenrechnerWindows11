@@ -23,8 +23,8 @@ final class OperatorRegistry
             "+", new Operator(1, false, 2, (a, b) -> a + b),
             "-", new Operator(1, false, 2, (a, b) -> a - b),
             "*", new Operator(2, false, 2, (a, b) -> a * b),
-            "/", new Operator(2, false, 2, (a, b) -> a / nichtNull(b, "Division durch 0 ist nicht erlaubt")),
-            "%", new Operator(2, false, 2, (a, b) -> a % nichtNull(b, "Modulo durch 0 ist nicht erlaubt")),
+            "/", new Operator(2, false, 2, (a, b) -> a / nichtNull(b, "Division durch 0 ist nicht definiert.")),
+            "%", new Operator(2, false, 2, (a, b) -> a % nichtNull(b, "Modulo durch 0 ist nicht definiert.")),
             "^", new Operator(4, true, 2, Math::pow),
             // Unter ^: -2^2 = -(2^2), aber über * und /.
             UNAERES_MINUS, new Operator(3, true, 1, (a, b) -> -a)

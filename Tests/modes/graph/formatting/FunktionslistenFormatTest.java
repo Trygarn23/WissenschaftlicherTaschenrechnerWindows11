@@ -74,7 +74,7 @@ public class FunktionslistenFormatTest
     {
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> FunktionslistenFormat.lese("f;x;#000000;true\nF;2x;#000000;true"));
-        assertEquals("Die Datei enthält keine Funktionen",
+        assertEquals("Die Datei enthält keine Funktionen.",
                 assertThrows(IllegalArgumentException.class, () -> FunktionslistenFormat.lese("  \n\n")).getMessage());
     }
 }

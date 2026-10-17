@@ -88,8 +88,8 @@ public class KomplexPresenterTest
         presenter.dividiere();
 
         // Assert
-        assertEquals("Division durch 0 + 0i", view.fehler);
-        assertEquals("Division durch 0 + 0i", state.getStatus());
+        assertEquals("Division durch 0 ist nicht definiert.", view.fehler);
+        assertEquals("Division durch 0 ist nicht definiert.", state.getStatus());
         assertEquals(1, state.getErgebnis().getReal());
         assertEquals(1, state.getZweiteZahl().getReal());
     }

@@ -44,7 +44,7 @@ public final class KomplexeZahl
         double nenner = andere.real * andere.real + andere.imaginaer * andere.imaginaer;
         if (nenner == 0.0)
         {
-            throw new ArithmeticException("Division durch 0 + 0i");
+            throw new ArithmeticException("Division durch 0 ist nicht definiert.");
         }
 
         return new KomplexeZahl(

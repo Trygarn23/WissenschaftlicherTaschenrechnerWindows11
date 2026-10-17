@@ -67,7 +67,7 @@ public class BruchTest
         ArithmeticException fehler = assertThrows(ArithmeticException.class, () -> new Bruch(1, 2).durch(Bruch.NULL));
 
         // Assert
-        assertEquals("Division durch 0 ist nicht erlaubt.", fehler.getMessage());
+        assertEquals("Division durch 0 ist nicht definiert.", fehler.getMessage());
     }
 
     @Test

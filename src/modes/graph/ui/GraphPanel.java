@@ -138,7 +138,7 @@ public class GraphPanel extends JPanel implements ModePanel
         funktionsliste.uebernehmeInState();
         if (!state.entferneFunktion(index))
         {
-            statusAnzeige.zeigeFehler("Eine Funktion muss bleiben");
+            statusAnzeige.zeigeFehler("Eine Funktion muss bleiben.");
             return;
         }
 
@@ -187,7 +187,7 @@ public class GraphPanel extends JPanel implements ModePanel
         String ausdruck = state.getAktiveFunktion().getAusdruck();
         if (ausdruck.isBlank())
         {
-            statusAnzeige.zeigeFehler("Bitte Funktion eingeben");
+            statusAnzeige.zeigeFehler("Bitte eine Funktion eingeben.");
             analyseAusgabe.zeigeText("Gib mir eine Funktion, ich mal dir was.");
             canvasPanel.setKurvendiskussionResult(null);
             canvasPanel.repaint();
@@ -196,7 +196,7 @@ public class GraphPanel extends JPanel implements ModePanel
 
         if (!evaluator.istGueltig(ausdruck, winkelModus))
         {
-            statusAnzeige.zeigeFehler("Ausdruck kann nicht gezeichnet werden");
+            statusAnzeige.zeigeFehler("Ausdruck kann nicht gezeichnet werden.");
             analyseAusgabe.zeigeText("Kurvendiskussion nicht möglich.");
             canvasPanel.setKurvendiskussionResult(null);
             canvasPanel.repaint();
@@ -268,7 +268,7 @@ public class GraphPanel extends JPanel implements ModePanel
         Tangente neu = analyse.setzeTangente(state, funktionIndex, x, winkelModus);
         if (neu == null)
         {
-            statusAnzeige.zeigeFehler("An dieser Stelle gibt es keine Tangente");
+            statusAnzeige.zeigeFehler("An dieser Stelle gibt es keine Tangente.");
             return;
         }
         updateAnalysis();
@@ -319,7 +319,7 @@ public class GraphPanel extends JPanel implements ModePanel
         }
         catch (IOException e)
         {
-            statusAnzeige.zeigeFehler("Datei konnte nicht gelesen werden");
+            statusAnzeige.zeigeFehler("Datei konnte nicht gelesen werden.");
         }
         catch (IllegalArgumentException e)
         {
@@ -343,7 +343,7 @@ public class GraphPanel extends JPanel implements ModePanel
         }
         catch (IOException e)
         {
-            statusAnzeige.zeigeFehler("Datei konnte nicht gespeichert werden");
+            statusAnzeige.zeigeFehler("Datei konnte nicht gespeichert werden.");
         }
     }
 
@@ -362,7 +362,7 @@ public class GraphPanel extends JPanel implements ModePanel
         }
         catch (IOException | IllegalStateException e)
         {
-            statusAnzeige.zeigeFehler("Bild konnte nicht gespeichert werden");
+            statusAnzeige.zeigeFehler("Bild konnte nicht gespeichert werden.");
         }
     }
 

@@ -173,6 +173,7 @@ Die Modi sind weitgehend getrennt aufgebaut. Gemeinsame Logik wie Parser, Verlau
 - **Logik und Model auf Deutsch** (`berechne`, `formatiereZahl`, `RechnerZustand`).
 - Innerhalb einer Klasse nicht mischen: die privaten Hilfsmethoden einer Klasse sind alle in einer Sprache.
 - Texte für die Oberfläche immer mit echten Umlauten („öffnen“, nicht „oeffnen“).
+- Fehlermeldungen sind ganze Sätze mit Punkt und sagen, was zu tun ist („Bitte eine Zahl eingeben.“). Mathematisch heißt es „nicht definiert“, nicht „nicht erlaubt“.
 
 ### Lösch-Tasten
 

@@ -138,7 +138,7 @@ final class GraphFunktionsResolver
                 return index;
             }
         }
-        throw new IllegalArgumentException("Schließende Klammer bei Funktionsaufruf fehlt");
+        throw new IllegalArgumentException("Schließende Klammer beim Funktionsaufruf fehlt.");
     }
 
     private int ueberspringeLeerzeichen(String ausdruck, int index)

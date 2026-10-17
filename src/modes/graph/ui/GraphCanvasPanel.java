@@ -141,7 +141,7 @@ public class GraphCanvasPanel extends JPanel
     {
         if (getWidth() <= 0 || getHeight() <= 0)
         {
-            throw new IllegalStateException("Die Zeichenfläche ist noch nicht sichtbar");
+            throw new IllegalStateException("Die Zeichenfläche ist noch nicht sichtbar.");
         }
 
         verbergeHover();
@@ -151,7 +151,7 @@ public class GraphCanvasPanel extends JPanel
         g.dispose();
         if (!ImageIO.write(bild, "png", datei))
         {
-            throw new IOException("PNG konnte nicht geschrieben werden");
+            throw new IOException("PNG konnte nicht geschrieben werden.");
         }
     }
 

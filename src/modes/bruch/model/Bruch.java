@@ -70,7 +70,7 @@ public record Bruch(long zaehler, long nenner)
     {
         if (b.zaehler == 0)
         {
-            throw new ArithmeticException("Division durch 0 ist nicht erlaubt.");
+            throw new ArithmeticException("Division durch 0 ist nicht definiert.");
         }
         return mal(new Bruch(b.nenner, b.zaehler));
     }

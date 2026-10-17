@@ -51,7 +51,7 @@ public final class FunktionslistenFormat
 
         if (funktionen.isEmpty())
         {
-            throw new IllegalArgumentException("Die Datei enthält keine Funktionen");
+            throw new IllegalArgumentException("Die Datei enthält keine Funktionen.");
         }
         return funktionen;
     }

@@ -33,6 +33,7 @@
 - [ ] Fehlertexte vereinheitlichen: kurz, fachlich korrekt, hilfreich.
   - [x] Zahleneingaben in Komplex, Matrix, Statistik und Einheiten über `ZahlenEingabe` mit deutscher Meldung.
   - [x] Umlaute in Fehlermeldungen und Einheitennamen korrigiert (z. B. „benötigt“, „Länge“, „Fuß“).
+  - [x] Graph-Meldungen enden jetzt auch mit Punkt; Division/Modulo durch 0 heißt überall „nicht definiert“ (vorher dreimal anders). Regel steht in der README.
 - [ ] In-App-Hilfe planen, aber ohne nerviges Tutorial-Gedöns.
 - [ ] Performance bei langen Ausdrücken, vielen History-Einträgen und großen Matrizen messen.
 - [x] Letzte Eingabe nach einem Absturz wieder anbieten, damit nicht alles einfach weg ist. → `LetzteEingabeSicherung`, Statuszeile meldet „Letzte Eingabe wiederhergestellt“.

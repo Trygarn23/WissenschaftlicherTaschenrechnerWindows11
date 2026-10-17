@@ -23,11 +23,11 @@ public class FlaechenRechner
     {
         if (!Double.isFinite(a) || !Double.isFinite(b))
         {
-            throw new IllegalArgumentException("Die Grenzen müssen endliche Zahlen sein");
+            throw new IllegalArgumentException("Die Grenzen müssen endliche Zahlen sein.");
         }
         if (a == b)
         {
-            throw new IllegalArgumentException("Die Grenzen a und b dürfen nicht gleich sein");
+            throw new IllegalArgumentException("Die Grenzen a und b dürfen nicht gleich sein.");
         }
 
         double links = Math.min(a, b);
@@ -39,7 +39,7 @@ public class FlaechenRechner
         if (!Double.isFinite(integral) || !Double.isFinite(grob)
                 || Math.abs(integral - grob) > KONVERGENZ_TOLERANZ * Math.max(1.0, Math.abs(integral)))
         {
-            throw new IllegalArgumentException("Im Intervall ist die Funktion nicht überall definiert (Polstelle o. Ä.) – keine sinnvolle Fläche");
+            throw new IllegalArgumentException("Im Intervall ist die Funktion nicht überall definiert (Polstelle o. Ä.) – keine sinnvolle Fläche.");
         }
 
         double inhalt = simpson(x -> Math.abs(f.applyAsDouble(x)), links, rechts, TEILE);

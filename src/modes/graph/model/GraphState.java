@@ -100,7 +100,7 @@ public class GraphState
     {
         if (neueFunktionen == null || neueFunktionen.isEmpty())
         {
-            throw new IllegalArgumentException("Mindestens eine Funktion wird gebraucht");
+            throw new IllegalArgumentException("Mindestens eine Funktion wird gebraucht.");
         }
         funktionen.clear();
         funktionen.addAll(neueFunktionen);
