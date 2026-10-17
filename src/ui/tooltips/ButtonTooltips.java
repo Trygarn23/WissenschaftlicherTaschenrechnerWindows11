@@ -87,6 +87,43 @@ public final class ButtonTooltips
             Map.entry("UNSIGNED", "Schaltet zwischen vorzeichenloser und vorzeichenbehafteter Darstellung um")
     );
 
+    /** Was ein Screenreader statt des Symbols vorlesen soll; „←“ oder „xʸ“ spricht sonst keiner sinnvoll aus. */
+    private static final Map<String, String> SPRECHNAMEN = Map.ofEntries(
+            Map.entry("%", "Prozent"),
+            Map.entry("CE", "Eingabe löschen"),
+            Map.entry("C", "Alles löschen"),
+            Map.entry("CLR", "Alles löschen"),
+            Map.entry("←", "Zeichen löschen"),
+            Map.entry("1/x", "Kehrwert"),
+            Map.entry("x²", "x Quadrat"),
+            Map.entry("√x", "Wurzel"),
+            Map.entry("÷", "Geteilt"),
+            Map.entry("×", "Mal"),
+            Map.entry("-", "Minus"),
+            Map.entry("+", "Plus"),
+            Map.entry("±", "Vorzeichen wechseln"),
+            Map.entry(",", "Komma"),
+            Map.entry("=", "Gleich"),
+            Map.entry("(", "Klammer auf"),
+            Map.entry(")", "Klammer zu"),
+            Map.entry("xʸ", "x hoch y"),
+            Map.entry("10ˣ", "10 hoch x"),
+            Map.entry("|x|", "Betrag"),
+            Map.entry("π", "Pi"),
+            Map.entry("e", "Eulersche Zahl"),
+            Map.entry("n!", "Fakultät"),
+            Map.entry(";", "Argumente trennen"),
+            Map.entry("S↔D", "Exakt oder dezimal"),
+            Map.entry("MC", "Speicher löschen"),
+            Map.entry("MR", "Speicher abrufen"),
+            Map.entry("M+", "Speicher plus"),
+            Map.entry("M-", "Speicher minus"),
+            Map.entry("f(x)", "Funktionsmenü"),
+            Map.entry("<<", "Shift links"),
+            Map.entry(">>", "Shift rechts arithmetisch"),
+            Map.entry(">>>", "Shift rechts logisch")
+    );
+
     private ButtonTooltips()
     {
     }
@@ -94,6 +131,19 @@ public final class ButtonTooltips
     public static void apply(JButton button, String key)
     {
         button.setToolTipText(textFor(key));
+
+        String normalizedKey = normalize(key);
+        String sprechname = normalizedKey == null ? null : SPRECHNAMEN.get(normalizedKey);
+        if (sprechname != null)
+        {
+            button.getAccessibleContext().setAccessibleName(sprechname);
+        }
+        button.getAccessibleContext().setAccessibleDescription(beschreibungFor(normalizedKey));
+    }
+
+    private static String normalize(String key)
+    {
+        return "f(x) ▼".equals(key) ? "f(x)" : key;
     }
 
     public static String textFor(String key)
@@ -103,7 +153,7 @@ public final class ButtonTooltips
             return null;
         }
 
-        String normalizedKey = "f(x) ▼".equals(key) ? "f(x)" : key;
+        String normalizedKey = normalize(key);
         String description = beschreibungFor(normalizedKey);
 
         if (description == null)

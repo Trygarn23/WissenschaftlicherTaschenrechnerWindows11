@@ -60,6 +60,34 @@ public class ButtonTooltipsTest
                 findButton(panel, "SIGNED").getToolTipText());
     }
 
+    @Test
+    void apply_ShouldGiveSymbolButtonsSpeakableNames()
+    {
+        // Arrange
+        StandardPanel panel = new StandardPanel();
+        JButton zurueck = findButton(panel, "←");
+
+        // Act
+        String name = zurueck.getAccessibleContext().getAccessibleName();
+        String beschreibung = zurueck.getAccessibleContext().getAccessibleDescription();
+
+        // Assert
+        assertEquals("Zeichen löschen", name);
+        assertEquals("Löscht das letzte Zeichen", beschreibung);
+        assertEquals("7", findButton(panel, "7").getAccessibleContext().getAccessibleName());
+    }
+
+    @Test
+    void wissenschaftlichPanel_ShouldGiveExponentButtonSpeakableName()
+    {
+        // Arrange
+        WissenschaftlichPanel panel = new WissenschaftlichPanel();
+
+        // Act & Assert
+        assertEquals("x hoch y", findButton(panel, "xʸ").getAccessibleContext().getAccessibleName());
+        assertEquals("sin", findButton(panel, "sin").getAccessibleContext().getAccessibleName());
+    }
+
     private void assertAllButtonsHaveTooltips(Container container)
     {
         for (Component component : container.getComponents())

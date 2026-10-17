@@ -29,6 +29,7 @@
 - [ ] Tastaturbedienung für jeden Modus vereinheitlichen.
 - [ ] Fokusreihenfolge pro Modus festlegen.
 - [ ] Accessibility verbessern: Kontrast, Screenreader-Namen, Tooltips, Fokusrahmen.
+  - [x] Screenreader-Namen: Symbol-Buttons (`←`, `×`, `xʸ`, `<<` …) haben sprechende Namen, die Tooltip-Beschreibung ist die Accessible Description.
 - [ ] Fehlertexte vereinheitlichen: kurz, fachlich korrekt, hilfreich.
   - [x] Zahleneingaben in Komplex, Matrix, Statistik und Einheiten über `ZahlenEingabe` mit deutscher Meldung.
   - [x] Umlaute in Fehlermeldungen und Einheitennamen korrigiert (z. B. „benötigt“, „Länge“, „Fuß“).
