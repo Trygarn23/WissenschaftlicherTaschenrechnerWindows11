@@ -8,8 +8,11 @@ import ui.theme.ModernButtonStyler;
 import javax.swing.JButton;
 import javax.swing.JPopupMenu;
 import javax.swing.JPanel;
+import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
@@ -18,6 +21,9 @@ import java.util.function.Consumer;
 
 public class ModeBarPanel extends JPanel
 {
+    /** Kleiner wird die Schrift nicht, lieber dann doch „…“ als unlesbar. */
+    private static final float MIN_SCHRIFT = 11f;
+
     private static final List<RechnerModus> DIREKTE_MODI = List.of(
             RechnerModus.STANDARD,
             RechnerModus.WISSENSCHAFTLICH,
@@ -37,6 +43,7 @@ public class ModeBarPanel extends JPanel
     private final JPopupMenu weitereMenu = new JPopupMenu();
     private final JButton zuletztButton = new JButton();
     private RechnerModus zuletztModus;
+    private AppTheme theme;
 
     private Consumer<RechnerModus> modeListener;
     private Runnable unitsListener;
@@ -135,6 +142,7 @@ public class ModeBarPanel extends JPanel
 
     public void setSelectedMode(RechnerModus aktuellerModus, AppTheme theme)
     {
+        this.theme = theme;
         setBackground(theme.modeBarBackground());
         weitereMenu.setBorder(javax.swing.BorderFactory.createLineBorder(theme.modeBorder(), 1));
 
@@ -192,6 +200,48 @@ public class ModeBarPanel extends JPanel
         }
         weitereButton.setEnabled(!aktiv);
         zuletztButton.setEnabled(!aktiv);
+    }
+
+    /** Alle Knöpfe sind gleich breit; bei schmalem Fenster schrumpft die Schrift aller Knöpfe gemeinsam, statt „Wissenschaftl…“ zu zeigen. */
+    @Override
+    public void doLayout()
+    {
+        super.doLayout();
+        if (theme == null)
+        {
+            return;
+        }
+
+        Font font = theme.buttonFont();
+        while (font.getSize2D() > MIN_SCHRIFT && !passtUeberall(font))
+        {
+            font = font.deriveFont(font.getSize2D() - 1f);
+        }
+
+        for (Component component : getComponents())
+        {
+            if (component instanceof JButton button && !font.equals(button.getFont()))
+            {
+                button.setFont(font);
+            }
+        }
+    }
+
+    private boolean passtUeberall(Font font)
+    {
+        for (Component component : getComponents())
+        {
+            if (component instanceof JButton button)
+            {
+                Insets insets = button.getInsets();
+                int platz = button.getWidth() - insets.left - insets.right;
+                if (button.getFontMetrics(font).stringWidth(button.getText()) > platz)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private void styleModeButton(JButton button, boolean aktiv, AppTheme theme)

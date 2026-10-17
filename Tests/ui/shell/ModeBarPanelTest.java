@@ -30,6 +30,26 @@ class ModeBarPanelTest
     }
 
     @Test
+    void modeBar_ShouldShrinkFont_WhenLabelDoesNotFit()
+    {
+        // Arrange
+        ModeBarPanel panel = new ModeBarPanel();
+        AzubiModernTheme theme = new AzubiModernTheme();
+        panel.setSelectedMode(RechnerModus.STANDARD, theme);
+        AbstractButton wissenschaftlich = SwingSuche.button(panel, "Wissenschaftlich");
+
+        // Act
+        panel.setSize(900, 40);
+        panel.doLayout();
+
+        // Assert
+        int platz = wissenschaftlich.getWidth() - wissenschaftlich.getInsets().left - wissenschaftlich.getInsets().right;
+        assertTrue(wissenschaftlich.getFont().getSize2D() < theme.buttonFont().getSize2D());
+        assertTrue(wissenschaftlich.getFontMetrics(wissenschaftlich.getFont()).stringWidth("Wissenschaftlich") <= platz);
+        assertEquals(wissenschaftlich.getFont(), SwingSuche.button(panel, "PRG").getFont());
+    }
+
+    @Test
     void modeBar_ShouldOnlyMarkLastUsedButtonActive_WhenExtraModeIsSelected()
     {
         ModeBarPanel panel = new ModeBarPanel();
